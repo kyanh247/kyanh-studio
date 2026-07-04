@@ -314,7 +314,7 @@
 <!-- ============= KHỐI CẤU HÌNH — CHỈNH 2 CHỖ NÀY ============= -->
 <script>
   // (1) Đổi mã PIN quản trị:
-  window.KA_ADMIN_PIN = "2468";
+  window.KA_ADMIN_PIN = "794831";
 
   // (2) Dán firebaseConfig từ Firebase Console vào đây.
   //     Để trống => app chạy chế độ máy đơn (chỉ lưu trên máy này).
@@ -882,12 +882,12 @@ init();
          match /replies/{docId} {
            allow read: if true;
            allow write: if request.resource == null
-                        || request.resource.data._key == "2468";
+                        || request.resource.data._key == "794831";
          }
        }
      }
 
-     ⚠️ Đổi "2468" trong rules cho khớp KA_ADMIN_PIN ở trên.
+     ⚠️ Đổi "794831" trong rules cho khớp KA_ADMIN_PIN ở trên.
      Đây là khoá mềm cho nội bộ studio — đủ chặn ghi tuỳ tiện,
      không phải bảo mật cấp cao. Cần chặt hơn thì bật Firebase Auth.
      ============================================================ -->
