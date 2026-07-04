@@ -162,7 +162,11 @@
     .cards, .skeleton { gap: 0.6rem; }
     .btn-add span { display: none; }
     .btn-add.show { padding: 0 0.9rem; }
-    .menu-tab { padding: 0.5rem 0.8rem; font-size: 0.63rem; }
+    .menu-tabs { gap: 0.35rem; }
+    .menu-tab { padding: 0.4rem 0.6rem; font-size: 0.58rem; gap: 0.3rem; }
+    .menu-tab .count { font-size: 0.53rem; padding: 0.03rem 0.4rem; }
+    .sub-tabs { gap: 0.3rem; }
+    .sub-tab { padding: 0.32rem 0.7rem; font-size: 0.6rem; }
     .lock-btn { top: -2px; }
     .clip-card, .sk-card { height: 150px; }
     .clip-card { padding: 0.85rem 0.85rem 0.75rem; gap: 0.4rem; border-radius: 10px; }
@@ -341,6 +345,7 @@ if (firebaseEnabled) {
 }
 
 const CATEGORIES = [
+  { id: 'all', label: 'Tất Cả' },
   { id: 'chot-don', label: 'Chốt Đơn' },
   { id: 'tuvan', label: 'Tư Vấn', subs: [
       { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
@@ -516,6 +521,7 @@ function tryPin(){
 
 function parentCat(id){ return CATEGORIES.find(c=>c.id===id && c.subs); }
 function countFor(catId){
+  if (catId==='all') return items.length;
   if (catId==='recent') return recent.length;
   const parent = parentCat(catId);
   if (parent) return items.filter(i=>String(i.cat).startsWith(catId+'-')).length;
@@ -548,7 +554,9 @@ function visibleItems(){
     return {list:all, searching:true};
   }
   let list;
-  if (activeCat==='recent'){
+  if (activeCat==='all'){
+    list=items;
+  } else if (activeCat==='recent'){
     const map=Object.fromEntries(items.map(i=>[i.id,i]));
     list=recent.map(r=>map[r.id]).filter(Boolean);
   } else if (parentCat(activeCat)) list=items.filter(i=>i.cat===activeSubs[activeCat]);
