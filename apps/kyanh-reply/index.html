@@ -67,11 +67,6 @@
 
   .sub-tabs { display: none; gap: 0.4rem; margin-bottom: 1rem; }
   .sub-tabs.show { display: flex; flex-wrap: wrap; }
-  .admin-tools { display: none; margin-bottom: 1rem; }
-  .admin-tools.show { display: flex; justify-content: flex-end; }
-  .admin-tool-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.25s ease; }
-  .admin-tool-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
-  .admin-tool-btn svg { width: 13px; height: 13px; stroke: currentColor; }
   .sub-tab { padding: 0.4rem 0.95rem; font-size: 0.66rem; font-weight: 500; letter-spacing: 0.05em; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; transition: all 0.25s ease; font-family: 'Montserrat', sans-serif; }
   .sub-tab:hover { border-color: var(--gold); color: var(--gold-dark); }
   .sub-tab.active { background: rgba(184,149,110,0.12); border-color: var(--gold); color: var(--gold-dark); font-weight: 600; }
@@ -233,12 +228,6 @@
 
   <nav class="menu-tabs" id="menuTabs"></nav>
   <div class="sub-tabs" id="subTabs"></div>
-  <div class="admin-tools" id="adminTools">
-    <button class="admin-tool-btn" id="btnRestore" title="Nạp lại bộ mẫu mới nhất từ hệ thống">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-      Khôi phục bộ mẫu gốc
-    </button>
-  </div>
   <main class="cards" id="cards"></main>
 </div>
 
@@ -473,22 +462,6 @@ async function seedToFirestore() {
   } catch(e){ console.warn(e); }
 }
 
-/* Khôi phục: xoá toàn bộ mẫu hiện có rồi nạp lại bộ SEED mới nhất */
-async function restoreSeeds() {
-  if (fb) {
-    try {
-      const snap = await fb.getDocs(fb.collection(fb.db, 'replies'));
-      for (const d of snap.docs) await fb.deleteDoc(d.ref);
-      await seedToFirestore();
-      showToast('Đã khôi phục bộ mẫu gốc — các máy sẽ tự đồng bộ');
-    } catch(e){ console.warn(e); showToast('Khôi phục thất bại — kiểm tra mạng/PIN', true); }
-  } else {
-    items = SEED_ITEMS.map(withId); recent = [];
-    saveCache(); saveRecent(); render();
-    showToast('Đã khôi phục bộ mẫu gốc');
-  }
-}
-
 async function upsertItem(id, data) {
   if (fb) {
     try {
@@ -521,11 +494,7 @@ function applyAdminUI() {
     ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   btnAdd.classList.toggle('show', isAdmin);
-  $('adminTools').classList.toggle('show', isAdmin);
 }
-$('btnRestore').onclick = () => {
-  if (confirm('Khôi phục bộ mẫu gốc sẽ XOÁ toàn bộ mẫu hiện tại và nạp lại bộ mẫu mới nhất. Tiếp tục?')) restoreSeeds();
-};
 lockBtn.onclick = () => {
   if (isAdmin) { isAdmin=false; SS.del('kyanh-admin'); applyAdminUI(); render(); showToast('Đã thoát chế độ quản trị'); }
   else openPin();

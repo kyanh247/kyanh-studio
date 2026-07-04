@@ -12,7 +12,6 @@
 
 ## Data an toàn
 - Update file HTML KHÔNG mất data (data nằm trên Firebase).
-- Nút "Khôi phục bộ mẫu gốc" (admin) sẽ XÓA HẾT và nạp lại seed — cẩn thận.
 - Đừng đổi `projectId` trong config và tên collection `replies`.
 
 ## Cú pháp template điền nhanh
