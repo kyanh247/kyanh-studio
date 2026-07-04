@@ -1,0 +1,259 @@
+/* ============================================================
+   KỲ ANH STUDIO — DESIGN SYSTEM
+   Tách từ kyanh-studio-template_1.html
+   Mọi trang <link> file này để đồng bộ giao diện.
+   Font: nhớ nhúng Google Fonts trong <head> mỗi trang:
+   Montserrat (300-700) + Playfair Display (400-600)
+   ============================================================ */
+
+/* ---------- Tokens ---------- */
+:root {
+  /* Màu */
+  --ka-cream: #FAF9F7;        /* nền chính */
+  --ka-ink: #3D3D3D;          /* chữ chính */
+  --ka-ink-dark: #1A1A1A;     /* tiêu đề */
+  --ka-muted: #8B8178;        /* chữ phụ */
+  --ka-gold: #B8956E;         /* accent */
+  --ka-gold-dark: #96724A;    /* accent hover */
+  --ka-dark-1: #3D3530;       /* nền tối (footer) */
+  --ka-dark-2: #2A2420;
+  --ka-line: rgba(139, 129, 120, 0.2);
+
+  /* Font */
+  --ka-font-display: 'Playfair Display', serif;
+  --ka-font-body: 'Montserrat', sans-serif;
+
+  /* Khoảng cách section */
+  --ka-section-pad: 4rem 3rem;
+  --ka-section-pad-mobile: 2rem 1rem;
+}
+
+/* ---------- Base ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--ka-font-body);
+  background: var(--ka-cream);
+  color: var(--ka-ink);
+  line-height: 1.8;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--ka-font-display);
+  font-weight: 400;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+/* ---------- Buttons ---------- */
+.ka-btn {
+  padding: 1rem 2.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--ka-font-body);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.ka-btn-primary { background: var(--ka-gold); color: #fff; }
+.ka-btn-primary:hover {
+  background: var(--ka-gold-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(184, 149, 110, 0.3);
+}
+
+.ka-btn-secondary {
+  background: transparent;
+  color: var(--ka-gold);
+  border: 1px solid var(--ka-gold);
+}
+.ka-btn-secondary:hover { background: var(--ka-gold); color: #fff; }
+
+/* ---------- Form ---------- */
+.ka-form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ka-ink);
+  margin-bottom: 0.6rem;
+}
+
+.ka-form-input,
+.ka-form-select,
+.ka-form-textarea {
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  font-size: 0.9rem;
+  font-family: var(--ka-font-body);
+  color: var(--ka-ink);
+  background: var(--ka-cream);
+  border: 1px solid var(--ka-line);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.ka-form-input:focus,
+.ka-form-select:focus,
+.ka-form-textarea:focus {
+  outline: none;
+  border-color: var(--ka-gold);
+  background: #fff;
+}
+
+.ka-form-select {
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* ---------- Card ---------- */
+.ka-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ---------- Section header ---------- */
+.ka-section-header { text-align: center; margin-bottom: 3rem; }
+
+.ka-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ka-muted);
+  margin-bottom: 0.5rem;
+}
+
+.ka-section-title {
+  font-family: var(--ka-font-display);
+  font-size: 2.5rem;
+  color: var(--ka-ink-dark);
+  margin-bottom: 1rem;
+}
+
+.ka-section-divider {
+  width: 60px;
+  height: 2px;
+  background: var(--ka-gold);
+  margin: 1.5rem auto;
+}
+
+/* ---------- Tabs ---------- */
+.ka-tab {
+  padding: 0.7rem 1.5rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ka-muted);
+  background: transparent;
+  border: 1px solid rgba(139, 129, 120, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--ka-font-body);
+}
+.ka-tab:hover { border-color: var(--ka-gold); color: var(--ka-gold-dark); }
+.ka-tab.active { background: var(--ka-gold); border-color: var(--ka-gold); color: #fff; }
+
+/* ---------- Footer ---------- */
+.ka-footer {
+  background: linear-gradient(180deg, var(--ka-dark-1) 0%, var(--ka-dark-2) 100%);
+  color: var(--ka-cream);
+  padding: 4rem 3rem 2rem;
+  font-family: var(--ka-font-body);
+}
+
+.ka-footer-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+}
+
+.ka-footer-logo { width: 234px; height: auto; margin-bottom: 1.5rem; }
+.ka-footer-logo svg { width: 100%; height: auto; display: block; }
+
+.ka-footer-brand > p {
+  font-size: 0.8rem;
+  color: rgba(250, 249, 247, 0.7);
+  line-height: 1.7;
+  margin-bottom: 1.8rem;
+}
+
+.ka-footer-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  font-size: 0.8rem;
+  color: rgba(250, 249, 247, 0.8);
+}
+.ka-footer-contact-item svg {
+  width: 18px; height: 18px;
+  stroke: var(--ka-gold);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.ka-footer-section h4 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ka-gold);
+  margin-bottom: 1.2rem;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--ka-gold);
+  font-family: var(--ka-font-body);
+}
+
+.ka-footer-links a {
+  font-size: 0.8rem;
+  color: rgba(250, 249, 247, 0.7);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding-left: 0.5rem;
+}
+.ka-footer-links a:hover { color: var(--ka-cream); padding-left: 1rem; }
+
+.ka-footer-social-link {
+  width: 36px; height: 36px;
+  border: 1px solid rgba(184, 149, 110, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.ka-footer-social-link:hover {
+  border-color: var(--ka-gold);
+  background: rgba(184, 149, 110, 0.1);
+}
+.ka-footer-social-link svg { width: 16px; height: 16px; stroke: var(--ka-gold); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .ka-section-title { font-size: 1.8rem; }
+  .ka-footer-content { grid-template-columns: 1fr; gap: 2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

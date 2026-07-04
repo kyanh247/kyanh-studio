@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ká»³Anh.Studio - Template</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       KYANH.STUDIO - DESIGN SYSTEM & STYLE GUIDE
+       ============================================ */
+    
+    /* BASE STYLES */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #FAF9F7;
+      color: #3D3D3D;
+      line-height: 1.8;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 400;
+    }
+
+    /* ============================================
+       COLOR PALETTE
+       ============================================ */
+    /*
+    Primary Background: #FAF9F7 (Cream)
+    Dark Background: #3D3530, #2A2420 (Gradient)
+    Primary Text: #3D3D3D
+    Secondary Text: #8B8178
+    Accent Gold: #B8956E
+    Darker Gold: #96724A
+    Text Light: #FAF9F7
+    */
+
+    /* ============================================
+       TYPOGRAPHY SYSTEM
+       ============================================ */
+    /*
+    Headings: 'Playfair Display', serif
+    Body: 'Montserrat', sans-serif
+    
+    Font Sizes:
+    - Large Title: 2.5rem / 2rem (mobile)
+    - Section Title: 1.8rem / 1.5rem (mobile)
+    - Card Title: 1.3rem / 1.1rem (mobile)
+    - Body: 0.9rem / 0.85rem (mobile)
+    - Small: 0.8rem / 0.75rem (mobile)
+    - Label: 0.7rem - 0.75rem uppercase with letter-spacing
+    */
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+    .ka-btn {
+      padding: 1rem 2.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .ka-btn-primary {
+      background: #B8956E;
+      color: #fff;
+    }
+
+    .ka-btn-primary:hover {
+      background: #96724A;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(184, 149, 110, 0.3);
+    }
+
+    .ka-btn-secondary {
+      background: transparent;
+      color: #B8956E;
+      border: 1px solid #B8956E;
+    }
+
+    .ka-btn-secondary:hover {
+      background: #B8956E;
+      color: #fff;
+    }
+
+    /* ============================================
+       FORM ELEMENTS
+       ============================================ */
+    .ka-form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #3D3D3D;
+      margin-bottom: 0.6rem;
+    }
+
+    .ka-form-input,
+    .ka-form-select,
+    .ka-form-textarea {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      font-size: 0.9rem;
+      font-family: 'Montserrat', sans-serif;
+      color: #3D3D3D;
+      background: #FAF9F7;
+      border: 1px solid rgba(139, 129, 120, 0.2);
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .ka-form-input:focus,
+    .ka-form-select:focus,
+    .ka-form-textarea:focus {
+      outline: none;
+      border-color: #B8956E;
+      background: #fff;
+    }
+
+    /* Dropdown icon */
+    .ka-form-select {
+      padding-right: 2.5rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    /* ============================================
+       CARDS
+       ============================================ */
+    .ka-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    /* ============================================
+       SECTIONS
+       ============================================ */
+    .ka-section-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .ka-section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #8B8178;
+      margin-bottom: 0.5rem;
+    }
+
+    .ka-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      color: #1A1A1A;
+      margin-bottom: 1rem;
+    }
+
+    .ka-section-divider {
+      width: 60px;
+      height: 2px;
+      background: #B8956E;
+      margin: 1.5rem auto;
+    }
+
+    /* ============================================
+       TABS
+       ============================================ */
+    .ka-tab {
+      padding: 0.7rem 1.5rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8B8178;
+      background: transparent;
+      border: 1px solid rgba(139, 129, 120, 0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .ka-tab:hover {
+      border-color: #B8956E;
+      color: #96724A;
+    }
+
+    .ka-tab.active {
+      background: #B8956E;
+      border-color: #B8956E;
+      color: #fff;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    .ka-footer {
+      background: linear-gradient(180deg, #3D3530 0%, #2A2420 100%);
+      color: #FAF9F7;
+      padding: 4rem 3rem 2rem;
+      margin-top: 0;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .ka-footer-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .ka-footer-logo {
+      width: 234px;
+      height: auto;
+      margin-bottom: 1.5rem;
+    }
+
+    .ka-footer-logo svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .ka-footer-brand > p {
+      font-size: 0.8rem;
+      color: rgba(250, 249, 247, 0.7);
+      line-height: 1.7;
+      margin-bottom: 1.8rem;
+    }
+
+    .ka-footer-contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      font-size: 0.8rem;
+      color: rgba(250, 249, 247, 0.8);
+    }
+
+    .ka-footer-contact-item svg {
+      width: 18px;
+      height: 18px;
+      stroke: #B8956E;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+
+    .ka-footer-section h4 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #B8956E;
+      margin-bottom: 1.2rem;
+      padding-left: 0.7rem;
+      border-left: 2px solid #B8956E;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .ka-footer-links a {
+      font-size: 0.8rem;
+      color: rgba(250, 249, 247, 0.7);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      padding-left: 0.5rem;
+    }
+
+    .ka-footer-links a:hover {
+      color: #FAF9F7;
+      padding-left: 1rem;
+    }
+
+    .ka-footer-social-link {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(184, 149, 110, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .ka-footer-social-link:hover {
+      border-color: #B8956E;
+      background: rgba(184, 149, 110, 0.1);
+    }
+
+    .ka-footer-social-link svg {
+      width: 16px;
+      height: 16px;
+      stroke: #B8956E;
+    }
+
+    /* ============================================
+       RESPONSIVE BREAKPOINTS
+       ============================================ */
+    /* Tablet: max-width: 1024px */
+    /* Mobile: max-width: 768px */
+    /* Small Mobile: max-width: 480px */
+
+    @media (max-width: 768px) {
+      .ka-section-title {
+        font-size: 1.8rem;
+      }
+
+      .ka-footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================
+       LOGO SVG - KYANH.STUDIO
+       ============================================ -->
+  <!-- Light Version (for dark backgrounds) -->
+  <div class="ka-logo-light" style="width: 234px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 246.51 42.66">
+      <defs>
+        <style>
+          .cls-1 {
+            fill: #fff;
+          }
+        </style>
+      </defs>
+      <g>
+        <path class="cls-1" d="M241.78,36.72l-16.51-16.51-.21-.2-.41-.36c-.13-.11-.27-.21-.41-.32-.83-.6-1.76-1.08-2.75-1.39-.9-.28-1.85-.43-2.84-.43-.18,0-.35,0-.53.02-.99.05-1.95.26-2.84.6,2.26.12,4.48,1.04,6.2,2.76v11.29c0,1.31-1.06,2.37-2.37,2.37h7.9c-1.31,0-2.37-1.06-2.37-2.37v-.95h7.18l6.87,6.87h6.44c-1.31,0-2.5-.53-3.35-1.39ZM224.65,30.37v-6.31l3.47,3.47,2.84,2.84h-6.31Z"/>
+        <path class="cls-1" d="M244.08,4c-2.58,0-4.92,1.03-6.62,2.7-.03.03-.05.05-.08.08l-12.18,12.18-.14.14-.41-.36c-.13-.11-.27-.21-.41-.32-.83-.6-1.75-1.08-2.75-1.39V6.37c0-1.31-1.06-2.37-2.37-2.37h7.9c-1.31,0-2.37,1.06-2.37,2.37v11.64l12.67-12.67c.14-.14.23-.34.23-.56,0-.44-.35-.79-.79-.79h7.33Z"/>
+      </g>
+      <g>
+        <path class="cls-1" d="M14.43,11.74l-5.58,8.06,7.58,9.11h-5.37l-6.79-8.05v8.05H0V11.74h4.28v7.78h.05l5.41-7.78h4.69Z"/>
+        <path class="cls-1" d="M22.97,28.9v-8.03l-6.77-9.13h5.18l3.72,5.38,3.75-5.38h5.16l-6.77,9.13v8.03h-4.28Z"/>
+        <path class="cls-1" d="M45.97,11.74l7.62,17.16h-4.6l-1.41-3.4h-7.67l-1.28,3.4h-4.53l6.92-17.16h4.96ZM46.32,22.51l-2.77-6.67-2.52,6.67h5.28Z"/>
+        <path class="cls-1" d="M72.97,11.74v17.16h-3.6l-9.48-10.98v10.98h-4.28V11.74h3.93l9.16,10.49v-10.49h4.28Z"/>
+        <path class="cls-1" d="M93.96,11.74v17.16h-4.28v-6.94h-8.56v6.94h-4.28V11.74h4.28v6.89h8.56v-6.89h4.28Z"/>
+        <path class="cls-1" d="M99.27,24.75c.6,0,1.12.21,1.55.64.43.43.64.94.64,1.55s-.21,1.12-.64,1.55-.94.64-1.55.64-1.12-.21-1.55-.64c-.43-.43-.64-.94-.64-1.55s.21-1.12.64-1.55c.43-.43.94-.64,1.55-.64Z"/>
+        <path class="cls-1" d="M116.13,12.85v3.35c-2.3-1.02-4.11-1.53-5.44-1.53-1.68,0-2.52.47-2.52,1.41,0,.65.75,1.27,2.26,1.86,2.25.87,3.65,1.49,4.2,1.86,1.51,1.01,2.26,2.38,2.26,4.13s-.69,3.08-2.06,4c-1.19.81-2.7,1.21-4.53,1.21-1.34,0-2.53-.17-3.57-.5-.62-.2-1.49-.59-2.62-1.16v-3.7c2.23,1.48,4.19,2.21,5.86,2.21s2.52-.53,2.52-1.59c0-.72-.75-1.37-2.26-1.94-2.25-.86-3.65-1.47-4.2-1.84-1.51-1.01-2.26-2.4-2.26-4.18,0-1.68.7-2.95,2.11-3.82,1.17-.74,2.65-1.11,4.43-1.11s3.75.44,5.81,1.33Z"/>
+        <path class="cls-1" d="M135.3,11.74v3.15h-6.22v14.02h-4.28v-14.02h-6.22v-3.15h16.71Z"/>
+        <path class="cls-1" d="M150.62,11.74h4.28v9.74c0,2.62-.8,4.57-2.39,5.86-1.46,1.19-3.52,1.79-6.19,1.79s-4.69-.6-6.16-1.81c-1.61-1.31-2.42-3.25-2.42-5.81v-9.76h4.28v9.86c0,1.23.4,2.19,1.19,2.89.8.7,1.82,1.06,3.06,1.06,1.34,0,2.4-.37,3.18-1.12.78-.75,1.17-1.79,1.17-3.13v-9.56Z"/>
+        <path class="cls-1" d="M158.58,11.74h7.57c2.78,0,5.03.73,6.74,2.19,1.83,1.54,2.74,3.68,2.74,6.42,0,2.9-.97,5.09-2.89,6.57-1.73,1.32-4.09,1.99-7.07,1.99h-7.1V11.74ZM162.85,14.88v10.87h2.79c1.73,0,3.09-.48,4.09-1.43,1-.96,1.5-2.29,1.5-4s-.5-3.09-1.5-4.03-2.38-1.41-4.14-1.41h-2.74Z"/>
+        <path class="cls-1" d="M183.21,11.74v17.16h-4.28V11.74h4.28Z"/>
+        <path class="cls-1" d="M206.08,20.32c0,2.63-.99,4.78-2.97,6.44-1.88,1.58-4.16,2.37-6.84,2.37s-4.99-.78-6.87-2.34c-1.98-1.66-2.97-3.82-2.97-6.47,0-2.28.83-4.27,2.49-5.96,1.86-1.9,4.31-2.84,7.35-2.84s5.48.95,7.32,2.84c1.66,1.71,2.49,3.7,2.49,5.96ZM201.68,20.32c0-1.63-.5-2.91-1.48-3.84-.99-.93-2.3-1.4-3.93-1.4s-2.94.47-3.94,1.41c-1,.94-1.5,2.21-1.5,3.82s.5,2.89,1.5,3.82c1,.94,2.31,1.41,3.94,1.41s2.94-.47,3.93-1.4c.99-.93,1.48-2.21,1.48-3.84Z"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Dark Version (for light backgrounds) -->
+  <div class="ka-logo-dark" style="width: 234px; margin-top: 2rem;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 246.51 42.66">
+      <defs>
+        <style>
+          .cls-dark {
+            fill: #3D3530;
+          }
+        </style>
+      </defs>
+      <g>
+        <path class="cls-dark" d="M241.78,36.72l-16.51-16.51-.21-.2-.41-.36c-.13-.11-.27-.21-.41-.32-.83-.6-1.76-1.08-2.75-1.39-.9-.28-1.85-.43-2.84-.43-.18,0-.35,0-.53.02-.99.05-1.95.26-2.84.6,2.26.12,4.48,1.04,6.2,2.76v11.29c0,1.31-1.06,2.37-2.37,2.37h7.9c-1.31,0-2.37-1.06-2.37-2.37v-.95h7.18l6.87,6.87h6.44c-1.31,0-2.5-.53-3.35-1.39ZM224.65,30.37v-6.31l3.47,3.47,2.84,2.84h-6.31Z"/>
+        <path class="cls-dark" d="M244.08,4c-2.58,0-4.92,1.03-6.62,2.7-.03.03-.05.05-.08.08l-12.18,12.18-.14.14-.41-.36c-.13-.11-.27-.21-.41-.32-.83-.6-1.75-1.08-2.75-1.39V6.37c0-1.31-1.06-2.37-2.37-2.37h7.9c-1.31,0-2.37,1.06-2.37,2.37v11.64l12.67-12.67c.14-.14.23-.34.23-.56,0-.44-.35-.79-.79-.79h7.33Z"/>
+      </g>
+      <g>
+        <path class="cls-dark" d="M14.43,11.74l-5.58,8.06,7.58,9.11h-5.37l-6.79-8.05v8.05H0V11.74h4.28v7.78h.05l5.41-7.78h4.69Z"/>
+        <path class="cls-dark" d="M22.97,28.9v-8.03l-6.77-9.13h5.18l3.72,5.38,3.75-5.38h5.16l-6.77,9.13v8.03h-4.28Z"/>
+        <path class="cls-dark" d="M45.97,11.74l7.62,17.16h-4.6l-1.41-3.4h-7.67l-1.28,3.4h-4.53l6.92-17.16h4.96ZM46.32,22.51l-2.77-6.67-2.52,6.67h5.28Z"/>
+        <path class="cls-dark" d="M72.97,11.74v17.16h-3.6l-9.48-10.98v10.98h-4.28V11.74h3.93l9.16,10.49v-10.49h4.28Z"/>
+        <path class="cls-dark" d="M93.96,11.74v17.16h-4.28v-6.94h-8.56v6.94h-4.28V11.74h4.28v6.89h8.56v-6.89h4.28Z"/>
+        <path class="cls-dark" d="M99.27,24.75c.6,0,1.12.21,1.55.64.43.43.64.94.64,1.55s-.21,1.12-.64,1.55-.94.64-1.55.64-1.12-.21-1.55-.64c-.43-.43-.64-.94-.64-1.55s.21-1.12.64-1.55c.43-.43.94-.64,1.55-.64Z"/>
+        <path class="cls-dark" d="M116.13,12.85v3.35c-2.3-1.02-4.11-1.53-5.44-1.53-1.68,0-2.52.47-2.52,1.41,0,.65.75,1.27,2.26,1.86,2.25.87,3.65,1.49,4.2,1.86,1.51,1.01,2.26,2.38,2.26,4.13s-.69,3.08-2.06,4c-1.19.81-2.7,1.21-4.53,1.21-1.34,0-2.53-.17-3.57-.5-.62-.2-1.49-.59-2.62-1.16v-3.7c2.23,1.48,4.19,2.21,5.86,2.21s2.52-.53,2.52-1.59c0-.72-.75-1.37-2.26-1.94-2.25-.86-3.65-1.47-4.2-1.84-1.51-1.01-2.26-2.4-2.26-4.18,0-1.68.7-2.95,2.11-3.82,1.17-.74,2.65-1.11,4.43-1.11s3.75.44,5.81,1.33Z"/>
+        <path class="cls-dark" d="M135.3,11.74v3.15h-6.22v14.02h-4.28v-14.02h-6.22v-3.15h16.71Z"/>
+        <path class="cls-dark" d="M150.62,11.74h4.28v9.74c0,2.62-.8,4.57-2.39,5.86-1.46,1.19-3.52,1.79-6.19,1.79s-4.69-.6-6.16-1.81c-1.61-1.31-2.42-3.25-2.42-5.81v-9.76h4.28v9.86c0,1.23.4,2.19,1.19,2.89.8.7,1.82,1.06,3.06,1.06,1.34,0,2.4-.37,3.18-1.12.78-.75,1.17-1.79,1.17-3.13v-9.56Z"/>
+        <path class="cls-dark" d="M158.58,11.74h7.57c2.78,0,5.03.73,6.74,2.19,1.83,1.54,2.74,3.68,2.74,6.42,0,2.9-.97,5.09-2.89,6.57-1.73,1.32-4.09,1.99-7.07,1.99h-7.1V11.74ZM162.85,14.88v10.87h2.79c1.73,0,3.09-.48,4.09-1.43,1-.96,1.5-2.29,1.5-4s-.5-3.09-1.5-4.03-2.38-1.41-4.14-1.41h-2.74Z"/>
+        <path class="cls-dark" d="M183.21,11.74v17.16h-4.28V11.74h4.28Z"/>
+        <path class="cls-dark" d="M206.08,20.32c0,2.63-.99,4.78-2.97,6.44-1.88,1.58-4.16,2.37-6.84,2.37s-4.99-.78-6.87-2.34c-1.98-1.66-2.97-3.82-2.97-6.47,0-2.28.83-4.27,2.49-5.96,1.86-1.9,4.31-2.84,7.35-2.84s5.48.95,7.32,2.84c1.66,1.71,2.49,3.7,2.49,5.96ZM201.68,20.32c0-1.63-.5-2.91-1.48-3.84-.99-.93-2.3-1.4-3.93-1.4s-2.94.47-3.94,1.41c-1,.94-1.5,2.21-1.5,3.82s.5,2.89,1.5,3.82c1,.94,2.31,1.41,3.94,1.41s2.94-.47,3.93-1.4c.99-.93,1.48-2.21,1.48-3.84Z"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ============================================
+       CONTACT INFORMATION
+       ============================================ -->
+  <div style="padding: 3rem; max-width: 600px;">
+    <h3 style="font-family: 'Playfair Display', serif; color: #1A1A1A; margin-bottom: 1.5rem;">ThÃ´ng Tin LiÃªn Há»‡</h3>
+    <p style="font-size: 0.9rem; line-height: 1.8; color: #3D3D3D;">
+      <strong>Ká»³Anh.Studio</strong><br>
+      ðŸ“ 307/1A Nguyá»…n VÄƒn Trá»—i, PhÆ°á»ng TÃ¢n SÆ¡n HÃ²a, TP. HCM<br>
+      (PhÆ°á»ng 1, Q. TÃ¢n BÃ¬nh cÅ©)<br><br>
+      ðŸ“ž <strong>07.6535.6526</strong> (Call hoáº·c Mess/Zalo)<br>
+      âœ‰ï¸ <strong>kyanh247@gmail.com</strong><br><br>
+      ðŸ• Giá» lÃ m viá»‡c: 09h00 - 21h00 (Thá»© 2 - Chá»§ Nháº­t)<br>
+      ðŸ’¡ Vui lÃ²ng gá»i trÆ°á»›c khi Ä‘áº¿n
+    </p>
+  </div>
+
+  <!-- ============================================
+       DESIGN NOTES & USAGE
+       ============================================ -->
+  <!--
+  DESIGN PRINCIPLES:
+  1. Minimalism - Clean, khÃ´ng over-format
+  2. Elegant - Sá»­ dá»¥ng Playfair Display cho headings
+  3. Professional - MÃ u sáº¯c tinh táº¿, khÃ´ng chÃ³i
+  4. Mobile-first - Responsive tá»« 480px Ä‘áº¿n desktop
+  
+  COLOR USAGE:
+  - Background chÃ­nh: #FAF9F7 (cream, warm)
+  - Text chÃ­nh: #3D3D3D (dark gray)
+  - Accent: #B8956E (gold)
+  - Footer/Dark sections: Gradient #3D3530 â†’ #2A2420
+  
+  TYPOGRAPHY:
+  - Headings: Playfair Display (serif, elegant)
+  - Body: Montserrat (sans-serif, clean, readable)
+  - Labels: Uppercase vá»›i letter-spacing 0.08em - 0.25em
+  
+  SPACING:
+  - Section padding: 3rem - 4rem desktop, 2rem mobile
+  - Card padding: 2rem - 3rem desktop, 1.5rem mobile
+  - Gap between elements: 1rem - 1.5rem
+  
+  LOGO USAGE:
+  - Light version (.cls-1 fill: #fff) - dÃ¹ng trÃªn dark background
+  - Dark version (.cls-dark fill: #3D3530) - dÃ¹ng trÃªn light background
+  - Recommended width: 234px desktop, 180px mobile
+  
+  RESPONSIVE:
+  - Desktop: > 1024px
+  - Tablet: 768px - 1024px
+  - Mobile: 480px - 768px
+  - Small mobile: < 480px
+  -->
+
+</body>
+</html>

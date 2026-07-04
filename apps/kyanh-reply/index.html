@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kỳ Anh Reply — Trả Lời Nhanh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     HƯỚNG DẪN CÀI ĐẶT (làm 1 lần) — xem chi tiết cuối file
+     1. Tạo project tại https://console.firebase.google.com
+     2. Build > Firestore Database > Create (Production mode)
+     3. Project settings > "Your apps" > Web (</>) > copy firebaseConfig
+     4. Dán config vào KHỐI CẤU HÌNH bên dưới, đổi ADMIN_PIN
+     5. Dán Security Rules (cuối file) vào tab Rules của Firestore
+     ============================================================ -->
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --cream: #FAF9F7; --ink: #3D3D3D; --ink-dark: #1A1A1A;
+    --muted: #8B8178; --gold: #B8956E; --gold-dark: #96724A;
+    --line: rgba(139,129,120,0.2); --dark-1: #3D3530; --dark-2: #2A2420;
+    --danger: #B0563C;
+  }
+  body {
+    font-family: 'Montserrat', sans-serif; background: var(--cream);
+    color: var(--ink); line-height: 1.7; padding-bottom: 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3 { font-family: 'Playfair Display', serif; font-weight: 400; }
+  .app { max-width: 880px; margin: 0 auto; padding: 1.6rem 1.1rem 3rem; }
+
+  .app-header { position: relative; text-align: center; margin-bottom: 1.4rem; }
+  .app-eyebrow { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.55rem; }
+  .app-logo { width: 210px; max-width: 62vw; margin: 0 auto 0.5rem; }
+  .app-logo svg { width: 100%; height: auto; display: block; }
+  .app-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+  .lock-btn { position: absolute; top: 0; right: 0; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.25s ease; color: var(--muted); }
+  .lock-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .lock-btn.admin { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .lock-btn svg { width: 17px; height: 17px; }
+
+  .sync-bar { display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.66rem; color: var(--muted); margin-bottom: 1rem; letter-spacing: 0.02em; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .sync-dot.online { background: #4caf50; box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
+  .sync-dot.offline { background: var(--gold); box-shadow: 0 0 0 3px rgba(184,149,110,0.15); }
+  .sync-dot.local { background: #c0392b; }
+
+  .toolbar { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; }
+  .search-wrap { position: relative; flex: 1; }
+  .search-wrap svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--muted); pointer-events: none; }
+  .search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.6rem; font-size: 0.86rem; font-family: 'Montserrat', sans-serif; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 8px; transition: all 0.3s ease; }
+  .search-input:focus { outline: none; border-color: var(--gold); }
+  .btn-add { display: none; align-items: center; gap: 0.45rem; padding: 0 1.25rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.3s ease; white-space: nowrap; }
+  .btn-add.show { display: flex; }
+  .btn-add:hover { background: var(--gold-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(184,149,110,0.3); }
+  .btn-add svg { width: 14px; height: 14px; stroke: #fff; }
+
+  .menu-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
+  .menu-tab { display: flex; align-items: center; gap: 0.45rem; padding: 0.58rem 1.1rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid rgba(139,129,120,0.3); border-radius: 5px; cursor: pointer; transition: all 0.3s ease; font-family: 'Montserrat', sans-serif; }
+  .menu-tab:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .menu-tab.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .menu-tab .count { font-size: 0.6rem; font-weight: 600; background: rgba(139,129,120,0.12); color: var(--muted); border-radius: 20px; padding: 0.05rem 0.5rem; letter-spacing: 0; }
+  .menu-tab.active .count { background: rgba(255,255,255,0.25); color: #fff; }
+
+  .sub-tabs { display: none; gap: 0.4rem; margin-bottom: 1rem; }
+  .sub-tabs.show { display: flex; flex-wrap: wrap; }
+  .admin-tools { display: none; margin-bottom: 1rem; }
+  .admin-tools.show { display: flex; justify-content: flex-end; }
+  .admin-tool-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.25s ease; }
+  .admin-tool-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .admin-tool-btn svg { width: 13px; height: 13px; stroke: currentColor; }
+  .sub-tab { padding: 0.4rem 0.95rem; font-size: 0.66rem; font-weight: 500; letter-spacing: 0.05em; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; transition: all 0.25s ease; font-family: 'Montserrat', sans-serif; }
+  .sub-tab:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .sub-tab.active { background: rgba(184,149,110,0.12); border-color: var(--gold); color: var(--gold-dark); font-weight: 600; }
+
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .clip-card { position: relative; height: 165px; overflow: hidden; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 1rem 1.1rem 0.9rem; box-shadow: 0 2px 14px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; gap: 0.45rem; }
+  .clip-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
+  .clip-card:active { transform: translateY(0) scale(0.995); }
+  .clip-card.copied { border-color: var(--gold); background: #FFFDFA; }
+  .clip-top { display: flex; align-items: flex-start; gap: 0.55rem; }
+  .clip-title { flex: 1; font-size: 0.85rem; font-weight: 600; color: var(--ink-dark); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .clip-price { font-size: 0.72rem; font-weight: 700; color: var(--gold-dark); background: rgba(184,149,110,0.1); border-radius: 5px; padding: 0.1rem 0.5rem; white-space: nowrap; }
+  .btn-more { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: none; align-items: center; justify-content: center; color: var(--muted); transition: all 0.2s ease; }
+  .btn-more.show { display: flex; }
+  .btn-more:hover { background: rgba(139,129,120,0.1); color: var(--ink-dark); }
+  .btn-more svg { width: 15px; height: 15px; }
+  .clip-body { font-size: 0.77rem; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+  .clip-img { width: 100%; height: 62px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); flex-shrink: 0; }
+  .clip-card.has-img .clip-body { -webkit-line-clamp: 1; }
+  .clip-card.copied::after { content: "✓ Đã copy"; position: absolute; top: 0.6rem; right: 0.7rem; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; color: #fff; background: var(--gold); padding: 0.18rem 0.55rem; border-radius: 20px; box-shadow: 0 2px 8px rgba(184,149,110,0.35); animation: popBadge 0.25s ease; }
+  @keyframes popBadge { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .clip-form-badge { align-self: flex-start; margin-top: 0.1rem; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.03em; color: var(--gold-dark); background: rgba(184,149,110,0.12); border: 1px solid rgba(184,149,110,0.3); padding: 0.15rem 0.55rem; border-radius: 20px; }
+  /* Khối lặp trong form điền nhanh */
+  .fill-block { margin-bottom: 1rem; }
+  .fill-group { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem 0.4rem; margin-bottom: 0.7rem; }
+  .fill-group-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+  .fill-group-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-dark); }
+  .fill-group-del { width: 24px; height: 24px; border-radius: 50%; border: none; background: rgba(176,86,60,0.1); color: var(--danger); font-size: 1rem; line-height: 1; cursor: pointer; transition: all 0.2s ease; }
+  .fill-group-del:hover { background: var(--danger); color: #fff; }
+  .fill-add { width: 100%; padding: 0.7rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold-dark); background: rgba(184,149,110,0.08); border: 1px dashed var(--gold); border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.25s ease; }
+  .fill-add:hover { background: rgba(184,149,110,0.16); }
+
+  .empty { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 0.84rem; }
+  .empty h3 { font-size: 1.2rem; color: var(--ink-dark); margin-bottom: 0.4rem; }
+  .section-note { grid-column: 1/-1; font-size: 0.7rem; color: var(--muted); text-align: center; margin-bottom: 0.2rem; }
+  .skeleton { grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  .sk-card { height: 165px; background: linear-gradient(100deg, #fff 30%, #f4efe9 50%, #fff 70%); background-size: 200% 100%; border-radius: 12px; animation: shimmer 1.3s infinite; }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+  .opt-overlay { display: none; position: fixed; inset: 0; z-index: 90; }
+  .opt-overlay.show { display: block; }
+  .opt-menu { position: absolute; min-width: 200px; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); overflow: hidden; z-index: 91; }
+  .opt-item { display: flex; align-items: center; gap: 0.65rem; width: 100%; padding: 0.7rem 1rem; border: none; background: none; font-size: 0.78rem; font-family: 'Montserrat', sans-serif; color: var(--ink); cursor: pointer; text-align: left; transition: background 0.15s; }
+  .opt-item:hover { background: rgba(184,149,110,0.08); }
+  .opt-item.danger { color: var(--danger); }
+  .opt-item svg { width: 15px; height: 15px; stroke: currentColor; flex-shrink: 0; }
+  .opt-divider { height: 1px; background: var(--line); }
+  .opt-label { padding: 0.45rem 1rem 0.15rem; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(42,36,32,0.5); backdrop-filter: blur(2px); align-items: flex-end; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { width: 100%; max-width: 520px; background: var(--cream); border-radius: 16px 16px 0 0; padding: 1.7rem 1.4rem 1.9rem; max-height: 90vh; overflow-y: auto; animation: slideUp 0.28s ease; }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @media (min-width: 640px) { .modal-overlay { align-items: center; padding: 1.5rem; } .modal { border-radius: 16px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  .modal h3 { font-size: 1.3rem; color: var(--ink-dark); margin-bottom: 1.1rem; text-align: center; }
+  .f-group { margin-bottom: 0.95rem; }
+  .f-label { display: block; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.4rem; }
+  .f-label .req { color: var(--gold); }
+  .f-input, .f-select, .f-textarea { width: 100%; padding: 0.8rem 1rem; font-size: 0.86rem; font-family: 'Montserrat', sans-serif; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 6px; transition: all 0.3s ease; }
+  .f-textarea { min-height: 130px; resize: vertical; line-height: 1.7; }
+  .f-input:focus, .f-select:focus, .f-textarea:focus { outline: none; border-color: var(--gold); }
+  .f-select { padding-right: 2.5rem; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
+  .f-hint { font-size: 0.67rem; color: var(--muted); margin-top: 0.35rem; }
+  .img-preview-wrap { display: none; position: relative; margin-top: 0.6rem; }
+  .img-preview-wrap.show { display: block; }
+  .img-preview { width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+  .btn-remove-img { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(26,26,26,0.65); color: #fff; cursor: pointer; font-size: 0.9rem; line-height: 1; }
+  .modal-actions { display: flex; gap: 0.7rem; margin-top: 1.3rem; }
+  .btn-primary, .btn-ghost { flex: 1; padding: 0.9rem 1rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 6px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.3s ease; }
+  .btn-primary { background: var(--gold); color: #fff; border: none; }
+  .btn-primary:hover { background: var(--gold-dark); }
+  .btn-primary:disabled { opacity: 0.55; cursor: default; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+  .pin-modal { max-width: 360px; text-align: center; }
+  .pin-modal h3 { margin-bottom: 0.5rem; }
+  .pin-modal p { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .pin-input { width: 100%; padding: 0.9rem; font-size: 1.3rem; text-align: center; letter-spacing: 0.5em; font-family: 'Montserrat', sans-serif; color: var(--ink-dark); background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+  .pin-input:focus { outline: none; border-color: var(--gold); }
+  .pin-err { font-size: 0.74rem; color: var(--danger); margin-top: 0.6rem; min-height: 1rem; }
+
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--dark-1); color: var(--cream); padding: 0.72rem 1.4rem; border-radius: 30px; font-size: 0.77rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.2); max-width: 90vw; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast svg { width: 15px; height: 15px; stroke: var(--gold); flex-shrink: 0; }
+  .toast.warn svg { stroke: #e0a458; }
+
+  @media (max-width: 640px) {
+    .app { padding: 1.3rem 0.7rem 3rem; }
+    .app-logo { width: 175px; }
+    /* 2 cột lưới đều trên mobile */
+    .cards, .skeleton { gap: 0.6rem; }
+    .btn-add span { display: none; }
+    .btn-add.show { padding: 0 0.9rem; }
+    .menu-tab { padding: 0.5rem 0.8rem; font-size: 0.63rem; }
+    .lock-btn { top: -2px; }
+    .clip-card, .sk-card { height: 150px; }
+    .clip-card { padding: 0.85rem 0.85rem 0.75rem; gap: 0.4rem; border-radius: 10px; }
+    .clip-title { font-size: 0.79rem; }
+    .clip-price { font-size: 0.66rem; padding: 0.08rem 0.4rem; }
+    .clip-body { font-size: 0.72rem; -webkit-line-clamp: 3; }
+    .clip-img { height: 54px; }
+    .btn-more { width: 24px; height: 24px; }
+  }
+  @media (max-width: 400px) {
+    .cards, .skeleton { gap: 0.5rem; }
+    .clip-card { padding: 0.75rem 0.7rem; }
+  }
+  button:focus-visible, .clip-card:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="app-header">
+    <div class="app-eyebrow">Nội bộ · Trả lời nhanh</div>
+    <div class="app-logo" role="img" aria-label="Kỳ Anh Studio">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 246.51 42.66">
+        <g fill="var(--ink-dark)">
+          <path d="M241.78,36.72l-16.51-16.51-.21-.2-.41-.36c-.13-.11-.27-.21-.41-.32-.83-.6-1.76-1.08-2.75-1.39-.9-.28-1.85-.43-2.84-.43-.18,0-.35,0-.53.02-.99.05-1.95.26-2.84.6,2.26.12,4.48,1.04,6.2,2.76v11.29c0,1.31-1.06,2.37-2.37,2.37h7.9c-1.31,0-2.37-1.06-2.37-2.37v-.95h7.18l6.87,6.87h6.44c-1.31,0-2.5-.53-3.35-1.39ZM224.65,30.37v-6.31l3.47,3.47,2.84,2.84h-6.31Z"/>
+          <path d="M244.08,4c-2.58,0-4.92,1.03-6.62,2.7-.03.03-.05.05-.08.08l-12.18,12.18-.14.14-.41-.36c-.13-.11-.27-.21-.41-.32-.83-.6-1.75-1.08-2.75-1.39V6.37c0-1.31-1.06-2.37-2.37-2.37h7.9c-1.31,0-2.37,1.06-2.37,2.37v11.64l12.67-12.67c.14-.14.23-.34.23-.56,0-.44-.35-.79-.79-.79h7.33Z"/>
+          <path d="M14.43,11.74l-5.58,8.06,7.58,9.11h-5.37l-6.79-8.05v8.05H0V11.74h4.28v7.78h.05l5.41-7.78h4.69Z"/>
+          <path d="M22.97,28.9v-8.03l-6.77-9.13h5.18l3.72,5.38,3.75-5.38h5.16l-6.77,9.13v8.03h-4.28Z"/>
+          <path d="M45.97,11.74l7.62,17.16h-4.6l-1.41-3.4h-7.67l-1.28,3.4h-4.53l6.92-17.16h4.96ZM46.32,22.51l-2.77-6.67-2.52,6.67h5.28Z"/>
+          <path d="M72.97,11.74v17.16h-3.6l-9.48-10.98v10.98h-4.28V11.74h3.93l9.16,10.49v-10.49h4.28Z"/>
+          <path d="M93.96,11.74v17.16h-4.28v-6.94h-8.56v6.94h-4.28V11.74h4.28v6.89h8.56v-6.89h4.28Z"/>
+          <path d="M99.27,24.75c.6,0,1.12.21,1.55.64.43.43.64.94.64,1.55s-.21,1.12-.64,1.55-.94.64-1.55.64-1.12-.21-1.55-.64c-.43-.43-.64-.94-.64-1.55s.21-1.12.64-1.55c.43-.43.94-.64,1.55-.64Z"/>
+          <path d="M116.13,12.85v3.35c-2.3-1.02-4.11-1.53-5.44-1.53-1.68,0-2.52.47-2.52,1.41,0,.65.75,1.27,2.26,1.86,2.25.87,3.65,1.49,4.2,1.86,1.51,1.01,2.26,2.38,2.26,4.13s-.69,3.08-2.06,4c-1.19.81-2.7,1.21-4.53,1.21-1.34,0-2.53-.17-3.57-.5-.62-.2-1.49-.59-2.62-1.16v-3.7c2.23,1.48,4.19,2.21,5.86,2.21s2.52-.53,2.52-1.59c0-.72-.75-1.37-2.26-1.94-2.25-.86-3.65-1.47-4.2-1.84-1.51-1.01-2.26-2.4-2.26-4.18,0-1.68.7-2.95,2.11-3.82,1.17-.74,2.65-1.11,4.43-1.11s3.75.44,5.81,1.33Z"/>
+          <path d="M135.3,11.74v3.15h-6.22v14.02h-4.28v-14.02h-6.22v-3.15h16.71Z"/>
+          <path d="M150.62,11.74h4.28v9.74c0,2.62-.8,4.57-2.39,5.86-1.46,1.19-3.52,1.79-6.19,1.79s-4.69-.6-6.16-1.81c-1.61-1.31-2.42-3.25-2.42-5.81v-9.76h4.28v9.86c0,1.23.4,2.19,1.19,2.89.8.7,1.82,1.06,3.06,1.06,1.34,0,2.4-.37,3.18-1.12.78-.75,1.17-1.79,1.17-3.13v-9.56Z"/>
+          <path d="M158.58,11.74h7.57c2.78,0,5.03.73,6.74,2.19,1.83,1.54,2.74,3.68,2.74,6.42,0,2.9-.97,5.09-2.89,6.57-1.73,1.32-4.09,1.99-7.07,1.99h-7.1V11.74ZM162.85,14.88v10.87h2.79c1.73,0,3.09-.48,4.09-1.43,1-.96,1.5-2.29,1.5-4s-.5-3.09-1.5-4.03-2.38-1.41-4.14-1.41h-2.74Z"/>
+          <path d="M183.21,11.74v17.16h-4.28V11.74h4.28Z"/>
+          <path d="M206.08,20.32c0,2.63-.99,4.78-2.97,6.44-1.88,1.58-4.16,2.37-6.84,2.37s-4.99-.78-6.87-2.34c-1.98-1.66-2.97-3.82-2.97-6.47,0-2.28.83-4.27,2.49-5.96,1.86-1.9,4.31-2.84,7.35-2.84s5.48.95,7.32,2.84c1.66,1.71,2.49,3.7,2.49,5.96ZM201.68,20.32c0-1.63-.5-2.91-1.48-3.84-.99-.93-2.3-1.4-3.93-1.4s-2.94.47-3.94,1.41c-1,.94-1.5,2.21-1.5,3.82s.5,2.89,1.5,3.82c1,.94,2.31,1.41,3.94,1.41s2.94-.47,3.93-1.4c.99-.93,1.48-2.21,1.48-3.84Z"/>
+        </g>
+      </svg>
+    </div>
+    <p class="app-sub">Chạm vào thẻ để sao chép — dán ngay vào Zalo, Messenger, TikTok</p>
+    <button class="lock-btn" id="lockBtn" title="Chế độ quản trị" aria-label="Chế độ quản trị">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </button>
+  </header>
+
+  <div class="sync-bar" id="syncBar">
+    <span class="sync-dot" id="syncDot"></span>
+    <span id="syncText">Đang kết nối…</span>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      <input type="search" class="search-input" id="searchInput" placeholder="Tìm mẫu trả lời, concept...">
+    </div>
+    <button class="btn-add" id="btnAdd" title="Thêm mẫu mới">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Thêm mẫu</span>
+    </button>
+  </div>
+
+  <nav class="menu-tabs" id="menuTabs"></nav>
+  <div class="sub-tabs" id="subTabs"></div>
+  <div class="admin-tools" id="adminTools">
+    <button class="admin-tool-btn" id="btnRestore" title="Nạp lại bộ mẫu mới nhất từ hệ thống">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      Khôi phục bộ mẫu gốc
+    </button>
+  </div>
+  <main class="cards" id="cards"></main>
+</div>
+
+<div class="opt-overlay" id="optOverlay"><div class="opt-menu" id="optMenu"></div></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Thêm Mẫu Trả Lời</h3>
+    <div class="f-group"><label class="f-label">Tiêu đề <span class="req">*</span></label>
+      <input type="text" class="f-input" id="fTitle" placeholder="VD: Xác nhận lịch chụp"></div>
+    <div class="f-group"><label class="f-label">Nội dung <span class="req">*</span></label>
+      <textarea class="f-textarea" id="fContent" placeholder="Nội dung sẽ được sao chép khi chạm vào thẻ..."></textarea>
+      <p class="f-hint">💡 <b>Ô điền nhanh:</b> gõ <b>{{Tên mục}}</b> — VD <b>{{Tên khách}}</b>, <b>{{Tổng chi phí}}</b>.<br>🔁 <b>Khối lặp</b> (cho nhiều concept): bọc phần lặp trong <b>[[Concept]]</b> ... <b>[[/Concept]]</b>, dùng <b>{{#}}</b> để tự đánh số. Khi điền sẽ có nút "＋ Thêm concept".</p></div>
+    <div class="f-group"><label class="f-label">Danh mục</label>
+      <select class="f-select" id="fCategory">
+        <option value="chot-don">Chốt Đơn</option>
+        <option value="tuvan-fbzalo">Tư Vấn — Facebook / Zalo</option>
+        <option value="tuvan-tiktok">Tư Vấn — TikTok</option>
+        <option value="concept-portrait">Concept — Portrait</option>
+        <option value="concept-beauty">Concept — Beauty</option>
+        <option value="concept-couple">Concept — Couple</option>
+        <option value="concept-bau">Concept — Ảnh Bầu</option>
+      </select></div>
+    <div class="f-group" id="priceGroup" style="display:none;"><label class="f-label">Giá concept</label>
+      <input type="text" class="f-input" id="fPrice" placeholder="VD: 550.000đ">
+      <p class="f-hint">Giá hiển thị trên thẻ concept.</p></div>
+    <div class="f-group"><label class="f-label">Hình ảnh (tuỳ chọn)</label>
+      <input type="file" class="f-input" id="fImage" accept="image/*">
+      <p class="f-hint">Ảnh preview cho concept. Tự nén nhẹ để đồng bộ nhanh.</p>
+      <div class="img-preview-wrap" id="imgPreviewWrap">
+        <img class="img-preview" id="imgPreview" alt="Ảnh xem trước">
+        <button class="btn-remove-img" id="btnRemoveImg" title="Xoá ảnh">×</button></div></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btnCancel">Huỷ</button>
+      <button class="btn-primary" id="btnSave">Lưu mẫu</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pinOverlay">
+  <div class="modal pin-modal">
+    <h3>Chế Độ Quản Trị</h3>
+    <p>Nhập mã PIN để mở khoá thêm / sửa / xoá mẫu</p>
+    <input type="password" class="pin-input" id="pinInput" inputmode="numeric" maxlength="8" placeholder="••••">
+    <div class="pin-err" id="pinErr"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="pinCancel">Huỷ</button>
+      <button class="btn-primary" id="pinConfirm">Mở khoá</button></div>
+  </div>
+</div>
+
+<!-- Modal điền nhanh template {{...}} -->
+<div class="modal-overlay" id="fillOverlay">
+  <div class="modal">
+    <h3>Điền Thông Tin Nhanh</h3>
+    <p style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:1.1rem;">Điền các mục bên dưới, nội dung sẽ tự ghép hoàn chỉnh để copy</p>
+    <div id="fillFields"></div>
+    <div class="f-group">
+      <label class="f-label">Xem trước &amp; chỉnh tay</label>
+      <textarea class="f-textarea" id="fillPreview" style="min-height:180px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="fillCancel">Huỷ</button>
+      <button class="btn-primary" id="fillCopy">Copy tin nhắn</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Đã sao chép</span>
+</div>
+
+<!-- ============= KHỐI CẤU HÌNH — CHỈNH 2 CHỖ NÀY ============= -->
+<script>
+  // (1) Đổi mã PIN quản trị:
+  window.KA_ADMIN_PIN = "2468";
+
+  // (2) Dán firebaseConfig từ Firebase Console vào đây.
+  //     Để trống => app chạy chế độ máy đơn (chỉ lưu trên máy này).
+  window.KA_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBxy5G9nMwdqrJeKdnOYhjTBBHyerkKoKA",
+  authDomain: "ky-anh-studio---reply-d43ff.firebaseapp.com",
+  projectId: "ky-anh-studio---reply-d43ff",
+  storageBucket: "ky-anh-studio---reply-d43ff.firebasestorage.app",
+  messagingSenderId: "745250431197",
+  appId: "1:745250431197:web:a16ca6f026b4b99bf3fb34",
+  measurementId: "G-V1FQKSNY4W"
+  };
+</script>
+
+
+<!-- ============= LOGIC (không cần chỉnh) ============= -->
+<script type="module">
+let fb = null;
+const cfg = window.KA_FIREBASE_CONFIG || {};
+const firebaseEnabled = !!(cfg.projectId && cfg.apiKey);
+
+if (firebaseEnabled) {
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const fsMod  = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const app = appMod.initializeApp(cfg);
+    const db = fsMod.initializeFirestore(app, {
+      localCache: fsMod.persistentLocalCache({ tabManager: fsMod.persistentSingleTabManager() })
+    });
+    fb = { db, ...fsMod };
+  } catch (e) {
+    console.warn("Không tải được Firebase, chuyển chế độ máy đơn:", e);
+    fb = null;
+  }
+}
+
+const CATEGORIES = [
+  { id: 'chot-don', label: 'Chốt Đơn' },
+  { id: 'tuvan', label: 'Tư Vấn', subs: [
+      { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
+      { id: 'tuvan-tiktok', label: 'TikTok' } ]},
+  { id: 'concept', label: 'Concept', subs: [
+      { id: 'concept-portrait', label: 'Portrait' },
+      { id: 'concept-beauty',   label: 'Beauty' },
+      { id: 'concept-couple',   label: 'Couple' },
+      { id: 'concept-bau',      label: 'Ảnh Bầu' } ]},
+  { id: 'recent', label: 'Gần Đây' },
+];
+// Nhãn hiển thị góc thẻ + trong menu tuỳ chọn "Di chuyển tới"
+const CAT_LABELS = {
+  'chot-don': 'Chốt Đơn',
+  'tuvan-fbzalo': 'Tư Vấn · FB/Zalo', 'tuvan-tiktok': 'Tư Vấn · TikTok',
+  'concept-portrait': 'Concept · Portrait', 'concept-beauty': 'Concept · Beauty',
+  'concept-couple': 'Concept · Couple', 'concept-bau': 'Concept · Ảnh Bầu',
+};
+// Danh mục cha có sub-tab (dùng để gom & đếm)
+const PARENT_OF = { tuvan: 'tuvan', concept: 'concept' };
+
+const SEED_ITEMS = [
+  { cat:'chot-don', title:'📋 Xác nhận buổi chụp (điền nhanh)', content:'Studio gửi bạn thông tin buổi chụp sắp tới ạ\n{{Tên khách}}\n\n🗓️ CHI TIẾT BUỔI CHỤP\n[[Concept]]\nConcept {{#}}: {{Tên Concept}}\nNgày & Giờ: {{Ngày & Giờ}}\nMakeup: {{Makeup}}\nHair: {{Hair}}\n[[/Concept]]\n\n📍 ĐỊA ĐIỂM\nKỳ Anh Studio (Lầu 2) - 307/1A Nguyễn Văn Trỗi, Phường 1, Quận Tân Bình.\nHotline: 07.6535.6526 - Kỳ Anh\n\n💳 THANH TOÁN\nTổng chi phí: {{Tổng chi phí}}\nĐã đặt cọc: {{Đã cọc}} (Đã thanh toán)\nCòn lại: {{Còn lại}} (Thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp)' },
+  { cat:'chot-don', title:'Xác nhận lịch chụp', content:'Dạ Kỳ Anh Studio xác nhận lịch chụp của mình như sau ạ:\n\n📸 Dịch vụ: [tên gói]\n🗓 Thời gian: [ngày] — [giờ]\n📍 Địa chỉ: 307/1A Nguyễn Văn Trỗi, P. Tân Sơn Hòa, TP.HCM\n\nMình vui lòng đến trước 10 phút để chuẩn bị nhé. Cảm ơn mình đã tin tưởng studio ạ! 🤍' },
+  { cat:'chot-don', title:'Hướng dẫn đặt cọc giữ lịch', content:'Dạ để giữ lịch chụp, mình cọc trước 30% giá trị gói qua:\n\n🏦 [Tên ngân hàng] — [Số tài khoản]\n👤 Chủ TK: [Tên]\n📝 Nội dung CK: Tên + SĐT\n\nSau khi chuyển mình chụp màn hình gửi lại giúp em, studio sẽ xác nhận và chốt lịch ngay ạ!' },
+  { cat:'chot-don', title:'Nhắc lịch trước 1 ngày', content:'Dạ em nhắc nhẹ mai là buổi chụp của mình tại Kỳ Anh Studio rồi nè 🥰\n\n🗓 [Ngày] — [giờ]\n📍 307/1A Nguyễn Văn Trỗi, P. Tân Sơn Hòa\n\nMình nhớ ngủ sớm, dưỡng da nhẹ và mang theo trang phục đã trao đổi nhé. Hẹn gặp mình ạ!' },
+  { cat:'chot-don', title:'Cảm ơn sau buổi chụp', content:'Cảm ơn mình đã có buổi chụp thật vui cùng Kỳ Anh Studio hôm nay 🤍\n\nẢnh sẽ được retouch kỹ và gửi trong vòng [X] ngày. Nếu ưng ý, mình để lại đánh giá giúp studio nhé — em cảm ơn nhiều ạ!' },
+  { cat:'tuvan-fbzalo', title:'Chào khách mới inbox', content:'Dạ em chào mình, Kỳ Anh Studio xin phép tư vấn ạ 🤍\n\nMình đang quan tâm gói chụp nào để em gửi thông tin chi tiết nhé:\n• Beauty / Chân dung nghệ thuật\n• Ảnh bầu\n• Couple / Bạn thân\n• Sinh nhật\n\nHoặc mình mô tả concept mong muốn, em tư vấn liền ạ!' },
+  { cat:'tuvan-fbzalo', title:'Gửi bảng giá chung', content:'Dạ em gửi mình bảng giá các gói chụp tại Kỳ Anh Studio ạ:\n\n📷 Beauty: từ [giá]\n📷 Chân dung nghệ thuật: từ [giá]\n📷 Ảnh bầu: từ [giá]\n📷 Couple / Bạn thân: từ [giá]\n\nGiá đã gồm makeup nhẹ + retouch. Mình muốn xem concept mẫu của gói nào em gửi thêm nha!' },
+  { cat:'tuvan-fbzalo', title:'Giờ làm việc & địa chỉ', content:'Dạ studio mở cửa 09h00 – 21h00, Thứ 2 – Chủ Nhật ạ.\n\n📍 307/1A Nguyễn Văn Trỗi, P. Tân Sơn Hòa, TP.HCM (P.1, Q. Tân Bình cũ)\n📞 07.6535.6526 (Call / Zalo)\n\nMình vui lòng gọi hoặc nhắn trước khi đến để studio chuẩn bị đón mình chu đáo nhé!' },
+  { cat:'tuvan-tiktok', title:'Trả lời comment hỏi giá', content:'Dạ mình inbox giúp em để được báo giá chi tiết theo concept nha 🤍 Hoặc nhắn Zalo 07.6535.6526 em tư vấn nhanh nhất ạ!' },
+  { cat:'tuvan-tiktok', title:'Khách từ TikTok inbox', content:'Dạ em chào mình, cảm ơn mình đã ghé từ TikTok của Kỳ Anh Studio 🥰\n\nMình thích concept trong video nào để em gửi giá + lịch trống gần nhất nhé. Studio ở Tân Bình, mở cửa 09h–21h mỗi ngày ạ!' },
+  { cat:'concept-beauty', title:'Beauty tông nâu tây', price:'550.000đ', content:'✨ Concept Beauty tông nâu tây\n\n• 60 phút chụp tại studio\n• Makeup + làm tóc nhẹ\n• 30 ảnh gốc, 5 ảnh retouch kỹ\n• Phông nền + ánh sáng cinematic\n\nGiá: 550.000đ — Mình đặt lịch sớm để chọn khung giờ đẹp nhé!' },
+  { cat:'concept-portrait', title:'Chân dung nghệ thuật', price:'450.000đ', content:'🎞 Concept Chân dung nghệ thuật\n\n• 45 phút chụp\n• 25 ảnh gốc, 4 ảnh retouch\n• Tông màu film, ánh sáng khối\n\nGiá: 450.000đ — phù hợp làm ảnh profile, CV, portfolio cá nhân ạ.' },
+  { cat:'concept-couple', title:'Couple / Bạn thân', price:'650.000đ', content:'💛 Concept Couple / Bạn thân\n\n• 75 phút chụp cho 2 người\n• Makeup nhẹ cho cả hai\n• 40 ảnh gốc, 6 ảnh retouch\n\nGiá: 650.000đ — thêm người phụ thu [giá]/người ạ.' },
+  { cat:'concept-bau', title:'Ảnh bầu', price:'600.000đ', content:'🤰 Concept Ảnh bầu\n\n• 60 phút chụp, có váy bầu studio hỗ trợ\n• Makeup tôn da mẹ bầu\n• 30 ảnh gốc, 5 ảnh retouch\n\nGiá: 600.000đ — nên chụp ở tuần 28–34 để dáng bụng đẹp nhất ạ.' },
+];
+
+let items = [];
+let recent = [];
+let activeCat = 'chot-don';
+let activeSubs = { tuvan: 'tuvan-fbzalo', concept: 'concept-portrait' };
+let editingId = null, pendingImage = null;
+let isAdmin = false;
+let firstSnapshot = false;
+
+const ADMIN_PIN = String(window.KA_ADMIN_PIN || '2468');
+const CACHE_KEY = 'kyanh-reply-cache';
+const RECENT_KEY = 'kyanh-reply-recent';
+
+const LS = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+};
+const SS = {
+  get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { sessionStorage.setItem(k,v); } catch(e){} },
+  del(k){ try { sessionStorage.removeItem(k); } catch(e){} },
+};
+
+const $ = id => document.getElementById(id);
+const menuTabsEl = $('menuTabs'), subTabsEl = $('subTabs'), cardsEl = $('cards');
+const searchInput = $('searchInput'), syncDot = $('syncDot'), syncText = $('syncText');
+const btnAdd = $('btnAdd'), lockBtn = $('lockBtn');
+
+function loadRecent(){ try { recent = JSON.parse(LS.get(RECENT_KEY) || '[]'); } catch(e){ recent = []; } }
+function saveRecent(){ LS.set(RECENT_KEY, JSON.stringify(recent)); }
+function loadCache(){ try { return JSON.parse(LS.get(CACHE_KEY) || 'null'); } catch(e){ return null; } }
+function saveCache(){ LS.set(CACHE_KEY, JSON.stringify(items)); }
+
+async function init() {
+  loadRecent();
+  isAdmin = SS.get('kyanh-admin') === '1';
+  applyAdminUI();
+  const cached = loadCache();
+  if (cached && cached.length) { items = cached; render(); }
+  else showSkeleton();
+
+  if (fb) {
+    setSync('online', 'Đồng bộ realtime');
+    startFirestore();
+    window.addEventListener('online',  () => setSync('online', 'Đồng bộ realtime'));
+    window.addEventListener('offline', () => setSync('offline', 'Ngoại tuyến — vẫn copy được'));
+    if (!navigator.onLine) setSync('offline', 'Ngoại tuyến — vẫn copy được');
+  } else {
+    setSync('local', firebaseEnabled ? 'Chế độ máy đơn (không tải được máy chủ)' : 'Chế độ máy đơn — lưu trên máy này');
+    if (!items.length) { items = SEED_ITEMS.map(withId); saveCache(); }
+    render();
+  }
+}
+function withId(x){ return { id: 'c-' + Math.random().toString(36).slice(2,10), order: Date.now(), ...x }; }
+
+let colRef = null;
+function startFirestore() {
+  colRef = fb.collection(fb.db, 'replies');
+  const q = fb.query(colRef, fb.orderBy('order', 'asc'));
+  fb.onSnapshot(q, async (snap) => {
+    if (snap.empty && !firstSnapshot && isAdmin) {
+      firstSnapshot = true; await seedToFirestore(); return;
+    }
+    firstSnapshot = true;
+    items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    saveCache(); render();
+    setSync(navigator.onLine ? 'online' : 'offline',
+            navigator.onLine ? 'Đồng bộ realtime' : 'Ngoại tuyến — vẫn copy được');
+  }, (err) => {
+    console.warn('Firestore lỗi:', err);
+    setSync('local', 'Lỗi kết nối — dùng bản lưu trên máy');
+    const c = loadCache(); if (c) { items = c; render(); }
+  });
+}
+async function seedToFirestore() {
+  try {
+    for (let i = 0; i < SEED_ITEMS.length; i++) {
+      const it = SEED_ITEMS[i];
+      await fb.setDoc(fb.doc(colRef), { ...it, order: Date.now() + i, _key: ADMIN_PIN });
+    }
+    showToast('Đã tạo bộ mẫu ban đầu trên máy chủ');
+  } catch(e){ console.warn(e); }
+}
+
+/* Khôi phục: xoá toàn bộ mẫu hiện có rồi nạp lại bộ SEED mới nhất */
+async function restoreSeeds() {
+  if (fb) {
+    try {
+      const snap = await fb.getDocs(fb.collection(fb.db, 'replies'));
+      for (const d of snap.docs) await fb.deleteDoc(d.ref);
+      await seedToFirestore();
+      showToast('Đã khôi phục bộ mẫu gốc — các máy sẽ tự đồng bộ');
+    } catch(e){ console.warn(e); showToast('Khôi phục thất bại — kiểm tra mạng/PIN', true); }
+  } else {
+    items = SEED_ITEMS.map(withId); recent = [];
+    saveCache(); saveRecent(); render();
+    showToast('Đã khôi phục bộ mẫu gốc');
+  }
+}
+
+async function upsertItem(id, data) {
+  if (fb) {
+    try {
+      if (id) await fb.updateDoc(fb.doc(colRef, id), { ...data, _key: ADMIN_PIN });
+      else    await fb.setDoc(fb.doc(colRef), { ...data, order: Date.now(), _key: ADMIN_PIN });
+      return true;
+    } catch(e){ console.warn(e); showToast('Lưu lên máy chủ thất bại — kiểm tra mạng/PIN', true); return false; }
+  } else {
+    if (id) { const i = items.findIndex(x=>x.id===id); if(i>-1) items[i] = { ...items[i], ...data }; }
+    else items.unshift(withId(data));
+    saveCache(); render(); return true;
+  }
+}
+async function removeItem(id) {
+  if (fb) {
+    try { await fb.deleteDoc(fb.doc(colRef, id)); return true; }
+    catch(e){ console.warn(e); showToast('Xoá trên máy chủ thất bại', true); return false; }
+  } else {
+    items = items.filter(x=>x.id!==id); recent = recent.filter(r=>r.id!==id);
+    saveCache(); saveRecent(); render(); return true;
+  }
+}
+
+function setSync(kind, text) { syncDot.className = 'sync-dot ' + kind; syncText.textContent = text; }
+
+function applyAdminUI() {
+  lockBtn.classList.toggle('admin', isAdmin);
+  lockBtn.title = isAdmin ? 'Đang ở chế độ quản trị — chạm để thoát' : 'Chế độ quản trị';
+  lockBtn.innerHTML = isAdmin
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+  btnAdd.classList.toggle('show', isAdmin);
+  $('adminTools').classList.toggle('show', isAdmin);
+}
+$('btnRestore').onclick = () => {
+  if (confirm('Khôi phục bộ mẫu gốc sẽ XOÁ toàn bộ mẫu hiện tại và nạp lại bộ mẫu mới nhất. Tiếp tục?')) restoreSeeds();
+};
+lockBtn.onclick = () => {
+  if (isAdmin) { isAdmin=false; SS.del('kyanh-admin'); applyAdminUI(); render(); showToast('Đã thoát chế độ quản trị'); }
+  else openPin();
+};
+const pinOverlay = $('pinOverlay'), pinInput = $('pinInput'), pinErr = $('pinErr');
+function openPin(){ pinErr.textContent=''; pinInput.value=''; pinOverlay.classList.add('show'); setTimeout(()=>pinInput.focus(),50); }
+function closePin(){ pinOverlay.classList.remove('show'); }
+$('pinCancel').onclick = closePin;
+$('pinConfirm').onclick = tryPin;
+pinInput.addEventListener('keydown', e => { if(e.key==='Enter') tryPin(); });
+pinOverlay.addEventListener('click', e => { if(e.target===pinOverlay) closePin(); });
+function tryPin(){
+  if (pinInput.value === ADMIN_PIN) {
+    isAdmin=true; SS.set('kyanh-admin','1'); applyAdminUI(); render(); closePin();
+    showToast('Đã mở khoá quản trị');
+    if (fb && firstSnapshot && items.length===0) seedToFirestore();
+  } else { pinErr.textContent='Mã PIN không đúng'; pinInput.value=''; pinInput.focus(); }
+}
+
+function parentCat(id){ return CATEGORIES.find(c=>c.id===id && c.subs); }
+function countFor(catId){
+  if (catId==='recent') return recent.length;
+  const parent = parentCat(catId);
+  if (parent) return items.filter(i=>String(i.cat).startsWith(catId+'-')).length;
+  return items.filter(i=>i.cat===catId).length;
+}
+function renderMenu(){
+  menuTabsEl.innerHTML='';
+  CATEGORIES.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='menu-tab'+(activeCat===cat.id?' active':'');
+    b.innerHTML=`${cat.label} <span class="count">${countFor(cat.id)}</span>`;
+    b.onclick=()=>{activeCat=cat.id;render();};
+    menuTabsEl.appendChild(b);
+  });
+  const parent = parentCat(activeCat);
+  if (parent){
+    subTabsEl.classList.add('show'); subTabsEl.innerHTML='';
+    parent.subs.forEach(s=>{
+      const b=document.createElement('button');
+      b.className='sub-tab'+(activeSubs[activeCat]===s.id?' active':'');
+      b.textContent=s.label; b.onclick=()=>{activeSubs[activeCat]=s.id;render();};
+      subTabsEl.appendChild(b);
+    });
+  } else subTabsEl.classList.remove('show');
+}
+function visibleItems(){
+  const q=searchInput.value.trim().toLowerCase();
+  if (q){
+    const all=items.filter(i=> (i.title||'').toLowerCase().includes(q) || (i.content||'').toLowerCase().includes(q));
+    return {list:all, searching:true};
+  }
+  let list;
+  if (activeCat==='recent'){
+    const map=Object.fromEntries(items.map(i=>[i.id,i]));
+    list=recent.map(r=>map[r.id]).filter(Boolean);
+  } else if (parentCat(activeCat)) list=items.filter(i=>i.cat===activeSubs[activeCat]);
+  else list=items.filter(i=>i.cat===activeCat);
+  return {list, searching:false};
+}
+function showSkeleton(){ cardsEl.className='cards'; cardsEl.innerHTML='<div class="skeleton">'+Array(6).fill('<div class="sk-card"></div>').join('')+'</div>'; }
+function render(){
+  renderMenu();
+  const {list, searching}=visibleItems();
+  cardsEl.innerHTML='';
+  if (searching){ const n=document.createElement('p'); n.className='section-note'; n.textContent=`Kết quả tìm trong tất cả danh mục (${list.length})`; cardsEl.appendChild(n); }
+  else if (activeCat==='recent' && list.length){ const n=document.createElement('p'); n.className='section-note'; n.textContent='Các mẫu bạn đã copy gần đây (riêng máy này)'; cardsEl.appendChild(n); }
+  if (!list.length){
+    const e=document.createElement('div'); e.className='empty';
+    e.innerHTML = (activeCat==='recent'&&!searching)
+      ? '<h3>Chưa có mẫu nào gần đây</h3>Copy một mẫu bất kỳ, nó sẽ xuất hiện ở đây.'
+      : '<h3>Chưa có mẫu nào</h3>'+(isAdmin?'Nhấn “Thêm mẫu” để tạo mẫu đầu tiên.':'Khu vực này đang trống.');
+    cardsEl.appendChild(e); return;
+  }
+  list.forEach(it=>cardsEl.appendChild(cardEl(it)));
+}
+function cardEl(item){
+  const card=document.createElement('article');
+  card.className='clip-card'+(item.image?' has-img':''); card.tabIndex=0; card.setAttribute('role','button');
+  card.setAttribute('aria-label','Sao chép: '+item.title);
+  card.innerHTML=`
+    <div class="clip-top">
+      <div class="clip-title">${esc(item.title)}</div>
+      ${item.price?`<span class="clip-price">${esc(item.price)}</span>`:''}
+      <button class="btn-more${isAdmin?' show':''}" title="Tuỳ chọn" aria-label="Tuỳ chọn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </button>
+    </div>
+    ${item.image?`<img class="clip-img" src="${item.image}" alt="" loading="lazy">`:''}
+    <div class="clip-body">${esc(item.content)}</div>
+    ${hasFields(item)?'<span class="clip-form-badge">⚡ Điền nhanh</span>':''}`;
+  const more=card.querySelector('.btn-more');
+  more.onclick=e=>{e.stopPropagation();openOptions(item,more);};
+  card.onclick=()=>copyItem(item,card);
+  card.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();copyItem(item,card);} };
+  return card;
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ====== TEMPLATE ĐIỀN NHANH — hỗ trợ khối lặp [[Nhóm]]...[[/Nhóm]] ====== */
+const FIELD_RE = /\{\{\s*([^}]+?)\s*\}\}/g;
+const BLOCK_RE = /[ \t]*\[\[([^\/\]]+?)\]\][ \t]*\r?\n?([\s\S]*?)\r?\n?[ \t]*\[\[\/[^\]]*?\]\][ \t]*/g;
+
+function hasFields(item){ const c=item.content||''; return /\{\{[^}]+\}\}/.test(c) || /\[\[[^\/\]]+\]\]/.test(c); }
+
+/* Tách nội dung thành các đoạn: text thường & khối lặp */
+function parseTemplate(content){
+  const segs=[]; let last=0, m, bi=0;
+  BLOCK_RE.lastIndex=0;
+  while((m=BLOCK_RE.exec(content))){
+    if(m.index>last) segs.push({type:'text', value:content.slice(last,m.index)});
+    segs.push({type:'repeat', label:m[1].trim(), inner:m[2], bi:bi++});
+    last=BLOCK_RE.lastIndex;
+  }
+  if(last<content.length) segs.push({type:'text', value:content.slice(last)});
+  return segs;
+}
+function fieldsOf(text){
+  const seen=[]; let m; FIELD_RE.lastIndex=0;
+  while((m=FIELD_RE.exec(text))){ const lb=m[1].trim(); if(lb!=='#' && !seen.includes(lb)) seen.push(lb); }
+  return seen;
+}
+
+async function copyText(text){
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch(e){
+    const ta=document.createElement('textarea'); ta.value=text;
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+    let ok=false; try{ ok=document.execCommand('copy'); }catch(_){}
+    document.body.removeChild(ta); return ok;
+  }
+}
+async function copyItem(item, card){
+  if (hasFields(item)) { openFill(item, card); return; }
+  const ok=await copyText(item.content);
+  if (ok){
+    if (card){ card.classList.add('copied'); setTimeout(()=>card.classList.remove('copied'),1200); }
+    showToast('Đã sao chép “'+item.title+'”'); addRecent(item.id);
+  } else showToast('Không copy được — thử lại nhé', true);
+}
+
+/* ---------- Form điền nhanh ---------- */
+const fillOverlay=$('fillOverlay'), fillFields=$('fillFields'), fillPreview=$('fillPreview');
+let fillItem=null, fillCard=null, fillSegs=[];
+
+function groupHTML(bi, label, fields){
+  return `<div class="fill-group" data-bi="${bi}">
+    <div class="fill-group-head">
+      <span class="fill-group-title">${esc(label)} <span class="fill-group-num"></span></span>
+      <button type="button" class="fill-group-del" title="Xoá ${esc(label.toLowerCase())}">×</button>
+    </div>
+    ${fields.map(lb=>`
+      <div class="f-group">
+        <label class="f-label">${esc(lb)}</label>
+        <input type="text" class="f-input fill-in" data-scope="block" data-bi="${bi}" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}...">
+      </div>`).join('')}
+  </div>`;
+}
+
+function openFill(item, card){
+  fillItem=item; fillCard=card||null;
+  fillSegs=parseTemplate(item.content||'');
+  const renderedCommon=new Set();
+  let html='';
+  fillSegs.forEach(seg=>{
+    if(seg.type==='text'){
+      fieldsOf(seg.value).forEach(lb=>{
+        if(renderedCommon.has(lb)) return; renderedCommon.add(lb);
+        html+=`<div class="f-group">
+          <label class="f-label">${esc(lb)}</label>
+          <input type="text" class="f-input fill-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}...">
+        </div>`;
+      });
+    } else {
+      const flds=fieldsOf(seg.inner);
+      html+=`<div class="fill-block" data-bi="${seg.bi}" data-label="${esc(seg.label)}">
+        <div class="fill-groups">${groupHTML(seg.bi, seg.label, flds)}</div>
+        <button type="button" class="fill-add" data-bi="${seg.bi}">＋ Thêm ${esc(seg.label.toLowerCase())}</button>
+      </div>`;
+    }
+  });
+  fillFields.innerHTML=html;
+  bindFill();
+  renumberGroups();
+  updateFillPreview();
+  fillOverlay.classList.add('show');
+  setTimeout(()=>{ const f=fillFields.querySelector('.fill-in'); if(f) f.focus(); },50);
+}
+
+function bindFill(){
+  fillFields.querySelectorAll('.fill-in').forEach(inp=>inp.oninput=updateFillPreview);
+  fillFields.querySelectorAll('.fill-add').forEach(btn=>btn.onclick=()=>{
+    const bi=btn.dataset.bi;
+    const block=fillFields.querySelector(`.fill-block[data-bi="${bi}"]`);
+    const flds=fieldsOf(fillItem ? parseTemplate(fillItem.content).find(s=>s.type==='repeat'&&String(s.bi)===String(bi)).inner : '');
+    block.querySelector('.fill-groups').insertAdjacentHTML('beforeend', groupHTML(bi, block.dataset.label, flds));
+    bindFill(); renumberGroups(); updateFillPreview();
+  });
+  fillFields.querySelectorAll('.fill-group-del').forEach(btn=>btn.onclick=()=>{
+    const group=btn.closest('.fill-group');
+    const groups=group.parentElement;
+    if(groups.querySelectorAll('.fill-group').length<=1){ showToast('Cần giữ ít nhất 1'); return; }
+    group.remove(); renumberGroups(); updateFillPreview();
+  });
+}
+function renumberGroups(){
+  fillFields.querySelectorAll('.fill-block').forEach(block=>{
+    const gs=block.querySelectorAll('.fill-group');
+    gs.forEach((g,i)=>{ const n=g.querySelector('.fill-group-num'); if(n) n.textContent=(i+1); });
+    // Ẩn nút xoá khi chỉ còn 1 nhóm
+    block.querySelectorAll('.fill-group-del').forEach(d=>d.style.visibility = gs.length>1 ? 'visible':'hidden');
+  });
+}
+
+function buildFilled(){
+  const common={};
+  fillFields.querySelectorAll('.fill-in[data-scope="common"]').forEach(inp=>common[inp.dataset.label]=inp.value.trim());
+  let out=fillSegs.map(seg=>{
+    if(seg.type==='text'){
+      return seg.value.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return ''; return common[lb]||('['+lb+']'); });
+    }
+    const groups=[...fillFields.querySelectorAll(`.fill-block[data-bi="${seg.bi}"] .fill-group`)];
+    return groups.map((g,gi)=>{
+      const vals={};
+      g.querySelectorAll('.fill-in[data-scope="block"]').forEach(inp=>vals[inp.dataset.label]=inp.value.trim());
+      return seg.inner.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return String(gi+1); return vals[lb]||('['+lb+']'); });
+    }).join('\n\n');
+  }).join('');
+  return out.replace(/\n{3,}/g,'\n\n').trim();
+}
+function updateFillPreview(){ fillPreview.value=buildFilled(); }
+function closeFill(){ fillOverlay.classList.remove('show'); fillItem=null; fillCard=null; fillSegs=[]; }
+$('fillCancel').onclick=closeFill;
+fillOverlay.addEventListener('click', e=>{ if(e.target===fillOverlay) closeFill(); });
+$('fillCopy').onclick=async()=>{
+  const ok=await copyText(fillPreview.value);
+  if(ok){
+    if(fillCard){ fillCard.classList.add('copied'); setTimeout(()=>fillCard.classList.remove('copied'),1200); }
+    if(fillItem) addRecent(fillItem.id);
+    showToast('Đã copy tin nhắn hoàn chỉnh'); closeFill();
+  } else showToast('Không copy được — thử lại nhé', true);
+};
+function addRecent(id){
+  recent=recent.filter(r=>r.id!==id); recent.unshift({id,at:Date.now()}); recent=recent.slice(0,12);
+  saveRecent(); if(activeCat==='recent') render(); else renderMenu();
+}
+
+const toastEl=$('toast'), toastMsg=$('toastMsg'); let toastTimer;
+function showToast(msg, warn){
+  toastMsg.textContent=msg; toastEl.classList.toggle('warn',!!warn); toastEl.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2000);
+}
+
+const optOverlay=$('optOverlay'), optMenu=$('optMenu');
+function openOptions(item, anchor){
+  const inRecent = activeCat==='recent' && !searchInput.value.trim();
+  const moveTargets=Object.entries(CAT_LABELS).filter(([id])=>id!==item.cat);
+  optMenu.innerHTML=`
+    <button class="opt-item" data-act="copy"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Sao chép nội dung</button>
+    <button class="opt-item" data-act="edit"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg> Chỉnh sửa</button>
+    <div class="opt-divider"></div>
+    <div class="opt-label">Di chuyển tới</div>
+    ${moveTargets.map(([id,label])=>`<button class="opt-item" data-act="move" data-to="${id}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg> ${label}</button>`).join('')}
+    <div class="opt-divider"></div>
+    ${inRecent?`<button class="opt-item" data-act="remove-recent"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Bỏ khỏi Gần Đây</button>`:''}
+    <button class="opt-item danger" data-act="delete"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Xoá mẫu này</button>`;
+  const r=anchor.getBoundingClientRect(); optOverlay.classList.add('show');
+  const mw=210; let left=Math.min(r.left, window.innerWidth-mw-12); let top=r.bottom+6;
+  optMenu.style.left=Math.max(8,left)+'px'; optMenu.style.top=top+'px';
+  requestAnimationFrame(()=>{ const mh=optMenu.offsetHeight; if(top+mh>window.innerHeight-10) optMenu.style.top=Math.max(10,r.top-mh-6)+'px'; });
+  optMenu.querySelectorAll('.opt-item').forEach(btn=>{
+    btn.onclick=async()=>{
+      const act=btn.dataset.act; closeOptions();
+      if(act==='copy'){ copyItem(item, document.createElement('div')); }
+      if(act==='edit') openModal(item);
+      if(act==='move'){ if(await upsertItem(item.id,{cat:btn.dataset.to})) showToast('Đã chuyển tới '+CAT_LABELS[btn.dataset.to]); }
+      if(act==='remove-recent'){ recent=recent.filter(r2=>r2.id!==item.id); saveRecent(); render(); }
+      if(act==='delete'){ if(confirm('Xoá mẫu “'+item.title+'”? Không hoàn tác được.')){ if(await removeItem(item.id)) showToast('Đã xoá mẫu'); } }
+    };
+  });
+}
+function closeOptions(){ optOverlay.classList.remove('show'); }
+optOverlay.addEventListener('click', e=>{ if(e.target===optOverlay) closeOptions(); });
+
+const modalOverlay=$('modalOverlay'), fTitle=$('fTitle'), fContent=$('fContent'),
+  fCategory=$('fCategory'), fPrice=$('fPrice'), priceGroup=$('priceGroup'),
+  fImage=$('fImage'), imgPreviewWrap=$('imgPreviewWrap'), imgPreview=$('imgPreview'), btnSave=$('btnSave');
+
+btnAdd.onclick=()=>openModal(null);
+$('btnCancel').onclick=closeModal;
+modalOverlay.addEventListener('click', e=>{ if(e.target===modalOverlay) closeModal(); });
+fCategory.onchange=()=>{ priceGroup.style.display = fCategory.value.startsWith('concept')?'block':'none'; };
+
+fImage.onchange=()=>{
+  const file=fImage.files[0]; if(!file) return;
+  const img=new Image(), reader=new FileReader();
+  reader.onload=()=>{ img.onload=()=>{
+    const max=480, scale=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas'); c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    let q=0.7, out=c.toDataURL('image/jpeg',q);
+    while(out.length>120*1024 && q>0.3){ q-=0.1; out=c.toDataURL('image/jpeg',q); }
+    pendingImage=out; imgPreview.src=out; imgPreviewWrap.classList.add('show');
+  }; img.src=reader.result; };
+  reader.readAsDataURL(file);
+};
+$('btnRemoveImg').onclick=()=>{ pendingImage=null; fImage.value=''; imgPreviewWrap.classList.remove('show'); };
+
+function openModal(item){
+  editingId=item?item.id:null;
+  $('modalTitle').textContent=item?'Chỉnh Sửa Mẫu':'Thêm Mẫu Trả Lời';
+  fTitle.value=item?item.title:''; fContent.value=item?item.content:'';
+  fCategory.value=item?item.cat:(parentCat(activeCat)?activeSubs[activeCat]:(activeCat==='recent'?'chot-don':activeCat));
+  fPrice.value=item&&item.price?item.price:'';
+  priceGroup.style.display=fCategory.value.startsWith('concept')?'block':'none';
+  pendingImage=item&&item.image?item.image:null; fImage.value='';
+  if(pendingImage){ imgPreview.src=pendingImage; imgPreviewWrap.classList.add('show'); } else imgPreviewWrap.classList.remove('show');
+  modalOverlay.classList.add('show'); setTimeout(()=>fTitle.focus(),50);
+}
+function closeModal(){ modalOverlay.classList.remove('show'); editingId=null; }
+
+btnSave.onclick=async()=>{
+  const title=fTitle.value.trim(), content=fContent.value.trim();
+  if(!title||!content){ showToast('Nhập tiêu đề và nội dung trước nhé', true); return; }
+  const data={ title, content, cat:fCategory.value,
+    price: (fCategory.value.startsWith('concept')&&fPrice.value.trim())?fPrice.value.trim():'',
+    image: pendingImage || '' };
+  btnSave.disabled=true; btnSave.textContent='Đang lưu…';
+  const ok=await upsertItem(editingId, data);
+  btnSave.disabled=false; btnSave.textContent='Lưu mẫu';
+  if(!ok) return;
+  closeModal();
+  showToast(editingId?'Đã cập nhật mẫu':'Đã thêm mẫu mới');
+  // Điều hướng tới mục vừa lưu (nếu là sub thì mở đúng cha + sub)
+  const parentId = data.cat.split('-')[0];
+  if (parentCat(parentId)) { activeCat=parentId; activeSubs[parentId]=data.cat; }
+  else activeCat=data.cat;
+  if(!fb) render();
+};
+
+searchInput.addEventListener('input', render);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); } });
+
+init();
+</script>
+
+<!-- ============================================================
+     ⚙️  SECURITY RULES cho Firestore
+     (Firebase Console > Firestore Database > tab Rules > Publish)
+
+     rules_version = '2';
+     service cloud.firestore {
+       match /databases/{database}/documents {
+         match /replies/{docId} {
+           allow read: if true;
+           allow write: if request.resource == null
+                        || request.resource.data._key == "2468";
+         }
+       }
+     }
+
+     ⚠️ Đổi "2468" trong rules cho khớp KA_ADMIN_PIN ở trên.
+     Đây là khoá mềm cho nội bộ studio — đủ chặn ghi tuỳ tiện,
+     không phải bảo mật cấp cao. Cần chặt hơn thì bật Firebase Auth.
+     ============================================================ -->
+</body>
+</html>

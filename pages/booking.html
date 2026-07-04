@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đặt Lịch Chụp Ảnh | Kỳ Anh Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================
+     BASE
+     ============================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: #FAF9F7;
+    color: #3D3D3D;
+    line-height: 1.8;
+    padding-bottom: 84px; /* space for mobile sticky bar */
+  }
+
+  h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 400; }
+
+  .ka-page { min-height: 100vh; padding: 3.5rem 1.5rem 4rem; }
+  .ka-container { max-width: 880px; margin: 0 auto; }
+
+  /* ============================================
+     HEADER
+     ============================================ */
+  .ka-header { text-align: center; margin-bottom: 2.5rem; }
+
+  .ka-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #B8956E;
+    margin-bottom: 0.7rem;
+  }
+
+  .ka-title {
+    font-size: 2.4rem;
+    color: #1A1A1A;
+    margin-bottom: 0.6rem;
+  }
+
+  .ka-subtitle {
+    font-size: 0.92rem;
+    color: #8B8178;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ============================================
+     QUICK CONTACT — hero of the page
+     ============================================ */
+  .ka-contact-panel {
+    background: linear-gradient(155deg, #FFFDFB 0%, #F4EFE9 100%);
+    border: 1px solid rgba(184, 149, 110, 0.2);
+    border-radius: 16px;
+    padding: 2.2rem 2rem 2.4rem;
+    margin: 2.2rem 0 2.8rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ka-contact-panel::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,149,110,0.12) 0%, rgba(184,149,110,0) 70%);
+  }
+
+  .ka-contact-heading {
+    position: relative;
+    text-align: center;
+    margin-bottom: 1.6rem;
+  }
+
+  .ka-contact-heading h2 {
+    font-size: 1.3rem;
+    color: #1A1A1A;
+    margin-bottom: 0.3rem;
+  }
+
+  .ka-contact-heading p {
+    font-size: 0.8rem;
+    color: #8B8178;
+  }
+
+  .ka-contact-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.7rem;
+  }
+
+  .ka-contact-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.1rem 0.5rem;
+    background: #fff;
+    border: 1px solid rgba(139, 129, 120, 0.18);
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    transition: all 0.25s ease;
+  }
+
+  .ka-contact-card:hover {
+    background: rgba(184, 149, 110, 0.06);
+    border-color: #B8956E;
+    transform: translateY(-3px);
+  }
+
+  .ka-contact-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ka-contact-icon svg { width: 20px; height: 20px; }
+
+  .icon-zalo {
+    background: transparent;
+  }
+
+  .icon-mail {
+    background: #fff;
+    border: 1px solid rgba(139,129,120,0.12);
+  }
+
+  .icon-zalo img { width: 42px; height: 42px; }
+  .icon-mail svg { width: 30px; height: 30px; }
+
+  .icon-fb { background: #1877F2; }
+  .icon-wa { background: #25D366; }
+  .icon-ig { background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+  .icon-tiktok { background: #000; }
+
+  .ka-contact-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #3D3D3D;
+    text-align: center;
+  }
+
+  .ka-contact-divider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.8rem;
+    color: #8B8178;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .ka-contact-divider::before,
+  .ka-contact-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(139, 129, 120, 0.2);
+  }
+
+  .ka-contact-phone {
+    position: relative;
+    text-align: center;
+    margin-top: 1.4rem;
+  }
+
+  .ka-contact-phone a {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1A1A1A;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+  }
+
+  .ka-contact-phone span {
+    display: block;
+    font-size: 0.72rem;
+    color: #8B8178;
+    margin-top: 0.2rem;
+  }
+
+  /* ============================================
+     FORM SECTION
+     ============================================ */
+  .ka-form-intro {
+    text-align: center;
+    margin-bottom: 1.6rem;
+  }
+
+  .ka-form-intro h3 {
+    font-size: 1.5rem;
+    color: #1A1A1A;
+    margin-bottom: 0.4rem;
+  }
+
+  .ka-form-intro p {
+    font-size: 0.85rem;
+    color: #8B8178;
+  }
+
+  .ka-form-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2.4rem;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .ka-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.3rem;
+    margin-bottom: 1.3rem;
+  }
+
+  .ka-form-group { margin-bottom: 1.3rem; }
+  .ka-form-group.full-width { grid-column: 1 / -1; }
+
+  .ka-form-label {
+    display: block;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3D3D3D;
+    margin-bottom: 0.55rem;
+  }
+
+  .ka-form-label .required { color: #B8956E; }
+
+  .ka-form-hint {
+    font-size: 0.72rem;
+    color: #8B8178;
+    margin-top: 0.45rem;
+    line-height: 1.5;
+  }
+
+  .ka-form-input,
+  .ka-form-select,
+  .ka-form-textarea {
+    width: 100%;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.9rem;
+    font-family: 'Montserrat', sans-serif;
+    color: #3D3D3D;
+    background: #FAF9F7;
+    border: 1px solid rgba(139, 129, 120, 0.2);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .ka-form-select {
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+
+  .ka-form-input:focus,
+  .ka-form-select:focus,
+  .ka-form-textarea:focus {
+    outline: none;
+    border-color: #B8956E;
+    background: #fff;
+  }
+
+  .ka-form-actions { margin-top: 1.8rem; text-align: center; }
+
+  .ka-btn-submit {
+    width: 100%;
+    padding: 1rem 2rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #B8956E;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .ka-btn-submit:hover {
+    background: #96724A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(184, 149, 110, 0.3);
+  }
+
+  .ka-form-footnote {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #8B8178;
+    margin-top: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Success message */
+  .ka-success-message {
+    display: none;
+    background: #fff;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .ka-success-message.show { display: block; }
+
+  .ka-success-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.3rem;
+    background: rgba(184, 149, 110, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ka-success-icon svg { width: 34px; height: 34px; stroke: #B8956E; }
+
+  .ka-success-message h3 { font-size: 1.5rem; color: #1A1A1A; margin-bottom: 0.8rem; }
+
+  .ka-success-message p {
+    font-size: 0.88rem;
+    color: #8B8178;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  /* ============================================
+     STICKY MOBILE CONTACT BAR
+     ============================================ */
+  .ka-sticky-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid rgba(139, 129, 120, 0.15);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+    padding: 0.6rem 0.8rem;
+    z-index: 50;
+  }
+
+  .ka-sticky-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.25rem;
+  }
+
+  .ka-sticky-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+    padding: 0.3rem 0;
+  }
+
+  .ka-sticky-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ka-sticky-icon svg { width: 14px; height: 14px; }
+  .ka-sticky-link span { font-size: 0.5rem; color: #8B8178; font-weight: 500; text-align: center; line-height: 1.2; }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 768px) {
+    body { padding-bottom: 80px; }
+    .ka-page { padding: 2rem 1rem 2rem; }
+    .ka-title { font-size: 1.7rem; }
+    .ka-contact-panel { padding: 1.8rem 1.2rem 2rem; }
+    .ka-contact-grid { grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+    .ka-form-container { padding: 1.6rem 1.2rem; }
+    .ka-form-row { grid-template-columns: 1fr; gap: 1rem; }
+    .ka-sticky-bar { display: block; }
+    .ka-map-frame { height: 280px; }
+  }
+
+  @media (max-width: 480px) {
+    .ka-contact-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 380px) {
+    .ka-contact-label { font-size: 0.66rem; }
+    .ka-contact-icon { width: 34px; height: 34px; }
+  }
+
+  /* ============================================
+     MAP / ADDRESS SECTION
+     ============================================ */
+  .ka-map-section { margin-top: 3rem; }
+
+  .ka-map-header { text-align: center; margin-bottom: 1.5rem; }
+
+  .ka-map-header h3 {
+    font-size: 1.5rem;
+    color: #1A1A1A;
+    margin-bottom: 0.4rem;
+  }
+
+  .ka-map-header p {
+    font-size: 0.85rem;
+    color: #8B8178;
+  }
+
+  .ka-map-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .ka-map-frame {
+    width: 100%;
+    height: 360px;
+    border: 0;
+    display: block;
+    filter: grayscale(8%) contrast(1.02);
+  }
+
+  .ka-map-info {
+    padding: 1.6rem 1.8rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(139, 129, 120, 0.12);
+  }
+
+  .ka-map-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    color: #3D3D3D;
+    max-width: 420px;
+  }
+
+  .ka-map-address svg {
+    width: 20px;
+    height: 20px;
+    stroke: #B8956E;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .ka-map-address strong { display: block; margin-bottom: 0.2rem; color: #1A1A1A; }
+  .ka-map-address span { color: #8B8178; font-size: 0.8rem; }
+
+  .ka-btn-directions {
+    padding: 0.8rem 1.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #B8956E;
+    background: transparent;
+    border: 1px solid #B8956E;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+  }
+
+  .ka-btn-directions:hover { background: #B8956E; color: #fff; }
+
+  @media (max-width: 600px) {
+    .ka-map-frame { height: 260px; }
+    .ka-map-info { flex-direction: column; align-items: stretch; }
+    .ka-btn-directions { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ka-page">
+  <div class="ka-container">
+
+    <!-- Header -->
+    <div class="ka-header">
+      <div class="ka-eyebrow">Kỳ Anh Studio</div>
+      <h1 class="ka-title">Đặt Lịch Chụp Ảnh</h1>
+      <p class="ka-subtitle">Chọn kênh bạn hay dùng nhất để nhắn ngay, hoặc điền nhanh form bên dưới — studio sẽ liên hệ xác nhận trong 24 giờ.</p>
+    </div>
+
+    <!-- Quick contact panel -->
+    <div class="ka-contact-panel" id="contactPanel">
+      <div class="ka-contact-heading">
+        <h2>Nhắn Ngay Cho Studio</h2>
+        <p>Chọn kênh quen thuộc của bạn — phản hồi nhanh nhất trong giờ làm việc</p>
+      </div>
+
+      <div class="ka-contact-grid">
+        <a class="ka-contact-card" href="https://zalo.me/0765356526" target="_blank" rel="noopener">
+          <span class="ka-contact-icon icon-zalo">
+            <img src="data:image/png;base64,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" alt="Zalo">
+          </span>
+          <span class="ka-contact-label">Zalo</span>
+        </a>
+
+        <a class="ka-contact-card" href="https://www.facebook.com/kyanh.studio/" target="_blank" rel="noopener">
+          <span class="ka-contact-icon icon-fb">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.13 2 11.24c0 2.92 1.45 5.53 3.72 7.23V22l3.4-1.87c.91.25 1.87.39 2.88.39 5.52 0 10-4.13 10-9.24S17.52 2 12 2zm1.06 12.44l-2.55-2.72-4.98 2.72 5.48-5.82 2.61 2.72 4.92-2.72-5.48 5.82z"/></svg>
+          </span>
+          <span class="ka-contact-label">Facebook / Messenger</span>
+        </a>
+
+        <a class="ka-contact-card" href="https://instagram.com/kyanh.studio" target="_blank" rel="noopener">
+          <span class="ka-contact-icon icon-ig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </span>
+          <span class="ka-contact-label">Instagram</span>
+        </a>
+
+        <a class="ka-contact-card" href="https://tiktok.com/@kyanh.studio" target="_blank" rel="noopener">
+          <span class="ka-contact-icon icon-tiktok">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/></svg>
+          </span>
+          <span class="ka-contact-label">TikTok</span>
+        </a>
+
+        <a class="ka-contact-card" href="https://wa.me/84765356526" target="_blank" rel="noopener">
+          <span class="ka-contact-icon icon-wa">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.5-1.2-.7-1.7-.2-.4-.4-.4-.5-.4h-.5c-.1 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.4 3.8 3.4.5.2.9.4 1.3.5.5.2 1 .1 1.4.1.4-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
+          </span>
+          <span class="ka-contact-label">WhatsApp</span>
+        </a>
+
+        <a class="ka-contact-card" href="mailto:kyanh.studios@gmail.com?subject=Đặt%20Lịch%20Chụp%20Ảnh" target="_blank" rel="noopener">
+          <span class="ka-contact-icon icon-mail">
+            <svg viewBox="0 0 48 48" width="22" height="22"><path fill="#4caf50" d="M45,16.2l-5,2.75l-5,4.75L35,40h7c1.657,0,3-1.343,3-3V16.2z"/><path fill="#1e88e5" d="M3,16.2l3.614,1.71L13,23.7V40H6c-1.657,0-3-1.343-3-3V16.2z"/><polygon fill="#e53935" points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17"/><path fill="#c62828" d="M3,12.298V16.2l10,7.5V11.2L9.876,8.859C9.132,8.301,8.228,8,7.298,8h0C4.924,8,3,9.924,3,12.298z"/><path fill="#fbc02d" d="M45,12.298V16.2l-10,7.5V11.2l3.124-2.341C38.868,8.301,39.772,8,40.702,8h0C43.076,8,45,9.924,45,12.298z"/></svg>
+          </span>
+          <span class="ka-contact-label">Gmail</span>
+        </a>
+      </div>
+
+      <div class="ka-contact-divider">hoặc gọi trực tiếp</div>
+
+      <div class="ka-contact-phone">
+        <a href="tel:0765356526">07.6535.6526</a>
+        <span>09h00 – 21h00, Thứ 2 – Chủ Nhật</span>
+      </div>
+    </div>
+
+    <!-- Form intro -->
+    <div class="ka-form-intro">
+      <h3>Hoặc Điền Nhanh Thông Tin</h3>
+      <p>Chỉ vài mục, studio sẽ chủ động liên hệ lại với bạn</p>
+    </div>
+
+    <!-- Booking Form -->
+    <form class="ka-form-container" id="bookingForm">
+
+      <div class="ka-form-row">
+        <div class="ka-form-group">
+          <label class="ka-form-label">Tên của bạn <span class="required">*</span></label>
+          <input type="text" class="ka-form-input" name="fullname" required placeholder="Nguyễn Văn A">
+        </div>
+        <div class="ka-form-group">
+          <label class="ka-form-label">Số Điện Thoại <span class="required">*</span></label>
+          <input type="tel" class="ka-form-input" name="phone" required placeholder="0912 345 678">
+        </div>
+      </div>
+
+      <div class="ka-form-row">
+        <div class="ka-form-group">
+          <label class="ka-form-label">Dịch Vụ Quan Tâm</label>
+          <select class="ka-form-select" name="service">
+            <option value="Chụp Ảnh Beauty">Chụp Ảnh Beauty</option>
+            <option value="Chụp Ảnh Chân Dung">Chụp Ảnh Chân Dung</option>
+            <option value="Chụp Ảnh Bầu">Chụp Ảnh Bầu</option>
+            <option value="Chụp Ảnh Couple / Bạn Thân">Chụp Ảnh Couple / Bạn Thân</option>
+            <option value="Chụp Ảnh Sinh Nhật">Chụp Ảnh Sinh Nhật</option>
+            <option value="Dịch Vụ Khác">Dịch Vụ Khác</option>
+          </select>
+        </div>
+        <div class="ka-form-group">
+          <label class="ka-form-label">Ngày Mong Muốn</label>
+          <input type="date" class="ka-form-input" name="date">
+          <p class="ka-form-hint">Studio sẽ check lịch trống và liên hệ với bạn sau.</p>
+        </div>
+      </div>
+
+      <div class="ka-form-actions">
+        <button type="submit" class="ka-btn-submit">Gửi Yêu Cầu Đặt Lịch</button>
+      </div>
+
+      <p class="ka-form-footnote">Studio sẽ liên hệ trong 24 giờ.</p>
+
+    </form>
+
+    <!-- Success Message (hidden by default) -->
+    <div class="ka-success-message" id="successMessage">
+      <div class="ka-success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h3>Đã Gửi Yêu Cầu!</h3>
+      <p>Cảm ơn bạn đã quan tâm đến Kỳ Anh Studio. Chúng tôi sẽ liên hệ trong vòng 24 giờ để xác nhận lịch chụp.</p>
+    </div>
+
+    <!-- Map / Address -->
+    <div class="ka-map-section">
+      <div class="ka-map-header">
+        <h3>Tìm Đường Đến Studio</h3>
+        <p>307/1A Nguyễn Văn Trỗi, Phường Tân Sơn Hòa, TP. HCM</p>
+      </div>
+
+      <div class="ka-map-card">
+        <iframe
+          class="ka-map-frame"
+          src="https://www.google.com/maps?q=307/1A+Nguyen+Van+Troi,+Tan+Son+Hoa,+Ho+Chi+Minh+City&output=embed"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+
+        <div class="ka-map-info">
+          <div class="ka-map-address">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <div>
+              <strong>Kỳ Anh Studio</strong>
+              <span>307/1A Nguyễn Văn Trỗi, Phường Tân Sơn Hòa, TP. HCM (Phường 1, Q. Tân Bình cũ)</span>
+            </div>
+          </div>
+          <a class="ka-btn-directions" href="https://www.google.com/maps/dir/?api=1&destination=307/1A+Nguyen+Van+Troi,+Tan+Son+Hoa,+Ho+Chi+Minh+City" target="_blank" rel="noopener">Chỉ Đường</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Sticky mobile contact bar -->
+<div class="ka-sticky-bar">
+  <div class="ka-sticky-grid">
+    <a class="ka-sticky-link" href="https://zalo.me/0765356526" target="_blank" rel="noopener">
+      <span class="ka-sticky-icon icon-zalo"><img src="data:image/png;base64,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" alt="Zalo" style="width:20px;height:20px;"></span>
+      <span>Zalo</span>
+    </a>
+    <a class="ka-sticky-link" href="https://www.facebook.com/kyanh.studio/" target="_blank" rel="noopener">
+      <span class="ka-sticky-icon icon-fb"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.13 2 11.24c0 2.92 1.45 5.53 3.72 7.23V22l3.4-1.87c.91.25 1.87.39 2.88.39 5.52 0 10-4.13 10-9.24S17.52 2 12 2z"/></svg></span>
+      <span>Facebook / Messenger</span>
+    </a>
+    <a class="ka-sticky-link" href="https://instagram.com/kyanh.studio" target="_blank" rel="noopener">
+      <span class="ka-sticky-icon icon-ig"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></span>
+      <span>Instagram</span>
+    </a>
+    <a class="ka-sticky-link" href="https://tiktok.com/@kyanh.studio" target="_blank" rel="noopener">
+      <span class="ka-sticky-icon icon-tiktok"><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.6 5.82s.51.5 0 0A4.278 4.278 0 0 1 15.54 3h-3.09v12.4a2.592 2.592 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/></svg></span>
+      <span>TikTok</span>
+    </a>
+    <a class="ka-sticky-link" href="https://wa.me/84765356526" target="_blank" rel="noopener">
+      <span class="ka-sticky-icon icon-wa"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2z"/></svg></span>
+      <span>WhatsApp</span>
+    </a>
+    <a class="ka-sticky-link" href="mailto:kyanh.studios@gmail.com" target="_blank" rel="noopener">
+      <span class="ka-sticky-icon icon-mail"><svg viewBox="0 0 48 48" width="16" height="16"><path fill="#4caf50" d="M45,16.2l-5,2.75l-5,4.75L35,40h7c1.657,0,3-1.343,3-3V16.2z"/><path fill="#1e88e5" d="M3,16.2l3.614,1.71L13,23.7V40H6c-1.657,0-3-1.343-3-3V16.2z"/><polygon fill="#e53935" points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17"/><path fill="#c62828" d="M3,12.298V16.2l10,7.5V11.2L9.876,8.859C9.132,8.301,8.228,8,7.298,8h0C4.924,8,3,9.924,3,12.298z"/><path fill="#fbc02d" d="M45,12.298V16.2l-10,7.5V11.2l3.124-2.341C38.868,8.301,39.772,8,40.702,8h0C43.076,8,45,9.924,45,12.298z"/></svg></span>
+      <span>Gmail</span>
+    </a>
+  </div>
+</div>
+
+<script>
+  const bookingForm = document.getElementById('bookingForm');
+  const successMessage = document.getElementById('successMessage');
+
+  // Min date = today
+  const dateInput = document.querySelector('input[type="date"]');
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.setAttribute('min', today);
+
+  bookingForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(bookingForm);
+    const data = Object.fromEntries(formData);
+
+    const emailBody = `
+Đặt Lịch Chụp Ảnh Mới - Kỳ Anh Studio
+======================================
+
+THÔNG TIN KHÁCH HÀNG:
+- Họ và Tên: ${data.fullname}
+- Số Điện Thoại: ${data.phone}
+
+THÔNG TIN BUỔI CHỤP:
+- Dịch Vụ Quan Tâm: ${data.service}
+- Ngày Mong Muốn: ${data.date || 'Chưa chọn'}
+
+======================================
+Vui lòng liên hệ khách hàng để xác nhận lịch chụp.
+    `;
+
+    const mailtoLink = `mailto:kyanh.studios@gmail.com?subject=${encodeURIComponent('Đặt Lịch Chụp Ảnh - ' + data.fullname)}&body=${encodeURIComponent(emailBody)}`;
+    window.location.href = mailtoLink;
+
+    setTimeout(() => {
+      bookingForm.style.display = 'none';
+      successMessage.classList.add('show');
+      bookingForm.reset();
+
+      setTimeout(() => {
+        successMessage.classList.remove('show');
+        bookingForm.style.display = 'block';
+      }, 5000);
+    }, 500);
+  });
+
+  // Phone formatting
+  const phoneInput = document.querySelector('input[type="tel"]');
+  phoneInput.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 10) value = value.slice(0, 10);
+    e.target.value = value;
+  });
+</script>
+
+</body>
+</html>
