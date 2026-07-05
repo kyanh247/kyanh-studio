@@ -253,12 +253,12 @@
         <option value="chot-don">Chốt Đơn</option>
         <option value="tuvan-fbzalo">Tư Vấn — Facebook / Zalo</option>
         <option value="tuvan-tiktok">Tư Vấn — TikTok</option>
-        <option value="concept-conceptual">Concept</option>
-        <option value="concept-portrait">Concept — Portrait</option>
-        <option value="concept-bau">Concept — Ảnh Bầu</option>
-        <option value="concept-birthday">Concept — Birthday</option>
-        <option value="concept-couple">Concept — Couple</option>
-        <option value="concept-holiday">Concept — Truyền Thống</option>
+        <option value="concept-conceptual">Bảng Giá — Concept</option>
+        <option value="concept-portrait">Bảng Giá — Portrait</option>
+        <option value="concept-bau">Bảng Giá — Ảnh Bầu</option>
+        <option value="concept-birthday">Bảng Giá — Birthday</option>
+        <option value="concept-couple">Bảng Giá — Couple</option>
+        <option value="concept-holiday">Bảng Giá — Truyền Thống</option>
       </select></div>
     <div class="f-group" id="priceGroup" style="display:none;"><label class="f-label">Giá concept</label>
       <input type="text" class="f-input" id="fPrice" placeholder="VD: 550.000đ">
@@ -355,7 +355,7 @@ const CATEGORIES = [
   { id: 'tuvan', label: 'Tư Vấn', subs: [
       { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
       { id: 'tuvan-tiktok', label: 'TikTok' } ]},
-  { id: 'concept', label: 'Concept', subs: [
+  { id: 'concept', label: 'Bảng Giá', subs: [
       { id: 'concept-conceptual', label: 'Concept' },
       { id: 'concept-portrait',   label: 'Portrait' },
       { id: 'concept-bau',        label: 'Ảnh Bầu' },
@@ -368,9 +368,9 @@ const CATEGORIES = [
 const CAT_LABELS = {
   'chot-don': 'Chốt Đơn',
   'tuvan-fbzalo': 'Tư Vấn · FB/Zalo', 'tuvan-tiktok': 'Tư Vấn · TikTok',
-  'concept-conceptual': 'Concept', 'concept-portrait': 'Concept · Portrait',
-  'concept-bau': 'Concept · Ảnh Bầu', 'concept-birthday': 'Concept · Birthday',
-  'concept-couple': 'Concept · Couple', 'concept-holiday': 'Concept · Truyền Thống',
+  'concept-conceptual': 'Bảng Giá · Concept', 'concept-portrait': 'Bảng Giá · Portrait',
+  'concept-bau': 'Bảng Giá · Ảnh Bầu', 'concept-birthday': 'Bảng Giá · Birthday',
+  'concept-couple': 'Bảng Giá · Couple', 'concept-holiday': 'Bảng Giá · Truyền Thống',
 };
 // Danh mục cha có sub-tab (dùng để gom & đếm)
 const PARENT_OF = { tuvan: 'tuvan', concept: 'concept' };
