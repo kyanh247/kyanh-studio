@@ -211,7 +211,7 @@
         </g>
       </svg>
     </div>
-    <p class="app-sub">Chạm vào thẻ để sao chép — dán ngay vào Zalo, Messenger, TikTok</p>
+    <p class="app-sub">Chạm vào thẻ để sao chép</p>
     <button class="lock-btn" id="lockBtn" title="Chế độ quản trị" aria-label="Chế độ quản trị">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </button>
@@ -253,12 +253,12 @@
         <option value="chot-don">Chốt Đơn</option>
         <option value="tuvan-fbzalo">Tư Vấn — Facebook / Zalo</option>
         <option value="tuvan-tiktok">Tư Vấn — TikTok</option>
-        <option value="concept-conceptual">Concept — Conceptual</option>
+        <option value="concept-conceptual">Concept</option>
         <option value="concept-portrait">Concept — Portrait</option>
         <option value="concept-bau">Concept — Ảnh Bầu</option>
         <option value="concept-birthday">Concept — Birthday</option>
         <option value="concept-couple">Concept — Couple</option>
-        <option value="concept-holiday">Concept — Holiday</option>
+        <option value="concept-holiday">Concept — Truyền Thống</option>
       </select></div>
     <div class="f-group" id="priceGroup" style="display:none;"><label class="f-label">Giá concept</label>
       <input type="text" class="f-input" id="fPrice" placeholder="VD: 550.000đ">
@@ -356,21 +356,21 @@ const CATEGORIES = [
       { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
       { id: 'tuvan-tiktok', label: 'TikTok' } ]},
   { id: 'concept', label: 'Concept', subs: [
-      { id: 'concept-conceptual', label: 'Conceptual - Ảnh Cá Nhân' },
+      { id: 'concept-conceptual', label: 'Concept' },
       { id: 'concept-portrait',   label: 'Portrait' },
       { id: 'concept-bau',        label: 'Ảnh Bầu' },
-      { id: 'concept-birthday',  label: 'Birthday - Ảnh Sinh Nhật' },
+      { id: 'concept-birthday',  label: 'Birthday' },
       { id: 'concept-couple',     label: 'Couple' },
-      { id: 'concept-holiday',   label: 'Holiday - Ảnh Tết' } ]},
+      { id: 'concept-holiday',   label: 'Truyền Thống' } ]},
   { id: 'recent', label: 'Gần Đây' },
 ];
 // Nhãn hiển thị góc thẻ + trong menu tuỳ chọn "Di chuyển tới"
 const CAT_LABELS = {
   'chot-don': 'Chốt Đơn',
   'tuvan-fbzalo': 'Tư Vấn · FB/Zalo', 'tuvan-tiktok': 'Tư Vấn · TikTok',
-  'concept-conceptual': 'Concept · Conceptual', 'concept-portrait': 'Concept · Portrait',
+  'concept-conceptual': 'Concept', 'concept-portrait': 'Concept · Portrait',
   'concept-bau': 'Concept · Ảnh Bầu', 'concept-birthday': 'Concept · Birthday',
-  'concept-couple': 'Concept · Couple', 'concept-holiday': 'Concept · Holiday',
+  'concept-couple': 'Concept · Couple', 'concept-holiday': 'Concept · Truyền Thống',
 };
 // Danh mục cha có sub-tab (dùng để gom & đếm)
 const PARENT_OF = { tuvan: 'tuvan', concept: 'concept' };
