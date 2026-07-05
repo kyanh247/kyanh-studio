@@ -253,10 +253,12 @@
         <option value="chot-don">Chốt Đơn</option>
         <option value="tuvan-fbzalo">Tư Vấn — Facebook / Zalo</option>
         <option value="tuvan-tiktok">Tư Vấn — TikTok</option>
+        <option value="concept-conceptual">Concept — Conceptual</option>
         <option value="concept-portrait">Concept — Portrait</option>
-        <option value="concept-beauty">Concept — Beauty</option>
-        <option value="concept-couple">Concept — Couple</option>
         <option value="concept-bau">Concept — Ảnh Bầu</option>
+        <option value="concept-birthday">Concept — Birthday</option>
+        <option value="concept-couple">Concept — Couple</option>
+        <option value="concept-holiday">Concept — Holiday</option>
       </select></div>
     <div class="f-group" id="priceGroup" style="display:none;"><label class="f-label">Giá concept</label>
       <input type="text" class="f-input" id="fPrice" placeholder="VD: 550.000đ">
@@ -354,18 +356,21 @@ const CATEGORIES = [
       { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
       { id: 'tuvan-tiktok', label: 'TikTok' } ]},
   { id: 'concept', label: 'Concept', subs: [
-      { id: 'concept-portrait', label: 'Portrait' },
-      { id: 'concept-beauty',   label: 'Beauty' },
-      { id: 'concept-couple',   label: 'Couple' },
-      { id: 'concept-bau',      label: 'Ảnh Bầu' } ]},
+      { id: 'concept-conceptual', label: 'Conceptual - Ảnh Cá Nhân' },
+      { id: 'concept-portrait',   label: 'Portrait' },
+      { id: 'concept-bau',        label: 'Ảnh Bầu' },
+      { id: 'concept-birthday',  label: 'Birthday - Ảnh Sinh Nhật' },
+      { id: 'concept-couple',     label: 'Couple' },
+      { id: 'concept-holiday',   label: 'Holiday - Ảnh Tết' } ]},
   { id: 'recent', label: 'Gần Đây' },
 ];
 // Nhãn hiển thị góc thẻ + trong menu tuỳ chọn "Di chuyển tới"
 const CAT_LABELS = {
   'chot-don': 'Chốt Đơn',
   'tuvan-fbzalo': 'Tư Vấn · FB/Zalo', 'tuvan-tiktok': 'Tư Vấn · TikTok',
-  'concept-portrait': 'Concept · Portrait', 'concept-beauty': 'Concept · Beauty',
-  'concept-couple': 'Concept · Couple', 'concept-bau': 'Concept · Ảnh Bầu',
+  'concept-conceptual': 'Concept · Conceptual', 'concept-portrait': 'Concept · Portrait',
+  'concept-bau': 'Concept · Ảnh Bầu', 'concept-birthday': 'Concept · Birthday',
+  'concept-couple': 'Concept · Couple', 'concept-holiday': 'Concept · Holiday',
 };
 // Danh mục cha có sub-tab (dùng để gom & đếm)
 const PARENT_OF = { tuvan: 'tuvan', concept: 'concept' };
@@ -381,7 +386,6 @@ const SEED_ITEMS = [
   { cat:'tuvan-fbzalo', title:'Giờ làm việc & địa chỉ', content:'Dạ studio mở cửa 09h00 – 21h00, Thứ 2 – Chủ Nhật ạ.\n\n📍 307/1A Nguyễn Văn Trỗi, P. Tân Sơn Hòa, TP.HCM (P.1, Q. Tân Bình cũ)\n📞 07.6535.6526 (Call / Zalo)\n\nMình vui lòng gọi hoặc nhắn trước khi đến để studio chuẩn bị đón mình chu đáo nhé!' },
   { cat:'tuvan-tiktok', title:'Trả lời comment hỏi giá', content:'Dạ mình inbox giúp em để được báo giá chi tiết theo concept nha 🤍 Hoặc nhắn Zalo 07.6535.6526 em tư vấn nhanh nhất ạ!' },
   { cat:'tuvan-tiktok', title:'Khách từ TikTok inbox', content:'Dạ em chào mình, cảm ơn mình đã ghé từ TikTok của Kỳ Anh Studio 🥰\n\nMình thích concept trong video nào để em gửi giá + lịch trống gần nhất nhé. Studio ở Tân Bình, mở cửa 09h–21h mỗi ngày ạ!' },
-  { cat:'concept-beauty', title:'Beauty tông nâu tây', price:'550.000đ', content:'✨ Concept Beauty tông nâu tây\n\n• 60 phút chụp tại studio\n• Makeup + làm tóc nhẹ\n• 30 ảnh gốc, 5 ảnh retouch kỹ\n• Phông nền + ánh sáng cinematic\n\nGiá: 550.000đ — Mình đặt lịch sớm để chọn khung giờ đẹp nhé!' },
   { cat:'concept-portrait', title:'Chân dung nghệ thuật', price:'450.000đ', content:'🎞 Concept Chân dung nghệ thuật\n\n• 45 phút chụp\n• 25 ảnh gốc, 4 ảnh retouch\n• Tông màu film, ánh sáng khối\n\nGiá: 450.000đ — phù hợp làm ảnh profile, CV, portfolio cá nhân ạ.' },
   { cat:'concept-couple', title:'Couple / Bạn thân', price:'650.000đ', content:'💛 Concept Couple / Bạn thân\n\n• 75 phút chụp cho 2 người\n• Makeup nhẹ cho cả hai\n• 40 ảnh gốc, 6 ảnh retouch\n\nGiá: 650.000đ — thêm người phụ thu [giá]/người ạ.' },
   { cat:'concept-bau', title:'Ảnh bầu', price:'600.000đ', content:'🤰 Concept Ảnh bầu\n\n• 60 phút chụp, có váy bầu studio hỗ trợ\n• Makeup tôn da mẹ bầu\n• 30 ảnh gốc, 5 ảnh retouch\n\nGiá: 600.000đ — nên chụp ở tuần 28–34 để dáng bụng đẹp nhất ạ.' },
