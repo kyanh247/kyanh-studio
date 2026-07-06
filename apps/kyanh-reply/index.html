@@ -247,7 +247,7 @@
       <input type="text" class="f-input" id="fTitle" placeholder="VD: Xác nhận lịch chụp"></div>
     <div class="f-group"><label class="f-label">Nội dung <span class="req">*</span></label>
       <textarea class="f-textarea" id="fContent" placeholder="Nội dung sẽ được sao chép khi chạm vào thẻ..."></textarea>
-      <p class="f-hint">💡 <b>Ô điền nhanh:</b> gõ <b>{{Tên mục}}</b> — VD <b>{{Tên khách}}</b>, <b>{{Tổng chi phí}}</b>.<br>🔁 <b>Khối lặp</b> (cho nhiều concept): bọc phần lặp trong <b>[[Concept]]</b> ... <b>[[/Concept]]</b>, dùng <b>{{#}}</b> để tự đánh số. Khi điền sẽ có nút "＋ Thêm concept".</p></div>
+      <p class="f-hint">💡 <b>Ô điền nhanh:</b> gõ <b>{{Tên mục}}</b> — VD <b>{{Tên khách}}</b>, <b>{{Tổng chi phí}}</b>.<br>🔁 <b>Khối lặp</b> (cho nhiều concept): bọc phần lặp trong <b>[[Concept]]</b> ... <b>[[/Concept]]</b>, dùng <b>{{#}}</b> để tự đánh số. Khi điền sẽ có nút "＋ Thêm concept".<br>🅱️ <b>{{*Tên mục}}</b> (có dấu sao) → chữ/số điền vào tự in đậm kiểu 𝐛𝐨𝐥𝐝.<br>💰 <b>{{Giảm %}}</b> tự tính từ <b>{{Giá gốc}}</b> và <b>{{Giá khuyến mãi}}</b>, không cần điền.</p></div>
     <div class="f-group"><label class="f-label">Danh mục</label>
       <select class="f-select" id="fCategory">
         <option value="chot-don">Chốt Đơn</option>
@@ -629,8 +629,30 @@ function parseTemplate(content){
 }
 function fieldsOf(text){
   const seen=[]; let m; FIELD_RE.lastIndex=0;
-  while((m=FIELD_RE.exec(text))){ const lb=m[1].trim(); if(lb!=='#' && !seen.includes(lb)) seen.push(lb); }
+  while((m=FIELD_RE.exec(text))){ const lb=m[1].trim().replace(/^\*/,'').trim(); if(lb!=='#' && !seen.includes(lb)) seen.push(lb); }
   return seen;
+}
+
+/* {{*X}} → giá trị điền vào được đổi sang chữ/số đậm kiểu 𝐛𝐨𝐥𝐝 (chỉ A-Z, a-z, 0-9; ký tự có dấu giữ nguyên) */
+function boldify(s){
+  let out='';
+  for(const ch of s){
+    const c=ch.codePointAt(0);
+    if(c>=65&&c<=90) out+=String.fromCodePoint(0x1D400+c-65);
+    else if(c>=97&&c<=122) out+=String.fromCodePoint(0x1D41A+c-97);
+    else if(c>=48&&c<=57) out+=String.fromCodePoint(0x1D7CE+c-48);
+    else out+=ch;
+  }
+  return out;
+}
+
+/* Ô "Giảm %" không cần điền — tự tính từ "Giá gốc" và "Giá khuyến mãi" */
+const AUTO_DISCOUNT_LABEL='Giảm %';
+function computeDiscount(common){
+  const num=v=>parseInt(String(v||'').replace(/[^\d]/g,''),10);
+  const goc=num(common['Giá gốc']), km=num(common['Giá khuyến mãi']);
+  if(goc>0&&km>0&&km<goc) return Math.round((1-km/goc)*100)+'%';
+  return '';
 }
 
 async function copyText(text){
@@ -677,6 +699,7 @@ function openFill(item, card){
   fillSegs.forEach(seg=>{
     if(seg.type==='text'){
       fieldsOf(seg.value).forEach(lb=>{
+        if(lb===AUTO_DISCOUNT_LABEL) return; // tự tính, không cần ô điền
         if(renderedCommon.has(lb)) return; renderedCommon.add(lb);
         html+=`<div class="f-group">
           <label class="f-label">${esc(lb)}</label>
@@ -727,15 +750,22 @@ function renumberGroups(){
 function buildFilled(){
   const common={};
   fillFields.querySelectorAll('.fill-in[data-scope="common"]').forEach(inp=>common[inp.dataset.label]=inp.value.trim());
+  common[AUTO_DISCOUNT_LABEL]=computeDiscount(common);
+  const sub=(vals,lb)=>{
+    const bold=lb.startsWith('*'); lb=lb.replace(/^\*/,'').trim();
+    const v=vals[lb]||'';
+    if(!v) return '['+lb+']';
+    return bold ? boldify(v) : v;
+  };
   let out=fillSegs.map(seg=>{
     if(seg.type==='text'){
-      return seg.value.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return ''; return common[lb]||('['+lb+']'); });
+      return seg.value.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return ''; return sub(common,lb); });
     }
     const groups=[...fillFields.querySelectorAll(`.fill-block[data-bi="${seg.bi}"] .fill-group`)];
     return groups.map((g,gi)=>{
       const vals={};
       g.querySelectorAll('.fill-in[data-scope="block"]').forEach(inp=>vals[inp.dataset.label]=inp.value.trim());
-      return seg.inner.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return String(gi+1); return vals[lb]||('['+lb+']'); });
+      return seg.inner.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return String(gi+1); return sub(vals,lb); });
     }).join('\n\n');
   }).join('');
   return out.replace(/\n{3,}/g,'\n\n').trim();
