@@ -278,12 +278,19 @@
 <div class="modal-overlay" id="pinOverlay">
   <div class="modal pin-modal">
     <h3>Chế Độ Quản Trị</h3>
-    <p>Nhập mã PIN để mở khoá thêm / sửa / xoá mẫu</p>
-    <input type="password" class="pin-input" id="pinInput" inputmode="numeric" maxlength="8" placeholder="••••">
+    <p>Đăng nhập để thêm / sửa / xoá mẫu</p>
+    <div class="f-group" style="text-align:left">
+      <label class="f-label" for="loginEmail">Email</label>
+      <input type="email" class="f-input" id="loginEmail" autocomplete="username" placeholder="email@gmail.com">
+    </div>
+    <div class="f-group" style="text-align:left">
+      <label class="f-label" for="loginPass">Mật khẩu</label>
+      <input type="password" class="f-input" id="loginPass" autocomplete="current-password" placeholder="••••••••">
+    </div>
     <div class="pin-err" id="pinErr"></div>
     <div class="modal-actions">
       <button class="btn-ghost" id="pinCancel">Huỷ</button>
-      <button class="btn-primary" id="pinConfirm">Mở khoá</button></div>
+      <button class="btn-primary" id="pinConfirm">Đăng nhập</button></div>
   </div>
 </div>
 
@@ -331,21 +338,25 @@
 <!-- ============= LOGIC (không cần chỉnh) ============= -->
 <script type="module">
 let fb = null;
+let auth = null;
 const cfg = window.KA_FIREBASE_CONFIG || {};
 const firebaseEnabled = !!(cfg.projectId && cfg.apiKey);
 
 if (firebaseEnabled) {
   try {
-    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const fsMod  = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const appMod  = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const fsMod   = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     const app = appMod.initializeApp(cfg);
     const db = fsMod.initializeFirestore(app, {
       localCache: fsMod.persistentLocalCache({ tabManager: fsMod.persistentSingleTabManager() })
     });
     fb = { db, ...fsMod };
+    // Đăng nhập được ghi nhớ trên máy này, không phải nhập lại mỗi lần mở app
+    auth = { instance: authMod.getAuth(app), ...authMod };
   } catch (e) {
     console.warn("Không tải được Firebase, chuyển chế độ máy đơn:", e);
-    fb = null;
+    fb = null; auth = null;
   }
 }
 
@@ -397,6 +408,7 @@ let activeCat = 'chot-don';
 let activeSubs = { tuvan: 'tuvan-fbzalo', concept: 'concept-portrait' };
 let editingId = null, pendingImage = null;
 let isAdmin = false;
+let adminEmail = '';
 let firstSnapshot = false;
 
 const ADMIN_PIN = String(window.KA_ADMIN_PIN || '2468');
@@ -425,8 +437,17 @@ function saveCache(){ LS.set(CACHE_KEY, JSON.stringify(items)); }
 
 async function init() {
   loadRecent();
-  isAdmin = SS.get('kyanh-admin') === '1';
+  // Có Firebase thì quyền quản trị do đăng nhập quyết định.
+  // Không có (chế độ máy đơn) thì vẫn dùng PIN như cũ.
+  isAdmin = auth ? false : (SS.get('kyanh-admin') === '1');
   applyAdminUI();
+  if (auth) {
+    auth.onAuthStateChanged(auth.instance, user => {
+      isAdmin = !!user;
+      adminEmail = user ? (user.email || '') : '';
+      applyAdminUI(); render();
+    });
+  }
   const cached = loadCache();
   if (cached && cached.length) { items = cached; render(); }
   else showSkeleton();
@@ -501,29 +522,74 @@ function setSync(kind, text) { syncDot.className = 'sync-dot ' + kind; syncText.
 
 function applyAdminUI() {
   lockBtn.classList.toggle('admin', isAdmin);
-  lockBtn.title = isAdmin ? 'Đang ở chế độ quản trị — chạm để thoát' : 'Chế độ quản trị';
+  lockBtn.title = isAdmin
+    ? 'Đang quản trị' + (adminEmail ? ' — ' + adminEmail : '') + ' (chạm để đăng xuất)'
+    : 'Đăng nhập quản trị';
   lockBtn.innerHTML = isAdmin
     ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   btnAdd.classList.toggle('show', isAdmin);
 }
-lockBtn.onclick = () => {
-  if (isAdmin) { isAdmin=false; SS.del('kyanh-admin'); applyAdminUI(); render(); showToast('Đã thoát chế độ quản trị'); }
-  else openPin();
+lockBtn.onclick = async () => {
+  if (!isAdmin) { openPin(); return; }
+  if (auth) {
+    try { await auth.signOut(auth.instance); showToast('Đã đăng xuất'); }
+    catch(e){ console.warn(e); showToast('Không đăng xuất được', true); }
+  } else {
+    isAdmin=false; SS.del('kyanh-admin'); applyAdminUI(); render();
+    showToast('Đã thoát chế độ quản trị');
+  }
 };
-const pinOverlay = $('pinOverlay'), pinInput = $('pinInput'), pinErr = $('pinErr');
-function openPin(){ pinErr.textContent=''; pinInput.value=''; pinOverlay.classList.add('show'); setTimeout(()=>pinInput.focus(),50); }
+const pinOverlay = $('pinOverlay'), pinErr = $('pinErr');
+const loginEmail = $('loginEmail'), loginPass = $('loginPass');
+function openPin(){
+  pinErr.textContent=''; loginPass.value='';
+  pinOverlay.classList.add('show');
+  setTimeout(()=>{ (loginEmail.value ? loginPass : loginEmail).focus(); },50);
+}
 function closePin(){ pinOverlay.classList.remove('show'); }
 $('pinCancel').onclick = closePin;
-$('pinConfirm').onclick = tryPin;
-pinInput.addEventListener('keydown', e => { if(e.key==='Enter') tryPin(); });
+$('pinConfirm').onclick = doLogin;
+[loginEmail, loginPass].forEach(el =>
+  el.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); }));
 pinOverlay.addEventListener('click', e => { if(e.target===pinOverlay) closePin(); });
-function tryPin(){
-  if (pinInput.value === ADMIN_PIN) {
-    isAdmin=true; SS.set('kyanh-admin','1'); applyAdminUI(); render(); closePin();
-    showToast('Đã mở khoá quản trị');
+
+function loginErrMsg(code){
+  switch(code){
+    case 'auth/invalid-email':      return 'Email không hợp lệ';
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential': return 'Email hoặc mật khẩu không đúng';
+    case 'auth/too-many-requests':  return 'Sai quá nhiều lần — đợi vài phút rồi thử lại';
+    case 'auth/network-request-failed': return 'Lỗi mạng — kiểm tra kết nối';
+    case 'auth/operation-not-allowed':
+    case 'auth/configuration-not-found': return 'Chưa bật đăng nhập Email/Password trong Firebase Console';
+    default: return 'Không đăng nhập được' + (code ? ' ('+code+')' : '');
+  }
+}
+
+async function doLogin(){
+  // Chế độ máy đơn: không có Firebase thì vẫn mở khoá bằng PIN
+  if (!auth) {
+    if (loginPass.value === ADMIN_PIN) {
+      isAdmin=true; SS.set('kyanh-admin','1'); applyAdminUI(); render(); closePin();
+      showToast('Đã mở khoá quản trị');
+    } else { pinErr.textContent='Mã PIN không đúng'; loginPass.value=''; loginPass.focus(); }
+    return;
+  }
+  const email=loginEmail.value.trim(), pass=loginPass.value;
+  if (!email || !pass) { pinErr.textContent='Nhập đủ email và mật khẩu'; return; }
+  const btn=$('pinConfirm');
+  btn.disabled=true; pinErr.textContent='Đang đăng nhập...';
+  try {
+    await auth.signInWithEmailAndPassword(auth.instance, email, pass);
+    closePin(); loginPass.value='';
+    showToast('Đã đăng nhập — mở khoá quản trị');
     if (fb && firstSnapshot && items.length===0) seedToFirestore();
-  } else { pinErr.textContent='Mã PIN không đúng'; pinInput.value=''; pinInput.focus(); }
+  } catch(e) {
+    pinErr.textContent=loginErrMsg(e && e.code);
+    loginPass.select();
+  } finally { btn.disabled=false; }
 }
 
 function parentCat(id){ return CATEGORIES.find(c=>c.id===id && c.subs); }
@@ -895,15 +961,27 @@ init();
        match /databases/{database}/documents {
          match /replies/{docId} {
            allow read: if true;
-           allow write: if request.resource == null
-                        || request.resource.data._key == "794831";
+           allow write: if request.auth != null
+                        && request.auth.token.email in [
+                             "kyanh247@gmail.com",
+                             "ngoctham0302@gmail.com"
+                           ];
          }
        }
      }
 
-     ⚠️ Đổi "794831" trong rules cho khớp KA_ADMIN_PIN ở trên.
-     Đây là khoá mềm cho nội bộ studio — đủ chặn ghi tuỳ tiện,
-     không phải bảo mật cấp cao. Cần chặt hơn thì bật Firebase Auth.
+     Ai cũng ĐỌC được (để nhân viên mở lên copy mẫu, không cần đăng nhập).
+     Chỉ 2 email trên mới THÊM / SỬA / XOÁ được.
+
+     ⚠️ Phải khoá theo đúng email, KHÔNG dùng mỗi `request.auth != null`:
+     apiKey nằm công khai trong file này, người lạ có thể tự tạo tài khoản
+     qua API rồi ghi bừa. Khoá theo email thì tài khoản lạ vô ích.
+
+     ⚠️ Thêm người quản trị = thêm email vào danh sách trên rồi Publish lại,
+     đồng thời tạo user trong Authentication > Users.
+
+     Ghi chú: KA_ADMIN_PIN bên trên giờ chỉ còn dùng cho chế độ máy đơn
+     (khi không tải được Firebase). Nó không còn mở khoá gì trên máy chủ.
      ============================================================ -->
 </body>
 </html>
