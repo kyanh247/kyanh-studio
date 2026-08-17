@@ -1061,6 +1061,47 @@ btnSave.onclick=async()=>{
 searchInput.addEventListener('input', render);
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); } });
 
+/* ---------- Tự cập nhật khi có bản mới ----------
+   App so ngày giờ của bản đang chạy với bản trên máy chủ. Mới hơn thì tự tải lại,
+   nên không phải xoá cache hay thêm ?v= vào link nữa. */
+const BAN_DANG_CHAY = new Date(document.lastModified).getTime();
+let coBanMoi = false, lanKiemTraCuoi = 0;
+
+function dangBanViec(){   // đang mở khung nào đó = đang làm dở, chưa tải lại vội
+  return ['modalOverlay','fillOverlay','pinOverlay','optOverlay']
+    .some(id => $(id) && $(id).classList.contains('show'));
+}
+
+async function taiLaiBanMoi(){
+  if(!coBanMoi || dangBanViec()) return;
+  // Đã tải lại cho đúng bản này rồi thì thôi, tránh lặp vô hạn nếu có trục trặc
+  if(SS.get('kyanh-da-tai-lai') === String(coBanMoi)) return;
+  SS.set('kyanh-da-tai-lai', String(coBanMoi));
+  try { await fetch(location.pathname, { cache:'reload' }); } catch(e){}  // nạp bản mới vào cache
+  location.reload();
+}
+
+async function kiemTraBanMoi(){
+  if(!navigator.onLine) return;
+  const gio=Date.now();
+  if(gio - lanKiemTraCuoi < 30000) return;   // tối đa 30 giây một lần
+  lanKiemTraCuoi=gio;
+  try{
+    const r=await fetch(location.pathname, { method:'HEAD', cache:'no-store' });
+    const lm=r.headers.get('Last-Modified');
+    if(!lm) return;
+    const tren=new Date(lm).getTime();
+    if(tren > BAN_DANG_CHAY + 1000){ coBanMoi=tren; taiLaiBanMoi(); }
+  }catch(e){}
+}
+
+setTimeout(kiemTraBanMoi, 5000);            // ngay sau khi mở app
+setInterval(kiemTraBanMoi, 10*60*1000);     // rồi mỗi 10 phút
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kiemTraBanMoi(); });
+window.addEventListener('focus', kiemTraBanMoi);
+// Đóng khung xong mà đang chờ bản mới thì tải lại luôn
+setInterval(taiLaiBanMoi, 3000);
+
 init();
 </script>
 
