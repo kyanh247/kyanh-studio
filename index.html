@@ -152,6 +152,12 @@
   .pin-input { width: 100%; padding: 0.9rem; font-size: 1.3rem; text-align: center; letter-spacing: 0.5em; font-family: 'Montserrat', sans-serif; color: var(--ink-dark); background: #fff; border: 1px solid var(--line); border-radius: 8px; }
   .pin-input:focus { outline: none; border-color: var(--gold); }
   .pin-err { font-size: 0.74rem; color: var(--danger); margin-top: 0.6rem; min-height: 1rem; }
+  /* Mẫu có nhiều bản: mỗi bản một ô xem trước + nút copy riêng */
+  .fill-ver { margin-bottom: 1.1rem; padding: 0.85rem; background: rgba(139,129,120,0.05); border: 1px solid var(--line); border-radius: 8px; }
+  .fill-ver .f-textarea { min-height: 150px; margin-bottom: 0.6rem; }
+  .fill-ver-copy { width: 100%; padding: 0.6rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #fff; background: var(--gold); border: none; border-radius: 6px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: background 0.25s ease; }
+  .fill-ver-copy:hover { background: var(--gold-dark); }
+  .fill-ver-copy.done { background: var(--dark-1); }
 
   .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--dark-1); color: var(--cream); padding: 0.72rem 1.4rem; border-radius: 30px; font-size: 0.77rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.2); max-width: 90vw; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -247,7 +253,7 @@
       <input type="text" class="f-input" id="fTitle" placeholder="VD: Xác nhận lịch chụp"></div>
     <div class="f-group"><label class="f-label">Nội dung <span class="req">*</span></label>
       <textarea class="f-textarea" id="fContent" placeholder="Nội dung sẽ được sao chép khi chạm vào thẻ..."></textarea>
-      <p class="f-hint">💡 <b>Ô điền nhanh:</b> gõ <b>{{Tên mục}}</b> — VD <b>{{Tên khách}}</b>, <b>{{Tổng chi phí}}</b>.<br>🔁 <b>Khối lặp</b> (cho nhiều concept): bọc phần lặp trong <b>[[Concept]]</b> ... <b>[[/Concept]]</b>, dùng <b>{{#}}</b> để tự đánh số. Khi điền sẽ có nút "＋ Thêm concept".<br>🅱️ <b>{{*Tên mục}}</b> (có dấu sao) → chữ/số điền vào tự in đậm kiểu 𝐛𝐨𝐥𝐝.<br>💰 <b>{{Giảm %}}</b> tự tính từ <b>{{Giá gốc}}</b> và <b>{{Giá khuyến mãi}}</b>, không cần điền.</p></div>
+      <p class="f-hint">💡 <b>Ô điền nhanh:</b> gõ <b>{{Tên mục}}</b> — VD <b>{{Tên khách}}</b>, <b>{{Tổng chi phí}}</b>.<br>🔁 <b>Khối lặp</b> (cho nhiều concept): bọc phần lặp trong <b>[[Concept]]</b> ... <b>[[/Concept]]</b>, dùng <b>{{#}}</b> để tự đánh số. Khi điền sẽ có nút "＋ Thêm concept".<br>🅱️ <b>{{*Tên mục}}</b> (có dấu sao) → chữ điền vào tự in đậm nghiêng 𝒃𝒐𝒍𝒅 (chữ tiếng Việt có dấu giữ nguyên).<br>💰 <b>{{Giảm %}}</b> tự tính từ <b>{{Giá gốc}}</b> và <b>{{Giá khuyến mãi}}</b>, không cần điền.<br>📱 <b>{{Giá TikTok}}</b> tự rút gọn giá khuyến mãi và chèn hoa để né kiểm duyệt — VD 2.690.000đ → 𝟐🌼𝟔𝟗𝟎.<br>2️⃣ <b>Nhiều bản trong 1 mẫu:</b> ngăn bằng dòng <b>===Tên bản===</b>. Mỗi bản sẽ có ô xem trước và nút copy riêng, dùng chung các ô điền.</p></div>
     <div class="f-group"><label class="f-label">Danh mục</label>
       <select class="f-select" id="fCategory">
         <option value="chot-don">Chốt Đơn</option>
@@ -300,10 +306,11 @@
     <h3>Điền Thông Tin Nhanh</h3>
     <p style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:1.1rem;">Điền các mục bên dưới, nội dung sẽ tự ghép hoàn chỉnh để copy</p>
     <div id="fillFields"></div>
-    <div class="f-group">
+    <div class="f-group" id="fillPreviewSingle">
       <label class="f-label">Xem trước &amp; chỉnh tay</label>
       <textarea class="f-textarea" id="fillPreview" style="min-height:180px;"></textarea>
     </div>
+    <div id="fillPreviewMulti"></div>
     <div class="modal-actions">
       <button class="btn-ghost" id="fillCancel">Huỷ</button>
       <button class="btn-primary" id="fillCopy">Copy tin nhắn</button>
@@ -665,7 +672,7 @@ function cardEl(item){
       </button>
     </div>
     ${item.image?`<img class="clip-img" src="${item.image}" alt="" loading="lazy">`:''}
-    <div class="clip-body">${esc(item.content)}</div>
+    <div class="clip-body">${esc(stripVersionMarks(item.content))}</div>
     ${hasFields(item)?'<span class="clip-form-badge">⚡ Điền nhanh</span>':''}`;
   const more=card.querySelector('.btn-more');
   more.onclick=e=>{e.stopPropagation();openOptions(item,more);};
@@ -699,14 +706,15 @@ function fieldsOf(text){
   return seen;
 }
 
-/* {{*X}} → giá trị điền vào được đổi sang chữ/số đậm kiểu 𝐛𝐨𝐥𝐝 (chỉ A-Z, a-z, 0-9; ký tự có dấu giữ nguyên) */
+/* {{*X}} → giá trị điền vào đổi sang chữ đậm nghiêng 𝒃𝒐𝒍𝒅 𝒊𝒕𝒂𝒍𝒊𝒄, số đậm 𝟏𝟐𝟑.
+   Chữ tiếng Việt có dấu (ơ, ọ, ê...) giữ nguyên vì Unicode không có bản đậm cho chúng. */
 function boldify(s){
   let out='';
   for(const ch of s){
     const c=ch.codePointAt(0);
-    if(c>=65&&c<=90) out+=String.fromCodePoint(0x1D400+c-65);
-    else if(c>=97&&c<=122) out+=String.fromCodePoint(0x1D41A+c-97);
-    else if(c>=48&&c<=57) out+=String.fromCodePoint(0x1D7CE+c-48);
+    if(c>=65&&c<=90)       out+=String.fromCodePoint(0x1D468+c-65);  // A-Z đậm nghiêng
+    else if(c>=97&&c<=122) out+=String.fromCodePoint(0x1D482+c-97);  // a-z đậm nghiêng
+    else if(c>=48&&c<=57)  out+=String.fromCodePoint(0x1D7CE+c-48);  // 0-9 đậm (không có bản nghiêng)
     else out+=ch;
   }
   return out;
@@ -719,6 +727,35 @@ function computeDiscount(common){
   const goc=num(common['Giá gốc']), km=num(common['Giá khuyến mãi']);
   if(goc>0&&km>0&&km<goc) return Math.round((1-km/goc)*100)+'%';
   return '';
+}
+
+/* "Giá TikTok" cũng tự tính — rút gọn phần nghìn rồi chèn hoa để né kiểm duyệt giá.
+   VD: 2.690.000đ → 𝟐🌼𝟔𝟗𝟎 */
+const AUTO_TIKTOK_LABEL='Giá TikTok';
+const TIKTOK_SEP='🌼';
+function computeTiktokPrice(common){
+  let d=String(common['Giá khuyến mãi']||'').replace(/[^\d]/g,'');
+  if(!d) return '';
+  if(d.length>3 && d.endsWith('000')) d=d.slice(0,-3);          // 2690000 → 2690
+  return boldify(d.replace(/\B(?=(\d{3})+(?!\d))/g, TIKTOK_SEP)); // 2690 → 2🌼690 → đậm
+}
+const AUTO_LABELS=[AUTO_DISCOUNT_LABEL, AUTO_TIKTOK_LABEL];
+
+/* Một mẫu có thể chứa nhiều bản, ngăn nhau bằng dòng ===Tên bản===
+   Mỗi bản hiện một ô xem trước + nút copy riêng. */
+function splitVersions(content){
+  const re=/^[ \t]*===[ \t]*(.+?)[ \t]*===[ \t]*\r?\n?/gm;
+  const marks=[]; let m;
+  while((m=re.exec(content))) marks.push({label:m[1].trim(), start:m.index, bodyStart:re.lastIndex});
+  if(!marks.length) return null;
+  return marks.map((mk,i)=>({
+    label: mk.label,
+    body: content.slice(mk.bodyStart, i+1<marks.length ? marks[i+1].start : content.length).trim()
+  })).filter(v=>v.body);
+}
+/* Bỏ dòng ===...=== khi hiện tóm tắt trên thẻ cho đỡ rối */
+function stripVersionMarks(content){
+  return String(content||'').replace(/^[ \t]*===[ \t]*.+?[ \t]*===[ \t]*\r?\n?/gm,'');
 }
 
 async function copyText(text){
@@ -741,7 +778,7 @@ async function copyItem(item, card){
 
 /* ---------- Form điền nhanh ---------- */
 const fillOverlay=$('fillOverlay'), fillFields=$('fillFields'), fillPreview=$('fillPreview');
-let fillItem=null, fillCard=null, fillSegs=[];
+let fillItem=null, fillCard=null, fillVersions=[];
 
 function groupHTML(bi, label, fields){
   return `<div class="fill-group" data-bi="${bi}">
@@ -759,28 +796,41 @@ function groupHTML(bi, label, fields){
 
 function openFill(item, card){
   fillItem=item; fillCard=card||null;
-  fillSegs=parseTemplate(item.content||'');
+  const raw=item.content||'';
+  const vers=splitVersions(raw) || [{label:null, body:raw}];
+
+  // Các ô điền gom chung cho mọi bản — điền một lần, mọi bản cùng dùng
   const renderedCommon=new Set();
+  const blockKey=new Map();  // nhãn khối lặp -> chỉ số, để 2 bản dùng chung 1 khối
   let html='';
-  fillSegs.forEach(seg=>{
-    if(seg.type==='text'){
-      fieldsOf(seg.value).forEach(lb=>{
-        if(lb===AUTO_DISCOUNT_LABEL) return; // tự tính, không cần ô điền
-        if(renderedCommon.has(lb)) return; renderedCommon.add(lb);
-        html+=`<div class="f-group">
-          <label class="f-label">${esc(lb)}</label>
-          <input type="text" class="f-input fill-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}...">
-        </div>`;
-      });
-    } else {
-      const flds=fieldsOf(seg.inner);
-      html+=`<div class="fill-block" data-bi="${seg.bi}" data-label="${esc(seg.label)}">
-        <div class="fill-groups">${groupHTML(seg.bi, seg.label, flds)}</div>
-        <button type="button" class="fill-add" data-bi="${seg.bi}">＋ Thêm ${esc(seg.label.toLowerCase())}</button>
-      </div>`;
-    }
+  fillVersions = vers.map(v=>{
+    const segs=parseTemplate(v.body);
+    segs.forEach(seg=>{
+      if(seg.type==='text'){
+        fieldsOf(seg.value).forEach(lb=>{
+          if(AUTO_LABELS.includes(lb)) return;      // tự tính, không cần ô điền
+          if(renderedCommon.has(lb)) return; renderedCommon.add(lb);
+          html+=`<div class="f-group">
+            <label class="f-label">${esc(lb)}</label>
+            <input type="text" class="f-input fill-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}...">
+          </div>`;
+        });
+      } else {
+        if(!blockKey.has(seg.label)){
+          const bi=blockKey.size; blockKey.set(seg.label, bi);
+          html+=`<div class="fill-block" data-bi="${bi}" data-label="${esc(seg.label)}">
+            <div class="fill-groups">${groupHTML(bi, seg.label, fieldsOf(seg.inner))}</div>
+            <button type="button" class="fill-add" data-bi="${bi}">＋ Thêm ${esc(seg.label.toLowerCase())}</button>
+          </div>`;
+        }
+        seg.bi=blockKey.get(seg.label);  // gán lại theo nhãn để các bản trỏ cùng một khối
+      }
+    });
+    return {...v, segs};
   });
+
   fillFields.innerHTML=html;
+  renderPreviewBoxes();
   bindFill();
   renumberGroups();
   updateFillPreview();
@@ -788,13 +838,32 @@ function openFill(item, card){
   setTimeout(()=>{ const f=fillFields.querySelector('.fill-in'); if(f) f.focus(); },50);
 }
 
+/* Một bản  -> giữ nguyên giao diện cũ (nút Copy ở dưới cùng)
+   Nhiều bản -> mỗi bản một ô xem trước + nút copy riêng */
+function renderPreviewBoxes(){
+  const single=$('fillPreviewSingle'), multi=$('fillPreviewMulti'), copyBtn=$('fillCopy');
+  if(fillVersions.length<=1){
+    single.style.display=''; multi.style.display='none'; multi.innerHTML='';
+    copyBtn.style.display=''; $('fillCancel').textContent='Huỷ';
+    return;
+  }
+  single.style.display='none'; multi.style.display='';
+  copyBtn.style.display='none'; $('fillCancel').textContent='Đóng';
+  multi.innerHTML=fillVersions.map((v,i)=>`
+    <div class="fill-ver" data-vi="${i}">
+      <label class="f-label">${esc(v.label || ('Bản '+(i+1)))}</label>
+      <textarea class="f-textarea fill-ver-text"></textarea>
+      <button type="button" class="fill-ver-copy" data-vi="${i}">Copy bản ${esc(v.label || (i+1))}</button>
+    </div>`).join('');
+}
+
 function bindFill(){
   fillFields.querySelectorAll('.fill-in').forEach(inp=>inp.oninput=updateFillPreview);
   fillFields.querySelectorAll('.fill-add').forEach(btn=>btn.onclick=()=>{
     const bi=btn.dataset.bi;
     const block=fillFields.querySelector(`.fill-block[data-bi="${bi}"]`);
-    const flds=fieldsOf(fillItem ? parseTemplate(fillItem.content).find(s=>s.type==='repeat'&&String(s.bi)===String(bi)).inner : '');
-    block.querySelector('.fill-groups').insertAdjacentHTML('beforeend', groupHTML(bi, block.dataset.label, flds));
+    const seg=fillVersions.flatMap(v=>v.segs).find(s=>s.type==='repeat'&&String(s.bi)===String(bi));
+    block.querySelector('.fill-groups').insertAdjacentHTML('beforeend', groupHTML(bi, block.dataset.label, fieldsOf(seg?seg.inner:'')));
     bindFill(); renumberGroups(); updateFillPreview();
   });
   fillFields.querySelectorAll('.fill-group-del').forEach(btn=>btn.onclick=()=>{
@@ -813,17 +882,21 @@ function renumberGroups(){
   });
 }
 
-function buildFilled(){
+function collectCommon(){
   const common={};
   fillFields.querySelectorAll('.fill-in[data-scope="common"]').forEach(inp=>common[inp.dataset.label]=inp.value.trim());
   common[AUTO_DISCOUNT_LABEL]=computeDiscount(common);
+  common[AUTO_TIKTOK_LABEL]=computeTiktokPrice(common);
+  return common;
+}
+function buildOne(ver, common){
   const sub=(vals,lb)=>{
     const bold=lb.startsWith('*'); lb=lb.replace(/^\*/,'').trim();
     const v=vals[lb]||'';
     if(!v) return '['+lb+']';
     return bold ? boldify(v) : v;
   };
-  let out=fillSegs.map(seg=>{
+  let out=ver.segs.map(seg=>{
     if(seg.type==='text'){
       return seg.value.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return ''; return sub(common,lb); });
     }
@@ -836,8 +909,15 @@ function buildFilled(){
   }).join('');
   return out.replace(/\n{3,}/g,'\n\n').trim();
 }
-function updateFillPreview(){ fillPreview.value=buildFilled(); }
-function closeFill(){ fillOverlay.classList.remove('show'); fillItem=null; fillCard=null; fillSegs=[]; }
+function updateFillPreview(){
+  const common=collectCommon();
+  if(fillVersions.length<=1){ fillPreview.value=buildOne(fillVersions[0], common); return; }
+  fillVersions.forEach((v,i)=>{
+    const ta=$('fillPreviewMulti').querySelector(`.fill-ver[data-vi="${i}"] .fill-ver-text`);
+    if(ta) ta.value=buildOne(v, common);
+  });
+}
+function closeFill(){ fillOverlay.classList.remove('show'); fillItem=null; fillCard=null; fillVersions=[]; }
 $('fillCancel').onclick=closeFill;
 fillOverlay.addEventListener('click', e=>{ if(e.target===fillOverlay) closeFill(); });
 $('fillCopy').onclick=async()=>{
@@ -848,6 +928,19 @@ $('fillCopy').onclick=async()=>{
     showToast('Đã copy tin nhắn hoàn chỉnh'); closeFill();
   } else showToast('Không copy được — thử lại nhé', true);
 };
+// Mẫu nhiều bản: copy từng bản, KHÔNG đóng khung để còn copy bản kia
+$('fillPreviewMulti').addEventListener('click', async e=>{
+  const btn=e.target.closest('.fill-ver-copy'); if(!btn) return;
+  const box=btn.closest('.fill-ver');
+  const ok=await copyText(box.querySelector('.fill-ver-text').value);
+  if(!ok){ showToast('Không copy được — thử lại nhé', true); return; }
+  if(fillItem) addRecent(fillItem.id);
+  const nhan=fillVersions[+btn.dataset.vi]?.label || ('bản '+(+btn.dataset.vi+1));
+  showToast('Đã copy '+nhan);
+  const cu=btn.textContent;
+  btn.classList.add('done'); btn.textContent='✓ Đã copy';
+  setTimeout(()=>{ btn.classList.remove('done'); btn.textContent=cu; }, 1400);
+});
 function addRecent(id){
   recent=recent.filter(r=>r.id!==id); recent.unshift({id,at:Date.now()}); recent=recent.slice(0,12);
   saveRecent(); if(activeCat==='recent') render(); else renderMenu();
