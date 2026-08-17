@@ -963,22 +963,24 @@ init();
            allow read: if true;
            allow write: if request.auth != null
                         && request.auth.token.email in [
-                             "kyanh247@gmail.com",
-                             "ngoctham0302@gmail.com"
+                             /* danh sách email quản trị — xem trong
+                                Firebase Console > Firestore > Rules.
+                                CỐ Ý không ghi ra đây: file này công khai,
+                                ghi vào là chỉ đích danh tài khoản cần tấn công. */
                            ];
          }
        }
      }
 
      Ai cũng ĐỌC được (để nhân viên mở lên copy mẫu, không cần đăng nhập).
-     Chỉ 2 email trên mới THÊM / SỬA / XOÁ được.
+     Chỉ các email trong danh sách mới THÊM / SỬA / XOÁ được.
 
      ⚠️ Phải khoá theo đúng email, KHÔNG dùng mỗi `request.auth != null`:
      apiKey nằm công khai trong file này, người lạ có thể tự tạo tài khoản
      qua API rồi ghi bừa. Khoá theo email thì tài khoản lạ vô ích.
 
-     ⚠️ Thêm người quản trị = thêm email vào danh sách trên rồi Publish lại,
-     đồng thời tạo user trong Authentication > Users.
+     ⚠️ Thêm người quản trị = thêm email vào danh sách trong Console rồi
+     Publish lại, đồng thời tạo user trong Authentication > Users.
 
      Ghi chú: KA_ADMIN_PIN bên trên giờ chỉ còn dùng cho chế độ máy đơn
      (khi không tải được Firebase). Nó không còn mở khoá gì trên máy chủ.
