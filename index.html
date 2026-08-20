@@ -121,7 +121,16 @@
 
   .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(42,36,32,0.5); backdrop-filter: blur(2px); align-items: flex-end; justify-content: center; }
   .modal-overlay.show { display: flex; }
-  .modal { width: 100%; max-width: 520px; background: var(--cream); border-radius: 16px 16px 0 0; padding: 1.7rem 1.4rem 1.9rem; max-height: 90vh; overflow-y: auto; animation: slideUp 0.28s ease; }
+  .chon-loai { display: flex; align-items: flex-start; gap: 0.85rem; width: 100%; text-align: left; padding: 1rem; margin-bottom: 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.25s ease; }
+  .chon-loai:hover { border-color: var(--gold); background: rgba(184,149,110,0.05); }
+  .chon-loai-icon { font-size: 1.4rem; line-height: 1.2; flex-shrink: 0; }
+  .chon-loai-text { display: block; }
+  .chon-loai-text b { display: block; font-size: 0.84rem; font-weight: 600; color: var(--ink-dark); margin-bottom: 0.2rem; }
+  .chon-loai-text small { display: block; font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+  .modal-x { position: absolute; top: 0.9rem; right: 0.9rem; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 50%; cursor: pointer; color: var(--muted); transition: all 0.2s ease; z-index: 2; }
+  .modal-x:hover { background: rgba(139,129,120,0.12); color: var(--ink-dark); }
+  .modal-x svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 2.2; }
+  .modal { position: relative; width: 100%; max-width: 520px; background: var(--cream); border-radius: 16px 16px 0 0; padding: 1.7rem 1.4rem 1.9rem; max-height: 90vh; overflow-y: auto; animation: slideUp 0.28s ease; }
   @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   @media (min-width: 640px) { .modal-overlay { align-items: center; padding: 1.5rem; } .modal { border-radius: 16px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -248,6 +257,7 @@
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
+    <button class="modal-x" data-dong="modalOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h3 id="modalTitle">Thêm Mẫu Trả Lời</h3>
     <div class="f-group"><label class="f-label">Tiêu đề <span class="req">*</span></label>
       <input type="text" class="f-input" id="fTitle" placeholder="VD: Xác nhận lịch chụp"></div>
@@ -282,8 +292,73 @@
   </div>
 </div>
 
+<!-- Bấm "Thêm mẫu" → chọn loại mẫu muốn tạo -->
+<div class="modal-overlay" id="chonLoaiOverlay">
+  <div class="modal" style="max-width:440px">
+    <button class="modal-x" data-dong="chonLoaiOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3>Thêm Mẫu Mới</h3>
+    <p style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:1.2rem;">Bạn muốn tạo loại nào?</p>
+    <button type="button" class="chon-loai" id="chonBaoGia">
+      <span class="chon-loai-icon">💰</span>
+      <span class="chon-loai-text">
+        <b>Tạo báo giá Concept mới</b>
+        <small>Điền tên và giá — app tự tạo sẵn 2 bản Facebook/Zalo và TikTok</small>
+      </span>
+    </button>
+    <button type="button" class="chon-loai" id="chonTextThuong">
+      <span class="chon-loai-icon">📝</span>
+      <span class="chon-loai-text">
+        <b>Tạo mẫu copy text mới</b>
+        <small>Mẫu trả lời thường, tự nhập nội dung</small>
+      </span>
+    </button>
+  </div>
+</div>
+
+<!-- Tạo báo giá concept: điền thông tin, app tự dựng 2 bản -->
+<div class="modal-overlay" id="baoGiaOverlay">
+  <div class="modal">
+    <button class="modal-x" data-dong="baoGiaOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3>Tạo Báo Giá Concept</h3>
+    <p style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:1.2rem;">Điền thông tin, app tự dựng bản Facebook/Zalo và bản TikTok</p>
+
+    <div class="f-group"><label class="f-label" for="bgTenBo">Tên bộ <span class="req">*</span></label>
+      <input type="text" class="f-input" id="bgTenBo" placeholder="VD: Portraits Collection">
+      <p class="f-hint">Phần này sẽ được in đậm 𝐧𝐡𝐮̛ 𝐭𝐡𝐞̂́ 𝐧𝐚̀𝐲</p></div>
+
+    <div class="f-group"><label class="f-label" for="bgSoConcept">Số &amp; tên concept</label>
+      <input type="text" class="f-input" id="bgSoConcept" placeholder="VD: #16 - Sơ mi sọc"></div>
+
+    <div class="f-group"><label class="f-label" for="bgGiaGoc">Giá gốc <span class="req">*</span></label>
+      <input type="text" class="f-input" id="bgGiaGoc" inputmode="numeric" placeholder="VD: 2.990.000đ"></div>
+
+    <div class="f-group"><label class="f-label" for="bgGiaKM">Giá khuyến mãi <span class="req">*</span></label>
+      <input type="text" class="f-input" id="bgGiaKM" inputmode="numeric" placeholder="VD: 2.690.000đ">
+      <p class="f-hint" id="bgGiamHint">Phần trăm giảm app tự tính</p></div>
+
+    <div class="f-group"><label class="f-label" for="bgDanhMuc">Xếp vào mục</label>
+      <select class="f-select" id="bgDanhMuc"></select></div>
+
+    <div class="f-group"><label class="f-label" for="bgBaoGom">Gói bao gồm</label>
+      <textarea class="f-textarea" id="bgBaoGom" style="min-height:150px"></textarea>
+      <p class="f-hint">Sửa lại nếu gói này khác gói thường (số ảnh, số layout...)</p></div>
+
+    <div class="f-group"><label class="f-label">Xem trước — bản Facebook/Zalo</label>
+      <textarea class="f-textarea" id="bgXemFB" style="min-height:130px" readonly></textarea></div>
+
+    <div class="f-group"><label class="f-label">Xem trước — bản TikTok</label>
+      <textarea class="f-textarea" id="bgXemTT" style="min-height:110px" readonly></textarea></div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" id="bgHuy">Huỷ</button>
+      <button class="btn-primary" id="bgLuu">Tạo mẫu</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="pinOverlay">
   <div class="modal pin-modal">
+    <button class="modal-x" data-dong="pinOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <h3>Chế Độ Quản Trị</h3>
     <p>Đăng nhập để thêm / sửa / xoá mẫu</p>
     <div class="f-group" style="text-align:left">
@@ -304,8 +379,9 @@
 <!-- Modal điền nhanh template {{...}} -->
 <div class="modal-overlay" id="fillOverlay">
   <div class="modal">
-    <h3>Điền Thông Tin Nhanh</h3>
-    <p style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:1.1rem;">Điền các mục bên dưới, nội dung sẽ tự ghép hoàn chỉnh để copy</p>
+    <button class="modal-x" data-dong="fillOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3 id="fillTieuDe">Điền Thông Tin Nhanh</h3>
+    <p style="text-align:center;font-size:0.78rem;color:var(--muted);margin-bottom:1.1rem;" id="fillMoTa">Điền các mục bên dưới, nội dung sẽ tự ghép hoàn chỉnh để copy</p>
     <div id="fillFields"></div>
     <div class="f-group" id="fillPreviewSingle">
       <label class="f-label">Xem trước &amp; chỉnh tay</label>
@@ -567,7 +643,7 @@ $('pinCancel').onclick = closePin;
 $('pinConfirm').onclick = doLogin;
 [loginEmail, loginPass].forEach(el =>
   el.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); }));
-pinOverlay.addEventListener('click', e => { if(e.target===pinOverlay) closePin(); });
+// Bấm ra ngoài KHÔNG đóng — phải bấm X hoặc Huỷ, tránh mất chữ đang gõ
 
 function loginErrMsg(code){
   switch(code){
@@ -681,7 +757,7 @@ function cardEl(item){
     </div>
     ${item.image?`<img class="clip-img" src="${item.image}" alt="" loading="lazy">`:''}
     <div class="clip-body">${esc(stripVersionMarks(item.content))}</div>
-    ${hasFields(item)?'<span class="clip-form-badge">⚡ Điền nhanh</span>':''}`;
+    ${nhanThe(item)}`;
   const more=card.querySelector('.btn-more');
   more.onclick=e=>{e.stopPropagation();openOptions(item,more);};
   card.onclick=()=>copyItem(item,card);
@@ -781,7 +857,8 @@ async function copyText(text){
   }
 }
 async function copyItem(item, card){
-  if (hasFields(item)) { openFill(item, card); return; }
+  // Có ô điền HOẶC có nhiều bản đều mở khung ra, đừng copy thẳng cả 2 bản dính nhau
+  if (hasFields(item) || splitVersions(item.content||'')) { openFill(item, card); return; }
   const ok=await copyText(item.content);
   if (ok){
     if (card){ card.classList.add('copied'); setTimeout(()=>card.classList.remove('copied'),1200); }
@@ -805,6 +882,12 @@ function groupHTML(bi, label, fields){
         <input type="text" class="f-input fill-in" data-scope="block" data-bi="${bi}" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}...">
       </div>`).join('')}
   </div>`;
+}
+
+function nhanThe(item){
+  if(hasFields(item)) return '<span class="clip-form-badge">⚡ Điền nhanh</span>';
+  const v=splitVersions(item.content||'');
+  return v ? `<span class="clip-form-badge">📑 ${v.length} bản</span>` : '';
 }
 
 function openFill(item, card){
@@ -847,6 +930,12 @@ function openFill(item, card){
   bindFill();
   renumberGroups();
   updateFillPreview();
+  // Không có ô nào để điền thì đây là khung chọn bản, đổi tiêu đề cho khỏi khó hiểu
+  const coODien=!!fillFields.querySelector('.fill-in');
+  $('fillTieuDe').textContent = coODien ? 'Điền Thông Tin Nhanh' : 'Chọn Bản Để Copy';
+  $('fillMoTa').textContent = coODien
+    ? 'Điền các mục bên dưới, nội dung sẽ tự ghép hoàn chỉnh để copy'
+    : 'Mẫu này có sẵn nhiều bản — chọn bản cần dùng rồi copy';
   fillOverlay.classList.add('show');
   setTimeout(()=>{ const f=fillFields.querySelector('.fill-in'); if(f) f.focus(); },50);
 }
@@ -933,7 +1022,7 @@ function updateFillPreview(){
 }
 function closeFill(){ fillOverlay.classList.remove('show'); fillItem=null; fillCard=null; fillVersions=[]; }
 $('fillCancel').onclick=closeFill;
-fillOverlay.addEventListener('click', e=>{ if(e.target===fillOverlay) closeFill(); });
+// Bấm ra ngoài KHÔNG đóng
 $('fillCopy').onclick=async()=>{
   const ok=await copyText(fillPreview.value);
   if(ok){
@@ -1003,9 +1092,9 @@ const modalOverlay=$('modalOverlay'), fTitle=$('fTitle'), fContent=$('fContent')
   fCategory=$('fCategory'), fPrice=$('fPrice'), priceGroup=$('priceGroup'),
   fImage=$('fImage'), imgPreviewWrap=$('imgPreviewWrap'), imgPreview=$('imgPreview'), btnSave=$('btnSave');
 
-btnAdd.onclick=()=>openModal(null);
+btnAdd.onclick=()=>moChonLoai();   // hỏi loại mẫu trước, rồi mới mở khung tương ứng
 $('btnCancel').onclick=closeModal;
-modalOverlay.addEventListener('click', e=>{ if(e.target===modalOverlay) closeModal(); });
+// Bấm ra ngoài KHÔNG đóng
 fCategory.onchange=()=>{ priceGroup.style.display = fCategory.value.startsWith('concept')?'block':'none'; };
 
 fImage.onchange=()=>{
@@ -1058,8 +1147,109 @@ btnSave.onclick=async()=>{
   if(!fb) render();
 };
 
+/* ---------- Thêm mẫu: chọn loại ---------- */
+const chonLoaiOverlay=$('chonLoaiOverlay'), baoGiaOverlay=$('baoGiaOverlay');
+function moChonLoai(){ chonLoaiOverlay.classList.add('show'); }
+function dongChonLoai(){ chonLoaiOverlay.classList.remove('show'); }
+
+/* ---------- Tạo báo giá concept ---------- */
+const BAO_GOM_MAC_DINH =
+`- 10 Ảnh đã Photoshop đẹp, hoàn thiện kỹ lưỡng
+- 01 Layout Make Up & Làm Tóc chuyên nghiệp
+- 01 Trang phục & phụ kiện (có sẵn tại Studio)
+- 01 Bộ Nail box & Lens mắt có sẵn
+✔️ Ekip hướng dẫn tạo dáng theo concept xuyên suốt buổi chụp
+✔️ Không gian Studio và check ảnh tại buổi chụp
+✔️ Trả toàn bộ file ảnh gốc trong ngày
+
+Tất cả chi phí đã bao gồm, không có phát sinh thêm.
+Thời gian chụp & Makeup dự kiến dưới 3 tiếng.`;
+
+const DUOI_TIKTOK =
+`Do quy định nền tảng TT hạn chế chia sẻ về giá cả và gói dịch vụ ạ.
+Bạn nhắn giúp qua phobo để Stu gửi b chi tiết ngay nha. ❤️
+
+Hoặc b nhắn qua Z4lo nha: Không7 Sáu535 Sáu Năm 26`;
+
+const bgTenBo=$('bgTenBo'), bgSoConcept=$('bgSoConcept'), bgGiaGoc=$('bgGiaGoc'),
+      bgGiaKM=$('bgGiaKM'), bgDanhMuc=$('bgDanhMuc'), bgBaoGom=$('bgBaoGom'),
+      bgXemFB=$('bgXemFB'), bgXemTT=$('bgXemTT'), bgGiamHint=$('bgGiamHint');
+
+function bgSo(v){ return parseInt(String(v||'').replace(/[^\d]/g,''),10); }
+function bgPhanTramGiam(){
+  const goc=bgSo(bgGiaGoc.value), km=bgSo(bgGiaKM.value);
+  if(goc>0 && km>0 && km<goc) return Math.round((1-km/goc)*100)+'%';
+  return '';
+}
+function bgTenDayDu(){
+  return [boldify(bgTenBo.value.trim(),false), bgSoConcept.value.trim()].filter(Boolean).join(' ');
+}
+function bgNoiDungFB(){
+  const giam=bgPhanTramGiam();
+  const km=bgGiaKM.value.trim(), goc=bgGiaGoc.value.trim();
+  const dau = `Gói chụp ${bgTenDayDu()}` +
+    (giam ? ` hiện đang giảm ${giam} chỉ còn ${boldify(km,false)} (Giá gốc ${goc})`
+          : (km ? ` — ${boldify(km,false)}` : ''));
+  return `${dau}\n\nBao gồm:\n${bgBaoGom.value.trim()}`;
+}
+function bgNoiDungTT(){
+  let d=String(bgGiaKM.value||'').replace(/[^\d]/g,'');
+  if(d.length>3 && d.endsWith('000')) d=d.slice(0,-3);
+  const gia=d ? boldify(d.replace(/\B(?=(\d{3})+(?!\d))/g, TIKTOK_SEP), false) : '';
+  return `Dạ gói chụp ${bgTenDayDu()}: ${gia} trọn gói gồm makeup, phụ kiện, trang phục,...\n\n${DUOI_TIKTOK}`;
+}
+function bgCapNhatXemTruoc(){
+  bgXemFB.value=bgNoiDungFB();
+  bgXemTT.value=bgNoiDungTT();
+  const g=bgPhanTramGiam();
+  bgGiamHint.textContent = g ? `App tính được: giảm ${g}` : 'Phần trăm giảm app tự tính';
+}
+function moBaoGia(){
+  bgTenBo.value=''; bgSoConcept.value=''; bgGiaGoc.value=''; bgGiaKM.value='';
+  bgBaoGom.value=BAO_GOM_MAC_DINH;
+  bgDanhMuc.innerHTML=CATEGORIES.find(c=>c.id==='concept').subs
+    .map(sub=>`<option value="${sub.id}">${esc(sub.label)}</option>`).join('');
+  // mở sẵn đúng mục đang xem nếu đang ở trong Bảng Giá
+  if(activeCat==='concept') bgDanhMuc.value=activeSubs.concept;
+  bgCapNhatXemTruoc();
+  baoGiaOverlay.classList.add('show');
+  setTimeout(()=>bgTenBo.focus(),50);
+}
+function dongBaoGia(){ baoGiaOverlay.classList.remove('show'); }
+
+[bgTenBo,bgSoConcept,bgGiaGoc,bgGiaKM,bgBaoGom].forEach(o=>o.addEventListener('input',bgCapNhatXemTruoc));
+$('bgHuy').onclick=dongBaoGia;
+$('chonBaoGia').onclick=()=>{ dongChonLoai(); moBaoGia(); };
+$('chonTextThuong').onclick=()=>{ dongChonLoai(); openModal(null); };
+
+$('bgLuu').onclick=async()=>{
+  if(!bgTenBo.value.trim()){ showToast('Nhập tên bộ trước nhé', true); bgTenBo.focus(); return; }
+  if(!bgGiaGoc.value.trim()||!bgGiaKM.value.trim()){ showToast('Nhập đủ giá gốc và giá khuyến mãi', true); return; }
+  const tieuDe=[bgTenBo.value.trim(), bgSoConcept.value.trim()].filter(Boolean).join(' ');
+  const noiDung=`===FB/Zalo===\n${bgNoiDungFB()}\n\n===TikTok===\n${bgNoiDungTT()}`;
+  const nut=$('bgLuu'); nut.disabled=true; nut.textContent='Đang tạo…';
+  const ok=await upsertItem(null, { title:tieuDe, content:noiDung, cat:bgDanhMuc.value,
+                                    price:bgGiaKM.value.trim(), image:'' });
+  nut.disabled=false; nut.textContent='Tạo mẫu';
+  if(!ok) return;
+  dongBaoGia();
+  showToast('Đã tạo mẫu báo giá — có sẵn 2 bản');
+  activeCat='concept'; activeSubs.concept=bgDanhMuc.value;
+  if(!fb) render();
+};
+
+// Nút X đóng khung
+document.querySelectorAll('.modal-x').forEach(b=>b.onclick=()=>{
+  const id=b.dataset.dong;
+  if(id==='modalOverlay') closeModal();
+  else if(id==='pinOverlay') closePin();
+  else if(id==='fillOverlay') closeFill();
+  else if(id==='chonLoaiOverlay') dongChonLoai();
+  else if(id==='baoGiaOverlay') dongBaoGia();
+});
+
 searchInput.addEventListener('input', render);
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); } });
 
 /* ---------- Tự cập nhật khi có bản mới ----------
    App so ngày giờ của bản đang chạy với bản trên máy chủ. Mới hơn thì tự tải lại,
