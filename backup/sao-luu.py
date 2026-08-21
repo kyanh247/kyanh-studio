@@ -4,7 +4,9 @@ import json, urllib.request, datetime, os, sys
 PROJECT = "ky-anh-studio---reply-d43ff"
 URL = (f"https://firestore.googleapis.com/v1/projects/{PROJECT}"
        "/databases/(default)/documents/replies?pageSize=300")
-OUT = r"G:\KAS-AllApp\KYANH.STUDIO\kyanh-studio\backup\replies-backup.json"
+# Luu ngay canh script nay — khong phu thuoc o dia hay ten thu muc
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                   "replies-backup.json")
 
 
 def untype(v):
