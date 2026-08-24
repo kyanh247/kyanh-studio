@@ -113,6 +113,10 @@
   .lk-btn.vua-copy { border-color: var(--gold); background: #FFFDFA; }
   .lk-btn.vua-copy .lk-phu { color: var(--gold-dark); font-weight: 700; }
 
+  .lk-sua { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; margin-top: 0.9rem; padding: 0.75rem; background: transparent; border: 1px dashed var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.74rem; font-weight: 600; color: var(--muted); transition: all 0.2s ease; }
+  .lk-sua:hover { border-color: var(--gold); color: var(--gold-dark); border-style: solid; }
+  .lk-sua svg { width: 15px; height: 15px; }
+
   /* ===== Luoi Link Concept ===== */
   .lc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
   .lc-card { position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: all 0.25s ease; }
@@ -1571,15 +1575,6 @@ function renderLinks(){
   grid.querySelectorAll('.lc-card').forEach(el=>{
     const c = ds.find(x=>String(x.id)===el.dataset.id);
     el.onclick=()=>moChonLink(c);
-    /* Quan tri: giu lau tren the de sua */
-    if(isAdmin){
-      let hen;
-      const batDau=()=>{ hen=setTimeout(()=>{ hen=null; moFormLink(c); }, 550); };
-      const huy=()=>{ if(hen){ clearTimeout(hen); hen=null; } };
-      el.addEventListener('pointerdown', batDau);
-      ['pointerup','pointerleave','pointercancel'].forEach(e=>el.addEventListener(e, huy));
-      el.addEventListener('contextmenu', ev=>{ ev.preventDefault(); moFormLink(c); });
-    }
   });
 }
 $('lcSearch').addEventListener('input', renderLinks);
@@ -1722,6 +1717,14 @@ function moChonLink(c){
       <span class="lk-phu">${url ? 'Chạm để copy' : 'Chưa có link'}</span>
     </button>`;
   }).join('');
+
+  if(isAdmin){
+    $('lkDsNut').insertAdjacentHTML('beforeend',
+      `<button class="lk-sua" id="lkSua">
+         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+         Sửa concept này</button>`);
+    $('lkSua').onclick = ()=>{ dongChonLink(); moFormLink(c); };
+  }
 
   $('lkDsNut').querySelectorAll('.lk-btn:not(.tat)').forEach(b=>{
     b.onclick = async()=>{
