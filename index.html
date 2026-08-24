@@ -64,15 +64,29 @@
   .lc-filter:focus { outline: none; border-color: var(--gold); }
   .lc-filter.dang-loc { border-color: var(--gold); color: var(--gold-dark); font-weight: 600; }
 
+  /* Khung chon link khi cham vao concept */
+  .lk-head { display: flex; gap: 0.85rem; align-items: center; margin-bottom: 1.2rem; }
+  .lk-head img { width: 62px; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); flex-shrink: 0; }
+  .lk-head b { display: block; font-size: 0.95rem; font-weight: 600; color: var(--ink-dark); line-height: 1.35; font-family: 'Playfair Display', serif; }
+  .lk-head small { display: block; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+  .lk-btn { display: flex; align-items: center; gap: 0.8rem; width: 100%; text-align: left; padding: 0.85rem 0.95rem; margin-bottom: 0.55rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink-dark); transition: all 0.2s ease; }
+  .lk-btn:hover:not(.tat) { border-color: var(--gold); background: rgba(184,149,110,0.06); }
+  .lk-btn svg { width: 19px; height: 19px; flex-shrink: 0; }
+  .lk-btn .lk-phu { margin-left: auto; font-size: 0.64rem; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; }
+  .lk-btn.tat { background: #F5F3F0; border-color: rgba(139,129,120,0.14); color: #B5ADA4; cursor: not-allowed; }
+  .lk-btn.tat svg { opacity: 0.4; }
+  .lk-btn.vua-copy { border-color: var(--gold); background: #FFFDFA; }
+  .lk-btn.vua-copy .lk-phu { color: var(--gold-dark); font-weight: 700; }
+
   /* ===== Luoi Link Concept ===== */
-  .lc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; }
+  .lc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
   .lc-card { position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: all 0.25s ease; }
   .lc-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
   .lc-card:active { transform: translateY(0) scale(0.995); }
   .lc-thumb { aspect-ratio: 2 / 3; width: 100%; object-fit: cover; display: block; background: linear-gradient(160deg, #EFEAE3, #DCD3C8); }
-  .lc-name { padding: 0.4rem 0.4rem 0.5rem; font-size: 0.64rem; font-weight: 600; color: var(--ink-dark); line-height: 1.3; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: calc(2.6em + 0.9rem); }  /* chua san 2 dong de moi the cao bang nhau */
+  .lc-name { padding: 0.45rem 0.45rem 0.55rem; font-size: 0.7rem; font-weight: 600; color: var(--ink-dark); line-height: 1.3; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: calc(2.6em + 0.9rem); }  /* chua san 2 dong de moi the cao bang nhau */
   .lc-card.copied { border-color: var(--gold); background: #FFFDFA; }
-  .lc-card.copied::after { content: "¹3"; position: absolute; top: 0.3rem; right: 0.3rem; width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 700; color: #fff; background: var(--gold); border-radius: 50%; box-shadow: 0 2px 8px rgba(184,149,110,0.35); animation: popBadge 0.25s ease; }
+  .lc-card.copied::after { content: "✓"; position: absolute; top: 0.3rem; right: 0.3rem; width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 700; color: #fff; background: var(--gold); border-radius: 50%; box-shadow: 0 2px 8px rgba(184,149,110,0.35); animation: popBadge 0.25s ease; }
   .lc-toolbar { flex-wrap: wrap; }
   /* Dien thoai: chu trong o loc dai hon be ngang o -> cho xuong hang rieng cho du cho */
   @media (max-width: 560px) {
@@ -298,7 +312,7 @@
     <div class="toolbar lc-toolbar">
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-        <input type="search" class="search-input" id="lcSearch" placeholder="Tìm concept...">
+        <input type="search" class="search-input" id="lcSearch" placeholder="Tìm theo tên concept hoặc model...">
       </div>
       <select class="lc-filter" id="lcFilter" title="Lọc theo dạng concept"></select>
       <button class="btn-add" id="lcAdd" title="Thêm concept mới">
@@ -324,6 +338,16 @@
 
 <div class="opt-overlay" id="optOverlay"><div class="opt-menu" id="optMenu"></div></div>
 
+<!-- Cham vao concept -> chon link muon copy -->
+<div class="modal-overlay" id="lkOverlay">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-x" data-dong="lkOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3 style="margin-bottom:1.1rem">Chọn Link Để Copy</h3>
+    <div class="lk-head" id="lkHead"></div>
+    <div id="lkDsNut"></div>
+  </div>
+</div>
+
 <!-- Them / sua mot Link Concept -->
 <div class="modal-overlay" id="lcOverlay">
   <div class="modal">
@@ -333,9 +357,19 @@
     <div class="f-group"><label class="f-label" for="lcTen">Tên concept <span class="req">*</span></label>
       <input type="text" class="f-input" id="lcTen" placeholder="VD: Sea &amp; Soul"></div>
 
-    <div class="f-group"><label class="f-label" for="lcLink">Link concept <span class="req">*</span></label>
-      <input type="url" class="f-input" id="lcLink" placeholder="https://kyanh.studio/concept/sea-and-soul">
-      <p class="f-hint">Đây là đường link sẽ được copy khi chạm vào ảnh.</p></div>
+    <div class="f-group"><label class="f-label" for="lcModel">Tên model</label>
+      <input type="text" class="f-input" id="lcModel" placeholder="VD: Thảo, Thu Thảo, DingDang">
+      <p class="f-hint">Để tìm nhanh theo tên mẫu chụp. Nhiều model thì ngăn bằng dấu phẩy.</p></div>
+
+    <div class="f-group"><label class="f-label" for="lcLink">Link Website <span class="req">*</span></label>
+      <input type="url" class="f-input" id="lcLink" placeholder="https://kyanh.studio/album/sen-sac-7"></div>
+
+    <div class="f-group"><label class="f-label" for="lcLinkFb">Link Facebook</label>
+      <input type="url" class="f-input" id="lcLinkFb" placeholder="https://facebook.com/..."></div>
+
+    <div class="f-group"><label class="f-label" for="lcLinkTt">Link TikTok</label>
+      <input type="url" class="f-input" id="lcLinkTt" placeholder="https://tiktok.com/@kyanh.studio/...">
+      <p class="f-hint">Bỏ trống cũng được — nền tảng nào chưa có link thì nút đó sẽ xám và không bấm được.</p></div>
 
     <div class="f-group"><label class="f-label" for="lcAnh">Link ảnh</label>
       <input type="url" class="f-input" id="lcAnh" placeholder="Dán link ảnh vào đây">
@@ -786,11 +820,12 @@ async function doLogin(){
 
 function parentCat(id){ return CATEGORIES.find(c=>c.id===id && c.subs); }
 function countFor(catId){
-  if (catId==='all') return items.length;
+  const nguon = itemsReply();          // khong tinh Link Concept vao cac tab ben Reply
+  if (catId==='all') return nguon.length;
   if (catId==='recent') return recent.length;
   const parent = parentCat(catId);
-  if (parent) return items.filter(i=>String(i.cat).startsWith(catId+'-')).length;
-  return items.filter(i=>i.cat===catId).length;
+  if (parent) return nguon.filter(i=>String(i.cat).startsWith(catId+'-')).length;
+  return nguon.filter(i=>i.cat===catId).length;
 }
 function renderMenu(){
   menuTabsEl.innerHTML='';
@@ -1353,6 +1388,7 @@ document.querySelectorAll('.modal-x').forEach(b=>b.onclick=()=>{
   else if(id==='chonLoaiOverlay') dongChonLoai();
   else if(id==='baoGiaOverlay') dongBaoGia();
   else if(id==='lcOverlay') dongFormLink();
+  else if(id==='lkOverlay') dongChonLink();
 });
 
 searchInput.addEventListener('input', render);
@@ -1411,7 +1447,7 @@ function renderLinks(){
   $('lcFilter').classList.toggle('dang-loc', !!dang);
   let ds = itemsLink();
   if(dang) ds = ds.filter(c=>c.dang===dang);
-  if(q)    ds = ds.filter(c=>(c.title||'').toLowerCase().includes(q));
+  if(q)    ds = ds.filter(c=>((c.title||'')+' '+(c.model||'')).toLowerCase().includes(q));
   const grid=$('lcGrid');
   if(!ds.length){
     const chuaCoGi = !itemsLink().length;
@@ -1430,13 +1466,7 @@ function renderLinks(){
     </article>`).join('');
   grid.querySelectorAll('.lc-card').forEach(el=>{
     const c = ds.find(x=>String(x.id)===el.dataset.id);
-    el.onclick=async()=>{
-      if(!c.content){ showToast('Concept này chưa có link', true); return; }
-      if(await copyText(c.content)){
-        el.classList.add('copied'); showToast('Đã copy link ' + c.title);
-        setTimeout(()=>el.classList.remove('copied'),1400);
-      } else showToast('Không copy được', true);
-    };
+    el.onclick=()=>moChonLink(c);
     /* Quan tri: giu lau tren the de sua */
     if(isAdmin){
       let hen;
@@ -1450,6 +1480,45 @@ function renderLinks(){
 }
 $('lcSearch').addEventListener('input', renderLinks);
 $('lcFilter').addEventListener('change', renderLinks);
+
+/* ---------- Cham vao concept -> chon link ---------- */
+/* truong: ten hien thi, ten truong trong du lieu, bieu tuong */
+const NEN_TANG = [
+  { id:'web', nhan:'Website',  truong:'content', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>' },
+  { id:'fb',  nhan:'Facebook', truong:'link_fb', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg>' },
+  { id:'tt',  nhan:'TikTok',   truong:'link_tt', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.9 4.9 0 0 1-1.1-2.8h-3v12.1a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.11V9.6a5.6 5.6 0 0 0-.74-.05 5.55 5.55 0 1 0 5.55 5.55V9.0a7.9 7.9 0 0 0 4.55 1.44V7.4a4.85 4.85 0 0 1-3.5-1.6z"/></svg>' },
+];
+
+const lkOverlay=$('lkOverlay');
+function moChonLink(c){
+  $('lkHead').innerHTML = `
+    <img src="${esc(c.image||ANH_TRONG)}" alt="" onerror="this.src='${ANH_TRONG}'">
+    <span><b>${esc(c.title)}</b>
+      <small>${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · ')) || '—'}</small></span>`;
+
+  $('lkDsNut').innerHTML = NEN_TANG.map(n=>{
+    const url = (c[n.truong]||'').trim();
+    return `<button class="lk-btn${url?'':' tat'}" data-nen="${n.id}"${url?'':' disabled'}>
+      ${n.icon}<span>${n.nhan}</span>
+      <span class="lk-phu">${url ? 'Chạm để copy' : 'Chưa có link'}</span>
+    </button>`;
+  }).join('');
+
+  $('lkDsNut').querySelectorAll('.lk-btn:not(.tat)').forEach(b=>{
+    b.onclick = async()=>{
+      const n = NEN_TANG.find(x=>x.id===b.dataset.nen);
+      const url = (c[n.truong]||'').trim();
+      if(await copyText(url)){
+        b.classList.add('vua-copy');
+        b.querySelector('.lk-phu').textContent = '✓ Đã copy';
+        showToast('Đã copy link ' + n.nhan + ' — ' + c.title);
+        setTimeout(()=>lkOverlay.classList.remove('show'), 650);
+      } else showToast('Không copy được', true);
+    };
+  });
+  lkOverlay.classList.add('show');
+}
+function dongChonLink(){ lkOverlay.classList.remove('show'); }
 
 /* ---------- Khung them / sua concept ---------- */
 const lcOverlay=$('lcOverlay');
@@ -1504,10 +1573,13 @@ $('lcTen').addEventListener('input', ()=>{
 function moFormLink(c){
   lcDangSua = c || null;
   $('lcFormTitle').textContent = c ? 'Sửa Concept' : 'Thêm Concept';
-  $('lcTen').value  = c?.title   || '';
-  $('lcLink').value = c?.content || '';
-  $('lcAnh').value  = c?.image   || '';
-  $('lcDang').value = c?.dang    || 'conceptual';
+  $('lcTen').value    = c?.title   || '';
+  $('lcModel').value  = c?.model   || '';
+  $('lcLink').value   = c?.content || '';
+  $('lcLinkFb').value = c?.link_fb || '';
+  $('lcLinkTt').value = c?.link_tt || '';
+  $('lcAnh').value    = c?.image   || '';
+  $('lcDang').value   = c?.dang    || 'conceptual';
   veXemTruoc();
   lcOverlay.classList.add('show');
   setTimeout(()=>$('lcTen').focus(),50);
@@ -1519,10 +1591,12 @@ $('lcAdd').onclick = ()=>moFormLink(null);
 $('lcLuu').onclick = async()=>{
   const ten=$('lcTen').value.trim(), link=$('lcLink').value.trim();
   if(!ten){  showToast('Nhập tên concept trước nhé', true); $('lcTen').focus();  return; }
-  if(!link){ showToast('Nhập link concept', true); $('lcLink').focus(); return; }
+  if(!link){ showToast('Nhập link Website', true); $('lcLink').focus(); return; }
   const nut=$('lcLuu'); nut.disabled=true; nut.textContent='Đang lưu…';
   const ok = await upsertItem(lcDangSua?.id || null, {
     title: ten, content: link, image: $('lcAnh').value.trim(),
+    model: $('lcModel').value.trim(),
+    link_fb: $('lcLinkFb').value.trim(), link_tt: $('lcLinkTt').value.trim(),
     cat: CAT_LINK, dang: $('lcDang').value, price: ''
   });
   nut.disabled=false; nut.textContent='Lưu';
@@ -1533,7 +1607,7 @@ $('lcLuu').onclick = async()=>{
 };
 
 
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongFormLink(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongFormLink(); dongChonLink(); } });
 
 /* ---------- Tự cập nhật khi có bản mới ----------
    App so ngày giờ của bản đang chạy với bản trên máy chủ. Mới hơn thì tự tải lại,
