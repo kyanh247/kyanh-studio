@@ -339,7 +339,8 @@
       <select class="f-select" id="lcDang"></select></div>
 
     <div class="f-group"><label class="f-label">Xem trước</label>
-      <div id="lcPreview" style="display:flex;justify-content:center;padding:0.5rem 0;"></div></div>
+      <div id="lcPreview" style="display:flex;justify-content:center;padding:0.5rem 0;"></div>
+      <p class="f-hint" id="lcNguon" style="text-align:center"></p></div>
 
     <div class="modal-actions">
       <button class="btn-ghost" id="lcHuy">Huỷ</button>
@@ -1448,13 +1449,51 @@ $('lcFilter').addEventListener('change', renderLinks);
 const lcOverlay=$('lcOverlay');
 let lcDangSua=null;
 
-function veXemTruoc(){
-  const url=$('lcAnh').value.trim();
-  $('lcPreview').innerHTML =
-    `<img src="${esc(url||ANH_TRONG)}" onerror="this.src='${ANH_TRONG}'"
-          style="width:96px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;border:1px solid var(--line)">`;
+/* Doi ten concept thanh ten file khong dau: "Sea & Soul" -> "sea-and-soul" */
+function taoTenFile(ten){
+  return (ten||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/đ/g,'d').replace(/Đ/g,'D')
+    .toLowerCase().replace(/&/g,'-and-')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
-$('lcAnh').addEventListener('input', veXemTruoc);
+const THU_MUC_ANH = 'assets/images/concepts/';
+
+function veXemTruoc(){
+  const url=$('lcAnh').value.trim(), ghiChu=$('lcNguon'), khung=$('lcPreview');
+  const img=document.createElement('img');
+  img.style.cssText='width:96px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;border:1px solid var(--line)';
+  if(!url){ img.src=ANH_TRONG; ghiChu.textContent=''; khung.replaceChildren(img); return; }
+
+  const laLinkNgoai = /^https?:\/\//i.test(url);
+  ghiChu.textContent = 'Đang kiểm tra…';
+  ghiChu.style.color = '';
+  img.onload = ()=>{
+    ghiChu.textContent = laLinkNgoai ? '✓ Ảnh từ website bên ngoài' : '✓ Ảnh trong repo';
+    ghiChu.style.color = '';
+  };
+  img.onerror = ()=>{
+    img.onload = null;                       // dung de anh thay the ghi de mat canh bao
+    img.src = ANH_TRONG;
+    ghiChu.textContent = laLinkNgoai
+      ? '⚠ Không tải được ảnh từ link này'
+      : '⚠ Chưa có ảnh này trong repo — nhớ tải lên GitHub';
+    ghiChu.style.color = 'var(--danger)';
+  };
+  img.src = url;
+  khung.replaceChildren(img);
+}
+$('lcAnh').addEventListener('input', ()=>{ $('lcAnh').dataset.tuDien=''; veXemTruoc(); });
+
+/* Go ten concept -> tu goi y duong dan anh trong repo.
+   Chi ghi de khi o dang trong hoac dang giu goi y cu, khong dap len thu nguoi dung tu nhap. */
+$('lcTen').addEventListener('input', ()=>{
+  const o=$('lcAnh'), dangTrong = !o.value.trim(), laGoiY = o.dataset.tuDien==='1';
+  if(!dangTrong && !laGoiY) return;
+  const ten=taoTenFile($('lcTen').value);
+  o.value = ten ? THU_MUC_ANH + ten + '.jpg' : '';
+  o.dataset.tuDien='1';
+  veXemTruoc();
+});
 
 function moFormLink(c){
   lcDangSua = c || null;
