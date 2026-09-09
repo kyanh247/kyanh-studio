@@ -1,0 +1,17 @@
+{
+  "name": "Kỳ Anh Reply",
+  "short_name": "KA Reply",
+  "description": "Công cụ trả lời nhanh & link concept nội bộ của Kỳ Anh Studio",
+  "lang": "vi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF9F7",
+  "theme_color": "#FAF9F7",
+  "icons": [
+    { "src": "assets/favicon/favicon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/favicon/favicon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/favicon/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

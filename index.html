@@ -2,11 +2,19 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Kỳ Anh Reply — Trả Lời Nhanh</title>
-<link rel="icon" href="../../assets/favicon/favicon.svg" type="image/svg+xml">
-<link rel="icon" href="../../assets/favicon/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="../../assets/favicon/favicon-180.png">
+<link rel="icon" href="assets/favicon/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/favicon/favicon-180.png">
+
+<!-- Them vao Man hinh chinh -> chay toan man hinh nhu app -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FAF9F7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kỳ Anh Reply">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -33,7 +41,10 @@
     -webkit-font-smoothing: antialiased;
   }
   h1,h2,h3 { font-family: 'Playfair Display', serif; font-weight: 400; }
-  .app { max-width: 880px; margin: 0 auto; padding: 1.6rem 1.1rem calc(6rem + env(safe-area-inset-bottom)); }
+  /* env(safe-area-*) chua cho tai/thanh trang thai khi chay toan man hinh tren iPhone */
+  .app { max-width: 880px; margin: 0 auto;
+         padding: calc(1.6rem + env(safe-area-inset-top)) calc(1.1rem + env(safe-area-inset-right))
+                  calc(6rem + env(safe-area-inset-bottom)) calc(1.1rem + env(safe-area-inset-left)); }
 
   .app-header { position: relative; text-align: center; margin-bottom: 1.4rem; }
   .app-eyebrow { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.55rem; }
