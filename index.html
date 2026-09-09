@@ -83,6 +83,17 @@
   .lk-sua svg { width: 15px; height: 15px; }
 
   /* ===== Luoi Link Concept ===== */
+  .lc-ghim-o { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0.95rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; color: var(--muted); }
+  .lc-ghim-o:hover { border-color: var(--gold); }
+  .lc-ghim-o input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; margin: 0; }
+  .lc-ghim-o svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .lc-ghim-o b { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-dark); }
+  .lc-ghim-o small { display: block; font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
+  .lc-ghim-o:has(input:checked) { border-color: var(--gold); background: #FFFDFA; color: var(--gold-dark); }
+
+  .lc-dau-ghim { position: absolute; top: 0.35rem; left: 0.35rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.92); border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.12); color: var(--gold-dark); z-index: 1; }
+  .lc-dau-ghim svg { width: 11px; height: 11px; stroke: currentColor; stroke-width: 2.4; fill: none; }
+
   .lc-khoi + .lc-khoi { margin-top: 1.6rem; }
   .lc-tieu-de { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--line); }
   .lc-tieu-de .lc-dem { margin-left: auto; letter-spacing: 0.02em; font-weight: 500; color: var(--gold-dark); }
@@ -385,6 +396,14 @@
 
     <div class="f-group"><label class="f-label" for="lcDang">Dạng concept</label>
       <select class="f-select" id="lcDang"></select></div>
+
+    <div class="f-group">
+      <label class="lc-ghim-o" for="lcGhim">
+        <input type="checkbox" id="lcGhim">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+        <span><b>Ghim lên đầu</b><small>Hiện ở khối trên cùng, khỏi phải cuộn tìm</small></span>
+      </label>
+    </div>
 
     <div class="f-group"><label class="f-label">Xem trước</label>
       <div id="lcPreview" style="display:flex;justify-content:center;padding:0.5rem 0;"></div>
@@ -1476,22 +1495,30 @@ function renderLinks(){
     return;
   }
 
+  /* Khoi dau tien: nhung concept Ky Anh tu ghim. Chung khong lap lai o khoi dang. */
+  const daGhim = ds.filter(c=>c.ghim);
+  const conLai = ds.filter(c=>!c.ghim);
+  const nhom = daGhim.length ? [{ nhan:'Ghim lên đầu', ds:daGhim }] : [];
+
   /* Gom theo dang, giu dung thu tu trong LC_DANG; dang la khong khop thi don xuong cuoi */
-  const nhom = LC_DANG.map(d=>({ nhan:d.nhan, ds:ds.filter(c=>c.dang===d.id) }))
-                      .filter(g=>g.ds.length);
+  LC_DANG.forEach(d=>{
+    const g = conLai.filter(c=>c.dang===d.id);
+    if(g.length) nhom.push({ nhan:d.nhan, ds:g });
+  });
   const idHopLe = LC_DANG.map(d=>d.id);
-  const con = ds.filter(c=>!idHopLe.includes(c.dang));
+  const con = conLai.filter(c=>!idHopLe.includes(c.dang));
   if(con.length) nhom.push({ nhan:'Chưa xếp dạng', ds:con });
 
   const veThe = c=>`
     <article class="lc-card" data-id="${esc(c.id)}">
+      ${c.ghim?`<span class="lc-dau-ghim" title="Đã ghim"><svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></span>`:''}
       <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy"
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
     </article>`;
 
   /* Chi mot khoi thi khoi can tieu de — dang loc san roi, ghi lai thanh thua */
-  grid.innerHTML = (nhom.length===1 && dang)
+  grid.innerHTML = (nhom.length===1 && dang && !daGhim.length)
     ? `<div class="lc-grid">${nhom[0].ds.map(veThe).join('')}</div>`
     : nhom.map(g=>`
         <section class="lc-khoi">
@@ -1614,6 +1641,7 @@ function moFormLink(c){
   $('lcLinkTt').value = c?.link_tt || '';
   $('lcAnh').value    = c?.image   || '';
   $('lcDang').value   = c?.dang    || 'conceptual';
+  $('lcGhim').checked = !!c?.ghim;
   veXemTruoc();
   lcOverlay.classList.add('show');
   setTimeout(()=>$('lcTen').focus(),50);
@@ -1629,7 +1657,7 @@ $('lcLuu').onclick = async()=>{
   const nut=$('lcLuu'); nut.disabled=true; nut.textContent='Đang lưu…';
   const ok = await upsertItem(lcDangSua?.id || null, {
     title: ten, content: link, image: $('lcAnh').value.trim(),
-    model: $('lcModel').value.trim(),
+    model: $('lcModel').value.trim(), ghim: $('lcGhim').checked,
     link_fb: $('lcLinkFb').value.trim(), link_tt: $('lcLinkTt').value.trim(),
     cat: CAT_LINK, dang: $('lcDang').value, price: ''
   });
