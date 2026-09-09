@@ -85,6 +85,8 @@
   .lk-btn.vua-copy .lk-phu { color: var(--gold-dark); font-weight: 700; }
 
   /* Hai nut quan tri cuoi bang chon link — cung ngon ngu voi cac nut nen tang o tren */
+  .lk-nhan { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.5rem 0.2rem; }
+  .lk-nhan:first-child { margin-top: 0; }
   .lk-hang { display: flex; gap: 0.5rem; margin-top: 1.1rem; padding-top: 0.95rem; border-top: 1px solid var(--line); }
   .lk-ghim, .lk-sua { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.8rem 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.76rem; font-weight: 600; color: var(--ink-dark); transition: all 0.2s ease; }
   .lk-ghim:hover, .lk-sua:hover { border-color: var(--gold); background: rgba(184,149,110,0.06); color: var(--gold-dark); }
@@ -380,24 +382,30 @@
     <h3 id="lcFormTitle">Thêm Concept</h3>
 
     <div class="f-group"><label class="f-label" for="lcTen">Tên concept <span class="req">*</span></label>
-      <input type="text" class="f-input" id="lcTen" placeholder="VD: Sea &amp; Soul"></div>
+      <input type="text" class="f-input" id="lcTen"></div>
 
     <div class="f-group"><label class="f-label" for="lcModel">Tên model</label>
-      <input type="text" class="f-input" id="lcModel" placeholder="VD: Thảo, Thu Thảo, DingDang">
-      <p class="f-hint">Để tìm nhanh theo tên mẫu chụp. Nhiều model thì ngăn bằng dấu phẩy.</p></div>
+      <input type="text" class="f-input" id="lcModel" list="dsModel" autocomplete="off">
+      <datalist id="dsModel"></datalist>
+      <p class="f-hint">Để tìm nhanh theo tên mẫu chụp. Gõ vào sẽ hiện các tên đã có.</p></div>
 
     <div class="f-group"><label class="f-label" for="lcLink">Link Website <span class="req">*</span></label>
-      <input type="url" class="f-input" id="lcLink" placeholder="https://kyanh.studio/album/sen-sac-7"></div>
+      <input type="url" class="f-input" id="lcLink"></div>
 
     <div class="f-group"><label class="f-label" for="lcLinkFb">Link Facebook</label>
-      <input type="url" class="f-input" id="lcLinkFb" placeholder="https://facebook.com/..."></div>
+      <input type="url" class="f-input" id="lcLinkFb"></div>
 
     <div class="f-group"><label class="f-label" for="lcLinkTt">Link TikTok</label>
-      <input type="url" class="f-input" id="lcLinkTt" placeholder="https://tiktok.com/@kyanh.studio/...">
-      <p class="f-hint">Bỏ trống cũng được — nền tảng nào chưa có link thì nút đó sẽ xám và không bấm được.</p></div>
+      <input type="url" class="f-input" id="lcLinkTt"></div>
+
+    <div class="f-group"><label class="f-label" for="lcGiaFb">Giá Facebook</label>
+      <textarea class="f-textarea" id="lcGiaFb" style="min-height:130px"></textarea></div>
+
+    <div class="f-group"><label class="f-label" for="lcGiaTt">Giá TikTok</label>
+      <textarea class="f-textarea" id="lcGiaTt" style="min-height:110px"></textarea></div>
 
     <div class="f-group"><label class="f-label" for="lcAnh">Link ảnh WordPress</label>
-      <input type="url" class="f-input" id="lcAnh" placeholder="Dán link ảnh vào đây">
+      <input type="url" class="f-input" id="lcAnh">
       <p class="f-hint">Trong WordPress: <b>Media</b> → chọn ảnh → copy <b>File URL</b>. Nên xuất 520×780, dưới 60 KB.</p></div>
 
     <div class="f-group"><label class="f-label" for="lcDang">Dạng concept</label>
@@ -1544,6 +1552,12 @@ const NEN_TANG = [
   { id:'tt',  nhan:'TikTok',   truong:'link_tt', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.9 4.9 0 0 1-1.1-2.8h-3v12.1a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.11V9.6a5.6 5.6 0 0 0-.74-.05 5.55 5.55 0 1 0 5.55 5.55V9.0a7.9 7.9 0 0 0 4.55 1.44V7.4a4.85 4.85 0 0 1-3.5-1.6z"/></svg>' },
 ];
 
+/* Gia gui khach — copy nguyen doan chu, khong phai duong link */
+const NHOM_GIA = [
+  { id:'gfb', nhan:'Giá Facebook', truong:'gia_fb', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg>' },
+  { id:'gtt', nhan:'Giá TikTok',   truong:'gia_tt', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.9 4.9 0 0 1-1.1-2.8h-3v12.1a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.11V9.6a5.6 5.6 0 0 0-.74-.05 5.55 5.55 0 1 0 5.55 5.55V9.0a7.9 7.9 0 0 0 4.55 1.44V7.4a4.85 4.85 0 0 1-3.5-1.6z"/></svg>' },
+];
+
 const lkOverlay=$('lkOverlay');
 function moChonLink(c){
   $('lkHead').innerHTML = `
@@ -1551,13 +1565,19 @@ function moChonLink(c){
     <span><b>${esc(c.title)}</b>
       <small>${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · ')) || '—'}</small></span>`;
 
-  $('lkDsNut').innerHTML = NEN_TANG.map(n=>{
-    const url = (c[n.truong]||'').trim();
-    return `<button class="lk-btn${url?'':' tat'}" data-nen="${n.id}"${url?'':' disabled'}>
+  const veNut = (n, thieu)=>{
+    const v = (c[n.truong]||'').trim();
+    return `<button class="lk-btn${v?'':' tat'}" data-nen="${n.id}"${v?'':' disabled'}>
       ${n.icon}<span>${n.nhan}</span>
-      <span class="lk-phu">${url ? 'Chạm để copy' : 'Chưa có link'}</span>
+      <span class="lk-phu">${v ? 'Chạm để copy' : thieu}</span>
     </button>`;
-  }).join('');
+  };
+  const coGia = NHOM_GIA.some(n=>(c[n.truong]||'').trim());
+  $('lkDsNut').innerHTML =
+      `<div class="lk-nhan">Link</div>`
+    + NEN_TANG.map(n=>veNut(n,'Chưa có link')).join('')
+    + (coGia ? `<div class="lk-nhan">Giá gửi khách</div>`
+               + NHOM_GIA.map(n=>veNut(n,'Chưa có')).join('') : '');
 
   if(isAdmin){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
@@ -1586,12 +1606,12 @@ function moChonLink(c){
 
   $('lkDsNut').querySelectorAll('.lk-btn:not(.tat)').forEach(b=>{
     b.onclick = async()=>{
-      const n = NEN_TANG.find(x=>x.id===b.dataset.nen);
+      const n = [...NEN_TANG, ...NHOM_GIA].find(x=>x.id===b.dataset.nen);
       const url = (c[n.truong]||'').trim();
       if(await copyText(url)){
         b.classList.add('vua-copy');
         b.querySelector('.lk-phu').textContent = '✓ Đã copy';
-        showToast('Đã copy link ' + n.nhan + ' — ' + c.title);
+        showToast('Đã copy ' + n.nhan + ' — ' + c.title);
         setTimeout(()=>lkOverlay.classList.remove('show'), 650);
       } else showToast('Không copy được', true);
     };
@@ -1633,6 +1653,9 @@ $('lcAnh').addEventListener('input', veXemTruoc);
 
 
 function moFormLink(c){
+  /* Gom tat ca ten model da nhap, tach theo dau phay, bo trung */
+  const dsModel = [...new Set(itemsLink().flatMap(x=>(x.model||'').split(',').map(t=>t.trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  $('dsModel').innerHTML = dsModel.map(m=>`<option value="${esc(m)}">`).join('');
   lcDangSua = c || null;
   $('lcFormTitle').textContent = c ? 'Sửa Concept' : 'Thêm Concept';
   $('lcTen').value    = c?.title   || '';
@@ -1640,6 +1663,8 @@ function moFormLink(c){
   $('lcLink').value   = c?.content || '';
   $('lcLinkFb').value = c?.link_fb || '';
   $('lcLinkTt').value = c?.link_tt || '';
+  $('lcGiaFb').value  = c?.gia_fb  || '';
+  $('lcGiaTt').value  = c?.gia_tt  || '';
   $('lcAnh').value    = c?.image   || '';
   $('lcDang').value   = c?.dang    || 'conceptual';
   $('lcGhim').checked = !!c?.ghim;
@@ -1660,6 +1685,7 @@ $('lcLuu').onclick = async()=>{
     title: ten, content: link, image: $('lcAnh').value.trim(),
     model: $('lcModel').value.trim(), ghim: $('lcGhim').checked,
     link_fb: $('lcLinkFb').value.trim(), link_tt: $('lcLinkTt').value.trim(),
+    gia_fb:  $('lcGiaFb').value.trim(),  gia_tt:  $('lcGiaTt').value.trim(),
     cat: CAT_LINK, dang: $('lcDang').value, price: ''
   });
   nut.disabled=false; nut.textContent='Lưu';
