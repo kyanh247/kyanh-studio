@@ -3,3 +3,11 @@ Thumbs.db
 node_modules/
 *.log
 .vscode/
+
+# Ban sao du lieu — KHONG day len GitHub.
+# GitHub Pages phuc vu ca thu muc repo, nen file nao commit vao day
+# la ai cung tai ve duoc qua reply.kyanh.studio. Ma mau tra loi co
+# chua so tai khoan, ma so thue, dia chi studio.
+# Ban sao luu that nam o Reply\Sao-luu-tu-dong\ (ngoai repo), chay tu dong moi Chu Nhat.
+backup/replies-backup.json
+versions/*.zip
