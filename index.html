@@ -83,6 +83,10 @@
   .lk-sua svg { width: 15px; height: 15px; }
 
   /* ===== Luoi Link Concept ===== */
+  .lc-khoi + .lc-khoi { margin-top: 1.6rem; }
+  .lc-tieu-de { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--line); }
+  .lc-tieu-de .lc-dem { margin-left: auto; letter-spacing: 0.02em; font-weight: 500; color: var(--gold-dark); }
+
   .lc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
   .lc-card { position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: all 0.25s ease; }
   .lc-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
@@ -323,7 +327,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
     </div>
-    <main class="lc-grid" id="lcGrid"></main>
+    <main id="lcGrid"></main>
   </div>
 </div>
 
@@ -1461,21 +1465,40 @@ function renderLinks(){
   if(dang) ds = ds.filter(c=>c.dang===dang);
   if(q)    ds = ds.filter(c=>((c.title||'')+' '+(c.model||'')).toLowerCase().includes(q));
   const grid=$('lcGrid');
+
   if(!ds.length){
     const chuaCoGi = !itemsLink().length;
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">`
+    grid.innerHTML = `<div class="empty">`
       + (chuaCoGi
           ? '<h3>Chưa có concept nào</h3>' + (isAdmin ? 'Nhấn dấu + để thêm concept đầu tiên.' : 'Khu vực này đang trống.')
           : '<h3>Không tìm thấy</h3>' + (dang ? `Chưa có concept nào thuộc ${esc(nhanDang(dang))}.` : ''))
       + `</div>`;
     return;
   }
-  grid.innerHTML = ds.map(c=>`
+
+  /* Gom theo dang, giu dung thu tu trong LC_DANG; dang la khong khop thi don xuong cuoi */
+  const nhom = LC_DANG.map(d=>({ nhan:d.nhan, ds:ds.filter(c=>c.dang===d.id) }))
+                      .filter(g=>g.ds.length);
+  const idHopLe = LC_DANG.map(d=>d.id);
+  const con = ds.filter(c=>!idHopLe.includes(c.dang));
+  if(con.length) nhom.push({ nhan:'Chưa xếp dạng', ds:con });
+
+  const veThe = c=>`
     <article class="lc-card" data-id="${esc(c.id)}">
       <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy"
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
-    </article>`).join('');
+    </article>`;
+
+  /* Chi mot khoi thi khoi can tieu de — dang loc san roi, ghi lai thanh thua */
+  grid.innerHTML = (nhom.length===1 && dang)
+    ? `<div class="lc-grid">${nhom[0].ds.map(veThe).join('')}</div>`
+    : nhom.map(g=>`
+        <section class="lc-khoi">
+          <div class="lc-tieu-de">${esc(g.nhan)}<span class="lc-dem">${g.ds.length}</span></div>
+          <div class="lc-grid">${g.ds.map(veThe).join('')}</div>
+        </section>`).join('');
+
   grid.querySelectorAll('.lc-card').forEach(el=>{
     const c = ds.find(x=>String(x.id)===el.dataset.id);
     el.onclick=()=>moChonLink(c);
