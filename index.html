@@ -396,9 +396,9 @@
       <input type="url" class="f-input" id="lcLinkTt" placeholder="https://tiktok.com/@kyanh.studio/...">
       <p class="f-hint">Bỏ trống cũng được — nền tảng nào chưa có link thì nút đó sẽ xám và không bấm được.</p></div>
 
-    <div class="f-group"><label class="f-label" for="lcAnh">Link ảnh</label>
+    <div class="f-group"><label class="f-label" for="lcAnh">Link ảnh WordPress</label>
       <input type="url" class="f-input" id="lcAnh" placeholder="Dán link ảnh vào đây">
-      <p class="f-hint"><b>Cách 1 — dán link có sẵn:</b> copy link ảnh từ WordPress (Media → chọn ảnh → <i>File URL</i>) hay bất kỳ đâu, dán thẳng vào ô trên.<br><b>Cách 2 — tải lên GitHub:</b> bỏ ảnh vào thư mục <b>assets/images/concepts/</b> rồi để nguyên đường dẫn app gợi ý sẵn.<br>Dùng cách nào cũng được, trộn lẫn cũng không sao. Ảnh nên 600×900, dưới 150 KB.</p></div>
+      <p class="f-hint">Trong WordPress: <b>Media</b> → chọn ảnh → copy <b>File URL</b>. Nên xuất 520×780, dưới 60 KB.</p></div>
 
     <div class="f-group"><label class="f-label" for="lcDang">Dạng concept</label>
       <select class="f-select" id="lcDang"></select></div>
@@ -1604,14 +1604,6 @@ function dongChonLink(){ lkOverlay.classList.remove('show'); }
 const lcOverlay=$('lcOverlay');
 let lcDangSua=null;
 
-/* Doi ten concept thanh ten file khong dau: "Sea & Soul" -> "sea-and-soul" */
-function taoTenFile(ten){
-  return (ten||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
-    .replace(/đ/g,'d').replace(/Đ/g,'D')
-    .toLowerCase().replace(/&/g,'-and-')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-}
-const THU_MUC_ANH = 'assets/images/concepts/';
 
 function veXemTruoc(){
   const url=$('lcAnh').value.trim(), ghiChu=$('lcNguon'), khung=$('lcPreview');
@@ -1637,18 +1629,8 @@ function veXemTruoc(){
   img.src = url;
   khung.replaceChildren(img);
 }
-$('lcAnh').addEventListener('input', ()=>{ $('lcAnh').dataset.tuDien=''; veXemTruoc(); });
+$('lcAnh').addEventListener('input', veXemTruoc);
 
-/* Go ten concept -> tu goi y duong dan anh trong repo.
-   Chi ghi de khi o dang trong hoac dang giu goi y cu, khong dap len thu nguoi dung tu nhap. */
-$('lcTen').addEventListener('input', ()=>{
-  const o=$('lcAnh'), dangTrong = !o.value.trim(), laGoiY = o.dataset.tuDien==='1';
-  if(!dangTrong && !laGoiY) return;
-  const ten=taoTenFile($('lcTen').value);
-  o.value = ten ? THU_MUC_ANH + ten + '.jpg' : '';
-  o.dataset.tuDien='1';
-  veXemTruoc();
-});
 
 function moFormLink(c){
   lcDangSua = c || null;
