@@ -85,6 +85,7 @@
   .lk-btn.vua-copy .lk-phu { color: var(--gold-dark); font-weight: 700; }
 
   /* Hai nut quan tri cuoi bang chon link — cung ngon ngu voi cac nut nen tang o tren */
+  .lk-btn .lk-phu.co-gia { font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); letter-spacing: 0; }
   .lk-nhan { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.5rem 0.2rem; }
   .lk-nhan:first-child { margin-top: 0; }
   .lk-hang { display: flex; gap: 0.5rem; margin-top: 1.1rem; padding-top: 0.95rem; border-top: 1px solid var(--line); }
@@ -1558,6 +1559,30 @@ const NHOM_GIA = [
   { id:'gtt', nhan:'Giá TikTok',   truong:'gia_tt', icon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.9 4.9 0 0 1-1.1-2.8h-3v12.1a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.11V9.6a5.6 5.6 0 0 0-.74-.05 5.55 5.55 0 1 0 5.55 5.55V9.0a7.9 7.9 0 0 0 4.55 1.44V7.4a4.85 4.85 0 0 1-3.5-1.6z"/></svg>' },
 ];
 
+/* Doi so dam Unicode ve so thuong de doc duoc gia trong doan chu */
+function soThuong(t){
+  let out='';
+  for(const ch of t){
+    const c=ch.codePointAt(0);
+    if(c>=0x1D7CE && c<=0x1D7D7) out += String.fromCharCode(48 + c - 0x1D7CE);
+    else out += ch;
+  }
+  return out;
+}
+
+/* Moc gia ra khoi doan chu gui khach.
+   Facebook: "...chi con 2.890.000d (Gia goc 3.190.000)" -> lay so day dau tien
+   TikTok  : "...goi chup 2<hoa>890 tron goi..."         -> so co ky tu chen giua */
+function docGia(t){
+  const v = soThuong(t||'');
+  /* Co u de ky tu chen giua (emoji) duoc tinh la mot, khong bi tach doi */
+  const tiktok = v.match(/\d[^\d\s.,]{1,2}\d{3}(?!\d)/u);
+  if(tiktok) return tiktok[0];
+  const day = v.match(/\d{1,3}(?:[.,]\d{3})+\s*đ?/);
+  if(day) return day[0].trim();
+  return '';
+}
+
 const lkOverlay=$('lkOverlay');
 function moChonLink(c){
   $('lkHead').innerHTML = `
@@ -1565,11 +1590,12 @@ function moChonLink(c){
     <span><b>${esc(c.title)}</b>
       <small>${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · ')) || '—'}</small></span>`;
 
-  const veNut = (n, thieu)=>{
+  const veNut = (n, thieu, laGia)=>{
     const v = (c[n.truong]||'').trim();
+    const gia = laGia && v ? docGia(v) : '';
     return `<button class="lk-btn${v?'':' tat'}" data-nen="${n.id}"${v?'':' disabled'}>
       ${n.icon}<span>${n.nhan}</span>
-      <span class="lk-phu">${v ? 'Chạm để copy' : thieu}</span>
+      <span class="lk-phu${gia?' co-gia':''}">${v ? (gia || 'Chạm để copy') : thieu}</span>
     </button>`;
   };
   const coGia = NHOM_GIA.some(n=>(c[n.truong]||'').trim());
@@ -1577,7 +1603,7 @@ function moChonLink(c){
       `<div class="lk-nhan">Link</div>`
     + NEN_TANG.map(n=>veNut(n,'Chưa có link')).join('')
     + (coGia ? `<div class="lk-nhan">Giá gửi khách</div>`
-               + NHOM_GIA.map(n=>veNut(n,'Chưa có')).join('') : '');
+               + NHOM_GIA.map(n=>veNut(n,'Chưa có',true)).join('') : '');
 
   if(isAdmin){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
