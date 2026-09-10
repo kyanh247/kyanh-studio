@@ -181,7 +181,11 @@
   .clip-card.has-img .clip-body { -webkit-line-clamp: 1; }
   .clip-card.copied::after { content: "✓ Đã copy"; position: absolute; top: 0.6rem; right: 0.7rem; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; color: #fff; background: var(--gold); padding: 0.18rem 0.55rem; border-radius: 20px; box-shadow: 0 2px 8px rgba(184,149,110,0.35); animation: popBadge 0.25s ease; }
   @keyframes popBadge { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .clip-form-badge { align-self: flex-start; margin-top: 0.1rem; font-size: 0.55rem; font-weight: 600; letter-spacing: 0.03em; color: var(--gold-dark); background: rgba(184,149,110,0.12); border: 1px solid rgba(184,149,110,0.3); padding: 0.15rem 0.55rem; border-radius: 20px; }
+  /* Hang duoi cung cua the: tag gia va nhan, canh trai, day xuong day thu */
+  .clip-duoi { margin-top: auto; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+  .clip-duoi:empty { display: none; }
+
+  .clip-form-badge { font-size: 0.55rem; font-weight: 600; letter-spacing: 0.03em; color: var(--gold-dark); background: rgba(184,149,110,0.12); border: 1px solid rgba(184,149,110,0.3); padding: 0.15rem 0.55rem; border-radius: 20px; }
   /* Khối lặp trong form điền nhanh */
   .fill-block { margin-bottom: 1rem; }
   .fill-group { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 1rem 0.4rem; margin-bottom: 0.7rem; }
@@ -962,14 +966,16 @@ function cardEl(item){
   card.innerHTML=`
     <div class="clip-top">
       <div class="clip-title">${esc(item.title)}</div>
-      ${item.price?`<span class="clip-price">${esc(item.price)}</span>`:''}
       <button class="btn-more${isAdmin?' show':''}" title="Tuỳ chọn" aria-label="Tuỳ chọn">
         <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>
     </div>
     ${item.image?`<img class="clip-img" src="${item.image}" alt="" loading="lazy">`:''}
     <div class="clip-body">${esc(stripVersionMarks(item.content))}</div>
-    ${nhanThe(item)}`;
+    <div class="clip-duoi">
+      ${item.price?`<span class="clip-price">${esc(item.price)}</span>`:''}
+      ${nhanThe(item)}
+    </div>`;
   const more=card.querySelector('.btn-more');
   more.onclick=e=>{e.stopPropagation();openOptions(item,more);};
   card.onclick=()=>copyItem(item,card);
