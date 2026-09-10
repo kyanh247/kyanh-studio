@@ -164,7 +164,7 @@
   .sub-tab:hover { border-color: var(--gold); color: var(--gold-dark); }
   .sub-tab.active { background: rgba(184,149,110,0.12); border-color: var(--gold); color: var(--gold-dark); font-weight: 600; }
 
-  .cards { display: grid; grid-template-columns: repeat(var(--so-cot, 2), 1fr); gap: 0.6rem; }
+  .cards { display: grid; grid-template-columns: repeat(var(--so-cot, 2), 1fr); gap: 0.45rem; }
   .clip-card { position: relative; height: 165px; overflow: hidden; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 0.85rem 0.8rem 0.75rem; box-shadow: 0 2px 14px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; gap: 0.45rem; }
   .clip-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
   .clip-card:active { transform: translateY(0) scale(0.995); }
@@ -267,7 +267,7 @@
     .app { padding: 1.3rem 0.55rem 3rem; }
     .app-logo { width: 175px; }
     /* 2 cột lưới đều trên mobile */
-    .cards, .skeleton { gap: 0.45rem; }
+    .cards, .skeleton { gap: 0.35rem; }
     .btn-add span { display: none; }
     .btn-add.show { padding: 0 0.9rem; }
     .menu-tabs { gap: 0.35rem; }
@@ -285,7 +285,7 @@
     .btn-more { width: 24px; height: 24px; }
   }
   @media (max-width: 400px) {
-    .cards, .skeleton { gap: 0.4rem; }
+    .cards, .skeleton { gap: 0.3rem; }
     .clip-card { padding: 0.6rem 0.5rem; }
   }
   button:focus-visible, .clip-card:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
