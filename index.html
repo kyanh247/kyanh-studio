@@ -1799,9 +1799,12 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); 
 const BAN_DANG_CHAY = new Date(document.lastModified).getTime();
 let coBanMoi = false, lanKiemTraCuoi = 0;
 
-function dangBanViec(){   // đang mở khung nào đó = đang làm dở, chưa tải lại vội
-  return ['modalOverlay','fillOverlay','pinOverlay','optOverlay']
-    .some(id => $(id) && $(id).classList.contains('show'));
+/* Đang làm dở thì chưa tải lại vội: có khung nào đang mở (mọi khung, kể cả khung làm thêm
+   sau này), hoặc đang gõ dở trong một ô nhập. */
+function dangBanViec(){
+  if(document.querySelector('.modal-overlay.show, .opt-overlay.show')) return true;
+  const o=document.activeElement;
+  return !!(o && /^(INPUT|TEXTAREA|SELECT)$/.test(o.tagName) && o.value);
 }
 
 async function taiLaiBanMoi(){
