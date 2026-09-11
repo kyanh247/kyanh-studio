@@ -153,6 +153,14 @@
   .chon-cot button.dang-chon { background: rgba(184,149,110,0.15); color: var(--gold-dark); }
   .chon-cot svg { width: 15px; height: 15px; fill: currentColor; }
 
+  /* Nut x xoa nhanh trong o tim — chi hien khi co chu */
+  .search-wrap .search-input { padding-right: 2.5rem; }
+  .search-input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+  .xoa-tim { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%; background: rgba(139,129,120,0.14); color: var(--ink); cursor: pointer; transition: background 0.2s ease; }
+  .xoa-tim:hover { background: rgba(184,149,110,0.25); }
+  .xoa-tim[hidden] { display: none; }
+  .search-wrap .xoa-tim svg { position: static; transform: none; width: 13px; height: 13px; stroke: currentColor; }
+
   .btn-add { display: none; align-items: center; gap: 0.45rem; padding: 0 1.25rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.3s ease; white-space: nowrap; }
   .btn-add.show { display: flex; }
   .btn-add:hover { background: var(--gold-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(184,149,110,0.3); }
@@ -342,6 +350,7 @@
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
       <input type="search" class="search-input" id="searchInput" placeholder="Tìm mẫu trả lời, concept...">
+      <button type="button" class="xoa-tim" title="Xoá" aria-label="Xoá tìm kiếm" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="chon-cot" id="btnCot" role="group" aria-label="Số cột">
       <button type="button" data-cot="2" title="2 cột" aria-label="2 cột"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/></svg></button>
@@ -364,6 +373,7 @@
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
         <input type="search" class="search-input" id="lcSearch" placeholder="Tìm theo tên concept hoặc model...">
+      <button type="button" class="xoa-tim" title="Xoá" aria-label="Xoá tìm kiếm" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <select class="lc-filter" id="lcFilter" title="Lọc theo dạng concept"></select>
       <div class="chon-cot" id="lcCoAnh" role="group" aria-label="Cỡ ảnh">
@@ -646,7 +656,7 @@ if (firebaseEnabled) {
 }
 
 const CATEGORIES = [
-  { id: 'all', label: 'All' },
+  { id: 'recent', label: 'Gần Đây' },
   { id: 'chot-don', label: 'Chốt Đơn' },
   { id: 'tuvan', label: 'Tư Vấn', subs: [
       { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
@@ -659,7 +669,7 @@ const CATEGORIES = [
       { id: 'concept-couple',     label: 'Couple' },
       { id: 'concept-holiday',   label: 'Truyền Thống' } ]},
   { id: 'uu-dai', label: 'Ưu Đãi' },
-  { id: 'recent', label: 'Gần Đây' },
+  { id: 'all', label: 'All' },
 ];
 // Nhãn hiển thị góc thẻ + trong menu tuỳ chọn "Di chuyển tới"
 const CAT_LABELS = {
@@ -734,6 +744,7 @@ $('btnCot').querySelectorAll('button').forEach(b=>b.onclick=()=>datSoCot(+b.data
 
 async function init() {
   loadRecent(); napSoCot();
+  activeCat = recent.length ? 'recent' : 'chot-don';   // may moi chua copy gi thi khoi man hinh trong
   // Có Firebase thì quyền quản trị do đăng nhập quyết định.
   // Không có (chế độ máy đơn) thì vẫn dùng PIN như cũ.
   isAdmin = auth ? false : (SS.get('kyanh-admin') === '1');
@@ -1792,6 +1803,16 @@ $('lcLuu').onclick = async()=>{
 
 
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongFormLink(); dongChonLink(); } });
+
+/* Nut x xoa nhanh trong o tim: hien khi co chu, bam la xoa va giu con tro trong o */
+document.querySelectorAll('.search-wrap').forEach(w=>{
+  const o=w.querySelector('input'), x=w.querySelector('.xoa-tim');
+  if(!o || !x) return;
+  const capNhat=()=>{ x.hidden=!o.value; };
+  o.addEventListener('input', capNhat);
+  x.onclick=()=>{ o.value=''; o.dispatchEvent(new Event('input')); o.focus(); };
+  capNhat();
+});
 
 /* ---------- Tự cập nhật khi có bản mới ----------
    App so ngày giờ của bản đang chạy với bản trên máy chủ. Mới hơn thì tự tải lại,
