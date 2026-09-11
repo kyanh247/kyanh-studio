@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>Kỳ Anh Reply — Trả Lời Nhanh</title>
+<title>Clipboard | KAS Reply</title>
 <link rel="icon" href="assets/favicon/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/favicon/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/favicon/favicon-180.png">
@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#FAF9F7">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Kỳ Anh Reply">
+<meta name="apple-mobile-web-app-title" content="Clipboard | KAS Reply">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
@@ -50,7 +50,6 @@
   .app-eyebrow { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.55rem; }
   .app-logo { width: 210px; max-width: 62vw; margin: 0 auto 0.5rem; }
   .app-logo svg { width: 100%; height: auto; display: block; }
-  .app-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
   .lock-btn { position: absolute; top: 0; right: 0; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.25s ease; color: var(--muted); }
   .lock-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
   .lock-btn.admin { background: var(--gold); border-color: var(--gold); color: #fff; }
@@ -138,13 +137,13 @@
   .search-wrap svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--muted); pointer-events: none; }
   .search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.6rem; font-size: 0.86rem; font-family: 'Montserrat', sans-serif; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 8px; transition: all 0.3s ease; }
   .search-input:focus { outline: none; border-color: var(--gold); }
-  .btn-cot { flex: 0 0 auto; width: 44px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.25s ease; }
-  .btn-cot:hover { border-color: var(--gold); color: var(--gold-dark); }
-  .btn-cot svg { width: 19px; height: 19px; }
-  /* Chi hien bieu tuong cua so cot SE chuyen sang khi bam */
-  .btn-cot svg:first-child { display: none; }
-  .btn-cot.ba-cot svg:first-child { display: block; }
-  .btn-cot.ba-cot svg:last-child { display: none; }
+
+  /* Chon so cot: hai o canh nhau, o dang dung to vang */
+  .chon-cot { flex: 0 0 auto; display: flex; gap: 2px; padding: 3px; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+  .chon-cot button { width: 34px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 6px; cursor: pointer; color: #C9C0B6; transition: all 0.2s ease; }
+  .chon-cot button:hover { color: var(--gold-dark); }
+  .chon-cot button.dang-chon { background: rgba(184,149,110,0.15); color: var(--gold-dark); }
+  .chon-cot svg { width: 15px; height: 15px; fill: currentColor; }
 
   .btn-add { display: none; align-items: center; gap: 0.45rem; padding: 0 1.25rem; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.3s ease; white-space: nowrap; }
   .btn-add.show { display: flex; }
@@ -320,7 +319,6 @@
         </g>
       </svg>
     </div>
-    <p class="app-sub">Chạm vào thẻ để sao chép</p>
     <button class="lock-btn" id="lockBtn" title="Chế độ quản trị" aria-label="Chế độ quản trị">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </button>
@@ -337,10 +335,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
       <input type="search" class="search-input" id="searchInput" placeholder="Tìm mẫu trả lời, concept...">
     </div>
-    <button class="btn-cot" id="btnCot" title="Đổi số cột" aria-label="Đổi số cột">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="4" width="7" height="16" rx="1.5"/><rect x="14" y="4" width="7" height="16" rx="1.5"/></svg>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="4" width="4.6" height="16" rx="1.3"/><rect x="9.7" y="4" width="4.6" height="16" rx="1.3"/><rect x="16.4" y="4" width="4.6" height="16" rx="1.3"/></svg>
-    </button>
+    <div class="chon-cot" id="btnCot" role="group" aria-label="Số cột">
+      <button type="button" data-cot="2" title="2 cột" aria-label="2 cột"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/></svg></button>
+      <button type="button" data-cot="3" title="3 cột" aria-label="3 cột"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="4.8" height="4.8" rx="1.3"/><rect x="9.6" y="3.5" width="4.8" height="4.8" rx="1.3"/><rect x="15.7" y="3.5" width="4.8" height="4.8" rx="1.3"/><rect x="3.5" y="9.6" width="4.8" height="4.8" rx="1.3"/><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="1.3"/><rect x="15.7" y="9.6" width="4.8" height="4.8" rx="1.3"/><rect x="3.5" y="15.7" width="4.8" height="4.8" rx="1.3"/><rect x="9.6" y="15.7" width="4.8" height="4.8" rx="1.3"/><rect x="15.7" y="15.7" width="4.8" height="4.8" rx="1.3"/></svg></button>
+    </div>
     <button class="btn-add" id="btnAdd" title="Thêm mẫu mới">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <span>Thêm mẫu</span>
@@ -376,7 +374,7 @@
   </button>
   <button class="dock-item" data-view="link">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-    <span>Link Concept</span>
+    <span>Concept</span>
   </button>
 </nav>
 
@@ -716,14 +714,11 @@ function saveCache(){ LS.set(CACHE_KEY, JSON.stringify(items)); }
 const COT_KEY = 'kyanh-reply-so-cot';
 function datSoCot(n){
   document.documentElement.style.setProperty('--so-cot', n);
-  $('btnCot').classList.toggle('ba-cot', n===3);
-  $('btnCot').title = n===2 ? 'Đang 2 cột — chạm để xem 3 cột'
-                            : 'Đang 3 cột — chạm để xem 2 cột';
+  $('btnCot').querySelectorAll('button').forEach(b=>b.classList.toggle('dang-chon', +b.dataset.cot===n));
   LS.set(COT_KEY, String(n));
 }
 function napSoCot(){ datSoCot(LS.get(COT_KEY)==='3' ? 3 : 2); }
-$('btnCot').onclick = ()=> datSoCot(getComputedStyle(document.documentElement)
-                                      .getPropertyValue('--so-cot').trim()==='3' ? 2 : 3);
+$('btnCot').querySelectorAll('button').forEach(b=>b.onclick=()=>datSoCot(+b.dataset.cot));
 
 async function init() {
   loadRecent(); napSoCot();
@@ -926,12 +921,34 @@ const CAT_AN   = [CAT_LINK, CAT_CHI];   // khong hien o bat ky tab nao ben Reply
 function itemsReply(){ return items.filter(i=>!CAT_AN.includes(i.cat)); }
 function itemsLink(){  return items.filter(i=>i.cat===CAT_LINK); }
 
+/* Diem xep hang ket qua tim. Go "14" thi concept "#14" dung dau, roi den ten co so 14
+   dung rieng, sau cung moi toi noi dung. So dinh vao so khac (140, 2014, 2.140.000) khong tinh. */
+function diemTim(tieuDe, phu, q){
+  const t=(tieuDe||'').toLowerCase(), c=(phu||'').toLowerCase();
+  if(!t.includes(q) && !c.includes(q)) return 0;
+  if(/^\d+$/.test(q)){
+    const soRieng = new RegExp('(^|[^0-9.,])' + q + '(?![0-9])');
+    if(new RegExp('# *' + q + '(?![0-9])').test(t)) return 100;
+    if(soRieng.test(t)) return 80;
+    if(t.includes(q))   return 40;
+    if(soRieng.test(c)) return 20;
+    return 10;
+  }
+  if(t.startsWith(q)) return 90;
+  if(t.includes(q))   return 70;
+  return 10;
+}
+/* Loc + xep theo diem, cung diem thi giu thu tu cu */
+function xepTheoDiem(ds, q, layPhu){
+  return ds.map((i,k)=>({i, k, d:diemTim(i.title, layPhu(i), q)}))
+           .filter(x=>x.d>0).sort((a,b)=>b.d-a.d || a.k-b.k).map(x=>x.i);
+}
+
 function visibleItems(){
   const q=searchInput.value.trim().toLowerCase();
   const nguon=itemsReply();
   if (q){
-    const all=nguon.filter(i=> (i.title||'').toLowerCase().includes(q) || (i.content||'').toLowerCase().includes(q));
-    return {list:all, searching:true};
+    return {list:xepTheoDiem(nguon, q, i=>i.content), searching:true};
   }
   let list;
   if (activeCat==='all'){
@@ -1471,20 +1488,20 @@ document.querySelectorAll('.modal-x').forEach(b=>b.onclick=()=>{
 searchInput.addEventListener('input', render);
 /* ================= Ngan keo + chuyen phan ================= */
 const viewReply=$('viewReply'), viewLink=$('viewLink');
-const appEyebrow=document.querySelector('.app-eyebrow'), appSub=document.querySelector('.app-sub');
+const appEyebrow=document.querySelector('.app-eyebrow');
 let activeView='reply';
 
 
 
 const TIEU_DE_VIEW = {
-  reply:  ['Nội bộ · Trả lời nhanh', 'Chạm vào thẻ để sao chép'],
-  link:   ['Nội bộ · Link concept',   'Chạm vào ảnh để copy link'],
+  reply: 'Nội bộ · Trả lời nhanh',
+  link:  'Nội bộ · Concept',
 };
 function doiView(v){
   activeView=v;
   viewReply.hidden  = v!=='reply';
   viewLink.hidden   = v!=='link';
-  [appEyebrow.textContent, appSub.textContent] = TIEU_DE_VIEW[v] || TIEU_DE_VIEW.reply;
+  appEyebrow.textContent = TIEU_DE_VIEW[v] || TIEU_DE_VIEW.reply;
   document.querySelectorAll('.dock-item').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
   if(v==='link')   renderLinks();
 }
@@ -1523,7 +1540,7 @@ function renderLinks(){
   $('lcFilter').classList.toggle('dang-loc', !!dang);
   let ds = itemsLink();
   if(dang) ds = ds.filter(c=>c.dang===dang);
-  if(q)    ds = ds.filter(c=>((c.title||'')+' '+(c.model||'')).toLowerCase().includes(q));
+  if(q)    ds = xepTheoDiem(ds, q, c=>c.model);
   const grid=$('lcGrid');
 
   if(!ds.length){
