@@ -1,7 +1,7 @@
-# Sao lưu mẫu trả lời — Kỳ Anh Reply
+# Sao lưu mẫu trả lời — KAS Reply
 
 Nội dung các mẫu trả lời nằm trên Firebase, **không nằm trong file HTML**.
-Thư mục này giữ bản sao phòng khi dữ liệu bị xoá.
+Thư mục này giữ script sao lưu và khôi phục.
 
 ## Nếu mẫu bị mất — cách lấy lại
 
@@ -11,23 +11,45 @@ Mở Terminal tại thư mục `kyanh-studio`, chạy:
 python backup/khoi-phuc.py
 ```
 
-Lệnh này **chỉ xem trước**, liệt kê những mẫu đang thiếu, chưa ghi gì lên Firebase.
-Xem thấy đúng rồi thì chạy tiếp:
+Lệnh này **chỉ xem trước**: nó in ra đang dùng bản sao lưu nào, sao lưu lúc nào, và những
+mẫu đang thiếu — chưa ghi gì lên Firebase, chưa hỏi mật khẩu. Xem thấy đúng rồi thì chạy:
 
 ```bash
 python backup/khoi-phuc.py --that
 ```
 
-Chỉ những mẫu **đã mất** mới được nạp lại. Mẫu nào còn trên Firebase thì giữ nguyên,
-không bị ghi đè — nên chạy nhầm cũng không làm hỏng dữ liệu đang có.
+Lúc này script hỏi **email + mật khẩu quản trị** (tài khoản đã thêm trong Firebase Console)
+rồi mới ghi. Chỉ những mẫu **đã mất** được nạp lại; mẫu còn trên Firebase giữ nguyên, không
+bị ghi đè — nên chạy nhầm cũng không làm hỏng dữ liệu đang có.
 
-## Cập nhật bản sao lưu
+Mẫu bị **sửa hỏng** chứ không bị xoá thì script không cứu được, vì với nó mẫu đó vẫn còn.
 
-`replies-backup.json` là ảnh chụp tại thời điểm sao lưu, **không tự cập nhật**.
-Thêm nhiều mẫu mới thì nhớ sao lưu lại, nếu không bản cũ sẽ thiếu mẫu mới.
+## Script lấy bản sao lưu nào
+
+Tự chọn bản **mới nhất** trong hai chỗ:
+
+- `Reply\Sao-luu-tu-dong\` — tác vụ Windows `KyAnhReply-SaoLuu` chạy mỗi Chủ Nhật 12h00,
+  nằm ngoài repo, giữ 12 bản gần nhất.
+- `backup/replies-backup.json` — bản trong repo, chỉ cập nhật khi chạy tay `sao-luu.py`.
+
+Nếu bản được chọn đã cũ hơn 10 ngày, script cảnh báo ngay trên màn hình: khôi phục bằng bản
+cũ nghĩa là **mất hết mẫu thêm sau ngày đó**. Muốn ép dùng một file khác:
+
+```bash
+python backup/khoi-phuc.py --tu "F:\...\replies-2026-09-06_1200.json"
+```
+
+## Cập nhật bản sao lưu bằng tay
+
+```bash
+python backup/sao-luu.py                 # ghi đè backup/replies-backup.json
+python backup/sao-luu.py --ra <thư mục>  # lưu ra ngoài repo, tên kèm ngày giờ
+```
 
 ## Lưu ý
 
-- Nếu sau này chuyển sang đăng nhập bằng email/mật khẩu (Firebase Auth),
-  script khôi phục cần sửa lại để đăng nhập trước khi ghi.
-- `PIN` trong `khoi-phuc.py` phải khớp `KA_ADMIN_PIN` trong `index.html`.
+- `replies-backup.json` **không commit** lên GitHub (xem `.gitignore`): repo công khai, ai
+  cũng tải được file đó nếu nó nằm trong repo.
+- Hai script này không chứa mật khẩu. `apiKey` được đọc từ `index.html` — key đó vốn là
+  thông tin công khai, thứ bảo vệ dữ liệu là Firestore Rules.
+- Cách ghi cũ bằng `_key` = PIN đã bị Rules chặn từ commit `21f2ef9`, không dùng được nữa.
