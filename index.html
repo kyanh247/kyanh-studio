@@ -251,6 +251,10 @@
   .f-input, .f-select, .f-textarea { width: 100%; padding: 0.8rem 1rem; font-size: 0.86rem; font-family: 'Montserrat', sans-serif; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 6px; transition: all 0.3s ease; }
   .f-textarea { min-height: 130px; resize: vertical; line-height: 1.7; }
   .f-input:focus, .f-select:focus, .f-textarea:focus { outline: none; border-color: var(--gold); }
+  /* Dong chi de xem: so do app tu tinh, khong go vao duoc */
+  .o-tu-tinh { background: rgba(139,129,120,0.07); border-style: dashed; color: var(--ink); font-weight: 600; }
+  .o-tu-tinh.trong { color: var(--muted); font-weight: 400; }
+  .nhan-tu-tinh { margin-left: 0.35rem; font-size: 0.6rem; font-weight: 500; letter-spacing: 0.04em; text-transform: none; color: var(--muted); }
   .f-select { padding-right: 2.5rem; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; }
   .f-hint { font-size: 0.67rem; color: var(--muted); margin-top: 0.35rem; }
   .img-preview-wrap { display: none; position: relative; margin-top: 0.6rem; }
@@ -1102,6 +1106,19 @@ function computeRemain(common){
 }
 const AUTO_LABELS=[AUTO_DISCOUNT_LABEL, AUTO_TIKTOK_LABEL, AUTO_REMAIN_LABEL];
 
+/* Ô nhập tiền: gõ 5000000 thì tự thành 5.000.000, con trỏ ở nguyên chỗ đang gõ */
+function laOTien(lb){ return /giá|chi phí|cọc|tiền/i.test(lb||'') && !AUTO_LABELS.includes(lb); }
+function chamNghin(inp){
+  const cu=inp.value, vt=inp.selectionStart==null?cu.length:inp.selectionStart;
+  const soTruoc=cu.slice(0,vt).replace(/[^0-9]/g,'').length;
+  const moi=cu.replace(/[^0-9]/g,'').replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.');
+  if(moi===cu) return;
+  inp.value=moi;
+  let i=0, d=0;
+  while(i<moi.length && d<soTruoc){ if(moi[i]>='0'&&moi[i]<='9') d++; i++; }
+  try{ inp.setSelectionRange(i,i); }catch(e){}
+}
+
 /* Một mẫu có thể chứa nhiều bản, ngăn nhau bằng dòng ===Tên bản===
    Mỗi bản hiện một ô xem trước + nút copy riêng. */
 function splitVersions(content){
@@ -1176,8 +1193,14 @@ function openFill(item, card){
     segs.forEach(seg=>{
       if(seg.type==='text'){
         fieldsOf(seg.value).forEach(lb=>{
-          if(AUTO_LABELS.includes(lb)) return;      // tự tính, không cần ô điền
           if(renderedCommon.has(lb)) return; renderedCommon.add(lb);
+          if(AUTO_LABELS.includes(lb)){            // app tự tính — chỉ hiện cho xem
+            html+=`<div class="f-group">
+              <label class="f-label">${esc(lb)} <span class="nhan-tu-tinh">tự tính</span></label>
+              <div class="f-input o-tu-tinh trong" data-auto="${esc(lb)}">—</div>
+            </div>`;
+            return;
+          }
           html+=`<div class="f-group">
             <label class="f-label">${esc(lb)}</label>
             <input type="text" class="f-input fill-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}...">
@@ -1232,7 +1255,11 @@ function renderPreviewBoxes(){
 }
 
 function bindFill(){
-  fillFields.querySelectorAll('.fill-in').forEach(inp=>inp.oninput=updateFillPreview);
+  fillFields.querySelectorAll('.fill-in').forEach(inp=>{
+    const tien=laOTien(inp.dataset.label);
+    if(tien) inp.setAttribute('inputmode','numeric');
+    inp.oninput=()=>{ if(tien) chamNghin(inp); updateFillPreview(); };
+  });
   fillFields.querySelectorAll('.fill-add').forEach(btn=>btn.onclick=()=>{
     const bi=btn.dataset.bi;
     const block=fillFields.querySelector(`.fill-block[data-bi="${bi}"]`);
@@ -1288,6 +1315,11 @@ function buildOne(ver, common){
 }
 function updateFillPreview(){
   const common=collectCommon();
+  fillFields.querySelectorAll('[data-auto]').forEach(o=>{
+    const v=common[o.dataset.auto]||'';
+    o.textContent = v || '—';
+    o.classList.toggle('trong', !v);
+  });
   if(fillVersions.length<=1){ fillPreview.value=buildOne(fillVersions[0], common); return; }
   fillVersions.forEach((v,i)=>{
     const ta=$('fillPreviewMulti').querySelector(`.fill-ver[data-vi="${i}"] .fill-ver-text`);
