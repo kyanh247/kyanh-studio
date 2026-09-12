@@ -1237,7 +1237,8 @@ function bindFill(){
 function renumberGroups(){
   fillFields.querySelectorAll('.fill-block').forEach(block=>{
     const gs=block.querySelectorAll('.fill-group');
-    gs.forEach((g,i)=>{ const n=g.querySelector('.fill-group-num'); if(n) n.textContent=(i+1); });
+    // Chỉ có 1 nhóm thì không đánh số — số chỉ hiện khi thêm nhóm thứ hai
+    gs.forEach((g,i)=>{ const n=g.querySelector('.fill-group-num'); if(n) n.textContent = gs.length>1 ? (i+1) : ''; });
     // Ẩn nút xoá khi chỉ còn 1 nhóm
     block.querySelectorAll('.fill-group-del').forEach(d=>d.style.visibility = gs.length>1 ? 'visible':'hidden');
   });
