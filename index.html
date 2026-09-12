@@ -1087,7 +1087,20 @@ function computeTiktokPrice(common){
   if(d.length>3 && d.endsWith('000')) d=d.slice(0,-3);                 // 2690000 → 2690
   return boldify(d.replace(/\B(?=(\d{3})+(?!\d))/g, TIKTOK_SEP), false); // 2690 → 2🌼690 → đậm
 }
-const AUTO_LABELS=[AUTO_DISCOUNT_LABEL, AUTO_TIKTOK_LABEL];
+/* Ô "Còn lại" cũng tự tính: Tổng chi phí trừ Đã cọc, giữ nguyên cách viết số của tổng.
+   VD: tổng 5.000.000đ, cọc 2.000.000 → 3.000.000đ */
+const AUTO_REMAIN_LABEL='Còn lại';
+function computeRemain(common){
+  const so=v=>{ const d=String(v||'').replace(/[^0-9]/g,''); return d?parseInt(d,10):NaN; };
+  const tong=so(common['Tổng chi phí']), coc=so(common['Đã cọc']);
+  if(!(tong>0)) return '';
+  const lai=tong-(isNaN(coc)?0:coc);
+  if(lai<0) return '';
+  const mau=String(common['Tổng chi phí']||'');
+  const ngan=lai.toString().replace(/\B(?=([0-9]{3})+(?![0-9]))/g, mau.indexOf(',')>-1 && mau.indexOf('.')<0 ? ',' : '.');
+  return ngan + (/[đĐ]/.test(mau) ? 'đ' : '');
+}
+const AUTO_LABELS=[AUTO_DISCOUNT_LABEL, AUTO_TIKTOK_LABEL, AUTO_REMAIN_LABEL];
 
 /* Một mẫu có thể chứa nhiều bản, ngăn nhau bằng dòng ===Tên bản===
    Mỗi bản hiện một ô xem trước + nút copy riêng. */
@@ -1249,6 +1262,7 @@ function collectCommon(){
   fillFields.querySelectorAll('.fill-in[data-scope="common"]').forEach(inp=>common[inp.dataset.label]=inp.value.trim());
   common[AUTO_DISCOUNT_LABEL]=computeDiscount(common);
   common[AUTO_TIKTOK_LABEL]=computeTiktokPrice(common);
+  common[AUTO_REMAIN_LABEL]=computeRemain(common);
   return common;
 }
 function buildOne(ver, common){
