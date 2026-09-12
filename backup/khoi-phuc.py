@@ -4,6 +4,10 @@ KHOI PHUC mau tra loi tu file backup len Firestore.
 Cach dung (mo Terminal tai thu muc kyanh-studio):
     python backup/khoi-phuc.py          -> chi xem truoc, KHONG ghi gi
     python backup/khoi-phuc.py --that   -> dang nhap roi ghi that len Firebase
+    python backup/khoi-phuc.py --tu <file.json>  -> dung dung file sao luu chi dinh
+
+Script tu chon ban sao luu MOI NHAT: so giua thu muc Sao-luu-tu-dong (chay moi
+Chu Nhat, nam ngoai repo) va ban replies-backup.json trong repo, lay ban moi hon.
 
 Chi nap lai nhung mau DA MAT. Mau nao con tren Firebase thi giu nguyen,
 khong ghi de -> chay nham cung khong lam hong du lieu dang co.
@@ -11,14 +15,43 @@ khong ghi de -> chay nham cung khong lam hong du lieu dang co.
 Tu 21/08/2026 script dang nhap bang EMAIL + MAT KHAU quan tri (Firebase Auth).
 Cach cu ghi kem _key = PIN da bi Firestore Rules chan, khong dung duoc nua.
 """
-import json, os, re, sys, getpass, urllib.request, urllib.error
+import datetime, glob, json, os, re, sys, getpass, urllib.request, urllib.error
 
 PROJECT = "ky-anh-studio---reply-d43ff"
 BASE = (f"https://firestore.googleapis.com/v1/projects/{PROJECT}"
         "/databases/(default)/documents/replies")
 HERE = os.path.dirname(os.path.abspath(__file__))
-BACKUP = os.path.join(HERE, "replies-backup.json")
+TRONG_REPO = os.path.join(HERE, "replies-backup.json")
+TU_DONG = os.path.abspath(os.path.join(HERE, "..", "..", "Sao-luu-tu-dong"))
 THAT = "--that" in sys.argv
+
+
+def chon_file_backup():
+    """Lay ban sao luu moi nhat trong cac cho co the co.
+
+    Ban trong repo chi cap nhat bang tay nen thuong cu hon nhieu so voi ban
+    tu dong chay moi Chu Nhat. Truoc day script doc thang ban trong repo:
+    khoi phuc xong van thieu cac mau them sau ngay do ma khong ai biet.
+    """
+    if "--tu" in sys.argv:
+        return sys.argv[sys.argv.index("--tu") + 1]
+    ung = glob.glob(os.path.join(TU_DONG, "replies-*.json"))
+    if os.path.exists(TRONG_REPO):
+        ung.append(TRONG_REPO)
+    if not ung:
+        sys.exit(f"KHONG tim thay file sao luu nao trong {TU_DONG} lan trong repo.")
+
+    def luc_nao(duong_dan):
+        try:
+            with open(duong_dan, encoding="utf-8") as fh:
+                return json.load(fh).get("backed_up_at", "")
+        except (OSError, ValueError):
+            return ""
+
+    return max(ung, key=luc_nao)
+
+
+BACKUP = chon_file_backup()
 
 
 def doc_api_key():
@@ -88,7 +121,16 @@ def get_json(url):
 
 data = json.load(open(BACKUP, encoding="utf-8"))
 items = data["items"]
-print(f"File backup: {data['count']} mau, luu luc {data['backed_up_at']}\n")
+print(f"File backup: {os.path.basename(BACKUP)}")
+print(f"  {data['count']} mau, luu luc {data['backed_up_at']}")
+try:
+    tuoi = (datetime.datetime.now()
+            - datetime.datetime.fromisoformat(data["backed_up_at"])).days
+    if tuoi > 10:
+        print(f"  CHU Y: ban nay da {tuoi} ngay tuoi — mau them sau do se KHONG duoc nap lai.")
+except (ValueError, KeyError, TypeError):
+    pass
+print()
 
 # Lay danh sach ID dang co tren Firebase (doc khong can dang nhap)
 dang_co, url = set(), BASE + "?pageSize=300"
