@@ -203,6 +203,21 @@
   .clip-nen svg { width: 0.95em; height: 0.95em; }
   .clip-duoi { margin-top: auto; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
   .clip-duoi:empty { display: none; }
+  /* Bang xep hang tab Dung Nhieu */
+  .xh-list { grid-column: 1/-1; display: flex; flex-direction: column; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; overflow: hidden; }
+  .xh-row { display: flex; align-items: center; gap: 0.85rem; width: 100%; padding: 0.8rem 1rem; background: transparent; border: none; border-bottom: 1px solid rgba(139,129,120,0.12); text-align: left; cursor: pointer; font-family: 'Montserrat', sans-serif; color: var(--dark-1); transition: background 0.2s ease; }
+  .xh-row:last-child { border-bottom: none; }
+  .xh-row:hover { background: #FFFDFA; }
+  .xh-row.copied { background: rgba(184,149,110,0.12); }
+  .xh-hang { flex: none; width: 1.7rem; height: 1.7rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.72rem; font-weight: 700; color: var(--muted); background: rgba(139,129,120,0.1); }
+  .xh-top .xh-hang { color: #fff; background: var(--gold); }
+  .xh-giua { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+  .xh-ten { display: flex; align-items: center; font-size: 0.82rem; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .xh-loai { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.03em; }
+  .xh-thanh { height: 4px; border-radius: 4px; background: rgba(139,129,120,0.12); overflow: hidden; margin-top: 0.15rem; }
+  .xh-thanh i { display: block; height: 100%; border-radius: 4px; background: var(--gold); }
+  .xh-so { flex: none; text-align: right; font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--gold-dark); line-height: 1; }
+  .xh-so small { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.56rem; font-weight: 600; color: var(--muted); margin-top: 0.2rem; }
   .clip-dem { margin-left: auto; font-size: 0.62rem; font-weight: 700; color: var(--gold-dark); border: 1px solid rgba(184,149,110,0.35); border-radius: 20px; padding: 0.08rem 0.55rem; white-space: nowrap; }
 
   .clip-form-badge { font-size: 0.55rem; font-weight: 600; letter-spacing: 0.03em; color: var(--gold-dark); background: rgba(184,149,110,0.12); border: 1px solid rgba(184,149,110,0.3); padding: 0.15rem 0.55rem; border-radius: 20px; }
@@ -1031,7 +1046,30 @@ function render(){
       : '<h3>Chưa có mẫu nào</h3>'+(isAdmin?'Nhấn “Thêm mẫu” để tạo mẫu đầu tiên.':'Khu vực này đang trống.');
     cardsEl.appendChild(e); return;
   }
+  if (activeCat==='dung-nhieu' && !searching){ cardsEl.appendChild(bangXepHang(list)); return; }
   list.forEach(it=>cardsEl.appendChild(cardEl(it)));
+}
+/* Tab Dung Nhieu: bang xep hang thay cho luoi the — hang, ten, thanh dai theo so lan, bam dong de copy */
+function bangXepHang(list){
+  const wrap=document.createElement('div'); wrap.className='xh-list';
+  const max=demCopy[list[0].id].n;
+  list.forEach((item,k)=>{
+    const n=demCopy[item.id].n, nt=nenTang(item.cat);
+    const row=document.createElement('button'); row.type='button';
+    row.className='xh-row'+(k<3?' xh-top':'');
+    row.setAttribute('aria-label',`Hạng ${k+1}: ${item.title}, ${n} lần — bấm để copy`);
+    row.innerHTML=`
+      <span class="xh-hang">${k+1}</span>
+      <span class="xh-giua">
+        <span class="xh-ten">${nt?`<span class="clip-nen">${ICON_NEN_TANG[nt]}</span>`:''}${esc(item.title)}</span>
+        <span class="xh-loai">${esc(CAT_LABELS[item.cat]||'')}</span>
+        <span class="xh-thanh"><i style="width:${Math.max(4,Math.round(n/max*100))}%"></i></span>
+      </span>
+      <span class="xh-so">${n}<small>lần</small></span>`;
+    row.onclick=()=>copyItem(item,row);
+    wrap.appendChild(row);
+  });
+  return wrap;
 }
 /* Icon nhỏ trước tiêu đề để biết mẫu dùng cho sàn nào.
    Tư Vấn TikTok → TikTok; Tư Vấn FB/Zalo và Bảng Giá (ghi giá thẳng, TikTok không cho) → Facebook */
