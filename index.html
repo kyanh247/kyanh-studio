@@ -203,6 +203,7 @@
   .clip-nen svg { width: 0.95em; height: 0.95em; }
   .clip-duoi { margin-top: auto; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
   .clip-duoi:empty { display: none; }
+  .clip-dem { margin-left: auto; font-size: 0.62rem; font-weight: 700; color: var(--gold-dark); border: 1px solid rgba(184,149,110,0.35); border-radius: 20px; padding: 0.08rem 0.55rem; white-space: nowrap; }
 
   .clip-form-badge { font-size: 0.55rem; font-weight: 600; letter-spacing: 0.03em; color: var(--gold-dark); background: rgba(184,149,110,0.12); border: 1px solid rgba(184,149,110,0.3); padding: 0.15rem 0.55rem; border-radius: 20px; }
   /* Khối lặp trong form điền nhanh */
@@ -665,6 +666,7 @@ if (firebaseEnabled) {
 
 const CATEGORIES = [
   { id: 'recent', label: 'Gần Đây' },
+  { id: 'dung-nhieu', label: 'Dùng Nhiều' },
   { id: 'chot-don', label: 'Chốt Đơn' },
   { id: 'tuvan', label: 'Tư Vấn', subs: [
       { id: 'tuvan-fbzalo', label: 'Facebook / Zalo' },
@@ -737,6 +739,17 @@ const btnAdd = $('btnAdd'), lockBtn = $('lockBtn');
 
 function loadRecent(){ try { recent = JSON.parse(LS.get(RECENT_KEY) || '[]'); } catch(e){ recent = []; } }
 function saveRecent(){ LS.set(RECENT_KEY, JSON.stringify(recent)); }
+/* Dem so lan copy tung mau — nho rieng tren tung may giong Gan Day, khong dong bo len Firestore.
+   demCopy = { id: { n: so lan, at: lan cuoi } }; DEM_TU_KEY la ngay bat dau dem */
+const DEM_KEY = 'kyanh-reply-dem-copy', DEM_TU_KEY = 'kyanh-reply-dem-tu';
+let demCopy = {};
+function loadDem(){ try { demCopy = JSON.parse(LS.get(DEM_KEY) || '{}') || {}; } catch(e){ demCopy = {}; } }
+function tangDem(id){
+  const d = demCopy[id] || { n: 0 };
+  demCopy[id] = { n: d.n + 1, at: Date.now() };
+  LS.set(DEM_KEY, JSON.stringify(demCopy));
+  if (!LS.get(DEM_TU_KEY)) LS.set(DEM_TU_KEY, String(Date.now()));
+}
 function loadCache(){ try { return JSON.parse(LS.get(CACHE_KEY) || 'null'); } catch(e){ return null; } }
 function saveCache(){ LS.set(CACHE_KEY, JSON.stringify(items)); }
 
@@ -751,7 +764,7 @@ function napSoCot(){ datSoCot(LS.get(COT_KEY)==='3' ? 3 : 2); }
 $('btnCot').querySelectorAll('button').forEach(b=>b.onclick=()=>datSoCot(+b.dataset.cot));
 
 async function init() {
-  loadRecent(); napSoCot();
+  loadRecent(); loadDem(); napSoCot();
   activeCat = recent.length ? 'recent' : 'chot-don';   // may moi chua copy gi thi khoi man hinh trong
   // Có Firebase thì quyền quản trị do đăng nhập quyết định.
   // Không có (chế độ máy đơn) thì vẫn dùng PIN như cũ.
@@ -920,6 +933,7 @@ function countFor(catId){
   const nguon = itemsReply();          // khong tinh Link Concept vao cac tab ben Reply
   if (catId==='all') return nguon.length;
   if (catId==='recent') return recent.length;
+  if (catId==='dung-nhieu') return nguon.filter(i=>demCopy[i.id]).length;
   const parent = parentCat(catId);
   if (parent) return nguon.filter(i=>String(i.cat).startsWith(catId+'-')).length;
   return nguon.filter(i=>i.cat===catId).length;
@@ -987,6 +1001,10 @@ function visibleItems(){
   } else if (activeCat==='recent'){
     const map=Object.fromEntries(nguon.map(i=>[i.id,i]));
     list=recent.map(r=>map[r.id]).filter(Boolean);
+  } else if (activeCat==='dung-nhieu'){
+    // nhieu lan nhat len dau; bang nhau thi mau copy gan day hon dung truoc
+    list=nguon.filter(i=>demCopy[i.id])
+              .sort((a,b)=>demCopy[b.id].n-demCopy[a.id].n || demCopy[b.id].at-demCopy[a.id].at);
   } else if (parentCat(activeCat)) list=nguon.filter(i=>i.cat===activeSubs[activeCat]);
   else list=nguon.filter(i=>i.cat===activeCat);
   return {list, searching:false};
@@ -998,10 +1016,18 @@ function render(){
   cardsEl.innerHTML='';
   if (searching){ const n=document.createElement('p'); n.className='section-note'; n.textContent=`Kết quả tìm trong tất cả danh mục (${list.length})`; cardsEl.appendChild(n); }
   else if (activeCat==='recent' && list.length){ const n=document.createElement('p'); n.className='section-note'; n.textContent='Các mẫu bạn đã copy gần đây (riêng máy này)'; cardsEl.appendChild(n); }
+  else if (activeCat==='dung-nhieu' && list.length){
+    const n=document.createElement('p'); n.className='section-note';
+    const tu=+LS.get(DEM_TU_KEY), tong=list.reduce((s,i)=>s+demCopy[i.id].n,0);
+    n.textContent=`Xếp theo số lần copy — ${tong} lần${tu?' từ '+new Date(tu).toLocaleDateString('vi-VN'):''} (riêng máy này)`;
+    cardsEl.appendChild(n);
+  }
   if (!list.length){
     const e=document.createElement('div'); e.className='empty';
     e.innerHTML = (activeCat==='recent'&&!searching)
       ? '<h3>Chưa có mẫu nào gần đây</h3>Copy một mẫu bất kỳ, nó sẽ xuất hiện ở đây.'
+      : (activeCat==='dung-nhieu'&&!searching)
+      ? '<h3>Chưa có thống kê</h3>Từ giờ mỗi lần copy sẽ được đếm, mẫu dùng nhiều nhất sẽ nằm đầu tab này.'
       : '<h3>Chưa có mẫu nào</h3>'+(isAdmin?'Nhấn “Thêm mẫu” để tạo mẫu đầu tiên.':'Khu vực này đang trống.');
     cardsEl.appendChild(e); return;
   }
@@ -1037,6 +1063,7 @@ function cardEl(item){
     <div class="clip-duoi">
       ${item.price?`<span class="clip-price">${esc(item.price)}</span>`:''}
       ${nhanThe(item)}
+      ${activeCat==='dung-nhieu'&&demCopy[item.id]?`<span class="clip-dem">${demCopy[item.id].n} lần</span>`:''}
     </div>`;
   const more=card.querySelector('.btn-more');
   more.onclick=e=>{e.stopPropagation();openOptions(item,more);};
@@ -1369,7 +1396,8 @@ $('fillPreviewMulti').addEventListener('click', async e=>{
 });
 function addRecent(id){
   recent=recent.filter(r=>r.id!==id); recent.unshift({id,at:Date.now()}); recent=recent.slice(0,12);
-  saveRecent(); if(activeCat==='recent') render(); else renderMenu();
+  saveRecent(); tangDem(id);
+  if(activeCat==='recent'||activeCat==='dung-nhieu') render(); else renderMenu();
 }
 
 const toastEl=$('toast'), toastMsg=$('toastMsg'); let toastTimer;
@@ -1441,7 +1469,7 @@ function openModal(item, nhanBan){
   pendingOrder = nhanBan && item ? (Number(item.order)||Date.now())+0.5 : null;
   $('modalTitle').textContent = nhanBan ? 'Nhân Bản Mẫu' : (item?'Chỉnh Sửa Mẫu':'Thêm Mẫu Trả Lời');
   fTitle.value=item?(nhanBan?item.title+' (bản sao)':item.title):''; fContent.value=item?item.content:'';
-  fCategory.value=item?item.cat:(parentCat(activeCat)?activeSubs[activeCat]:(activeCat==='recent'?'chot-don':activeCat));
+  fCategory.value=item?item.cat:(parentCat(activeCat)?activeSubs[activeCat]:(activeCat==='recent'||activeCat==='dung-nhieu'?'chot-don':activeCat));
   fPrice.value=item&&item.price?item.price:'';
   priceGroup.style.display=fCategory.value.startsWith('concept')?'block':'none';
   pendingImage=item&&item.image?item.image:null; fImage.value='';
