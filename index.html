@@ -780,6 +780,7 @@ $('btnCot').querySelectorAll('button').forEach(b=>b.onclick=()=>datSoCot(+b.data
 
 async function init() {
   loadRecent(); loadDem(); napSoCot();
+  napSheetConcept();   // chay nen, khong cho
   activeCat = recent.length ? 'recent' : 'chot-don';   // may moi chua copy gi thi khoi man hinh trong
   // Có Firebase thì quyền quản trị do đăng nhập quyết định.
   // Không có (chế độ máy đơn) thì vẫn dùng PIN như cũ.
@@ -979,7 +980,67 @@ const CAT_LINK = 'link-concept';   // muc rieng cua tab Link Concept
 const CAT_CHI  = 'chi-phi';
 const CAT_AN   = [CAT_LINK, CAT_CHI];   // khong hien o bat ky tab nao ben Reply
 function itemsReply(){ return items.filter(i=>!CAT_AN.includes(i.cat)); }
-function itemsLink(){  return items.filter(i=>i.cat===CAT_LINK); }
+/* Concept lay tu Google Sheet cua Ky Anh (file le chi chua sheet concept, tu keo tu file tong).
+   Sua sheet la app doi theo. Concept nhap tay trong app (Firestore) trung ten thi ban trong app thang. */
+const SHEET_CONCEPT = 'https://docs.google.com/spreadsheets/d/1xhYHsQDVgUaIzj8_i0wBFDqa5k7OsUjPqgVc-Jn2CaE/export?format=csv';
+const SHEET_KEY = 'kyanh-concept-sheet';
+let sheetConcepts = [], sheetLuc = 0;
+function itemsLink(){
+  const tay = items.filter(i=>i.cat===CAT_LINK);
+  const daCo = new Set(tay.map(i=>String(i.title||'').trim().toLowerCase()));
+  return tay.concat(sheetConcepts.filter(c=>!daCo.has(c.title.toLowerCase())));
+}
+function docCSV(t){
+  const rows=[]; let row=[], o='', q=false;
+  for(let i=0;i<t.length;i++){
+    const ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){o+='"';i++;} else q=false; } else o+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===','){ row.push(o); o=''; }
+    else if(ch==='\n'){ row.push(o); rows.push(row); row=[]; o=''; }
+    else if(ch!=='\r') o+=ch;
+  }
+  row.push(o); rows.push(row);
+  return rows;
+}
+/* Tim cot theo ten tieu de, khong theo vi tri — Ky Anh doi thu tu cot trong sheet cung khong hong */
+function conceptTuSheet(rows){
+  const h=(rows[0]||[]).map(x=>x.trim().toLowerCase());
+  const cot=(...tu)=>h.findIndex(x=>tu.every(w=>x.includes(w)));
+  const C={ dm:cot('danh mục'), ten:cot('tên'), gom:cot('đã gồm'), mod:cot('mod'),
+            km:h.findIndex(x=>x.includes('giá tư vấn')&&!x.includes('đã gồm')), goc:cot('niêm yết'),
+            anh:cot('thumbnail'), fb:cot('facebook'), web:cot('website'), tt:cot('tiktok') };
+  const o=(r,i)=>i<0?'':String(r[i]||'').trim();
+  const DANG=[['conceptual','conceptual'],['portrait','portrait'],['maternity','maternity'],['bầu','maternity'],
+              ['birthday','birthday'],['couple','couple'],['holiday','holiday']];
+  return rows.slice(1).map((r,k)=>{
+    const title=o(r,C.ten); if(!title) return null;
+    const dm=o(r,C.dm).toLowerCase();
+    const km=o(r,C.km).replace(/\s+/g,''), goc=o(r,C.goc).replace(/[^\d.]/g,'');
+    const gom=o(r,C.gom);
+    const baoGom = gom ? BAO_GOM_MAC_DINH.replace(/\n(?=✔️)/, `\n- ${gom}\n`) : BAO_GOM_MAC_DINH;
+    const ten=boldify(title,false);
+    return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod),
+             dang:(DANG.find(d=>dm.includes(d[0]))||[])[1]||'',
+             content:o(r,C.web), link_fb:o(r,C.fb), link_tt:o(r,C.tt), image:o(r,C.anh),
+             gia_fb: km ? giaFB(ten, km, goc, baoGom) : '',
+             gia_tt: km ? giaTT(ten, km) : '' };
+  }).filter(Boolean);
+}
+async function napSheetConcept(){
+  if(!sheetConcepts.length){
+    try { const c=JSON.parse(LS.get(SHEET_KEY)||'null'); if(c){ sheetConcepts=conceptTuSheet(c.rows); sheetLuc=c.luc; } } catch(e){}
+  }
+  try {
+    const res=await fetch(SHEET_CONCEPT, { cache:'no-store' });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=docCSV(await res.text());
+    if(!conceptTuSheet(rows).length) throw new Error('sheet trống');
+    sheetConcepts=conceptTuSheet(rows); sheetLuc=Date.now();
+    LS.set(SHEET_KEY, JSON.stringify({ rows, luc:sheetLuc }));
+  } catch(e){ console.warn('Không đọc được sheet concept, dùng bản đã lưu:', e); }
+  if(activeView==='link') renderLinks();
+}
 
 /* Diem xep hang ket qua tim. Go "14" thi concept "#14" dung dau, roi den ten co so 14
    dung rieng, sau cung moi toi noi dung. So dinh vao so khac (140, 2014, 2.140.000) khong tinh. */
@@ -1573,20 +1634,24 @@ function bgPhanTramGiam(){
 function bgTenDayDu(){
   return [boldify(bgTenBo.value.trim(),false), bgSoConcept.value.trim()].filter(Boolean).join(' ');
 }
-function bgNoiDungFB(){
-  const giam=bgPhanTramGiam();
-  const km=bgGiaKM.value.trim(), goc=bgGiaGoc.value.trim();
-  const dau = `Gói chụp ${bgTenDayDu()}` +
+/* Hai doan gia gui khach — dung chung cho khung Tao bao gia va concept lay tu Google Sheet.
+   ten: ten da in dam; km, goc: chuoi gia nhu "2.890.000đ" / "3.190.000" */
+function giaFB(ten, km, goc, baoGom){
+  const g=bgSo(goc), k=bgSo(km);
+  const giam = (g>0 && k>0 && k<g) ? Math.round((1-k/g)*100)+'%' : '';
+  const dau = `Gói chụp ${ten}` +
     (giam ? ` hiện đang giảm ${giam} chỉ còn ${boldify(km,false)} (Giá gốc ${goc})`
           : (km ? ` — ${boldify(km,false)}` : ''));
-  return `${dau}\n\nBao gồm:\n${bgBaoGom.value.trim()}`;
+  return `${dau}\n\nBao gồm:\n${baoGom.trim()}`;
 }
-function bgNoiDungTT(){
-  let d=String(bgGiaKM.value||'').replace(/[^\d]/g,'');
+function giaTT(ten, km){
+  let d=String(km||'').replace(/[^\d]/g,'');
   if(d.length>3 && d.endsWith('000')) d=d.slice(0,-3);
   const gia=d ? boldify(d.replace(/\B(?=(\d{3})+(?!\d))/g, TIKTOK_SEP), false) : '';
-  return `Dạ gói chụp ${bgTenDayDu()}: ${gia} trọn gói gồm makeup, phụ kiện, trang phục,...\n\n${DUOI_TIKTOK}`;
+  return `Dạ gói chụp ${ten}: ${gia} trọn gói gồm makeup, phụ kiện, trang phục,...\n\n${DUOI_TIKTOK}`;
 }
+function bgNoiDungFB(){ return giaFB(bgTenDayDu(), bgGiaKM.value.trim(), bgGiaGoc.value.trim(), bgBaoGom.value); }
+function bgNoiDungTT(){ return giaTT(bgTenDayDu(), bgGiaKM.value); }
 function bgCapNhatXemTruoc(){
   bgXemFB.value=bgNoiDungFB();
   bgXemTT.value=bgNoiDungTT();
@@ -1657,7 +1722,10 @@ function doiView(v){
   viewLink.hidden   = v!=='link';
   appEyebrow.textContent = TIEU_DE_VIEW[v] || TIEU_DE_VIEW.reply;
   document.querySelectorAll('.dock-item').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
-  if(v==='link')   renderLinks();
+  if(v==='link'){
+    renderLinks();
+    if(Date.now()-sheetLuc > 2*60*1000) napSheetConcept();   // mo tab Concept thi doc lai sheet, cach nhau it nhat 2 phut
+  }
 }
 document.querySelectorAll('.dock-item').forEach(b=>b.onclick=()=>doiView(b.dataset.view));
 
@@ -1738,6 +1806,9 @@ function renderLinks(){
           <div class="lc-grid">${g.ds.map(veThe).join('')}</div>
         </section>`).join('');
 
+  if(sheetLuc) grid.insertAdjacentHTML('beforeend',
+    `<p class="section-note" style="margin-top:1.4rem">Lấy từ Google Sheet · cập nhật ${new Date(sheetLuc).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}</p>`);
+
   grid.querySelectorAll('.lc-card').forEach(el=>{
     const c = ds.find(x=>String(x.id)===el.dataset.id);
     el.onclick=()=>moChonLink(c);
@@ -1816,7 +1887,10 @@ function moChonLink(c){
     + (coGia ? `<div class="lk-nhan">Giá gửi khách</div>`
                + NHOM_GIA.map(n=>veNut(n,'Chưa có',true)).join('') : '');
 
-  if(isAdmin){
+  if(isAdmin && c.tuSheet){
+    $('lkDsNut').insertAdjacentHTML('beforeend',
+      `<p class="lk-nhan" style="text-transform:none;letter-spacing:0.02em;text-align:center">Concept này lấy từ Google Sheet — muốn sửa thì sửa trong sheet.</p>`);
+  } else if(isAdmin){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
     $('lkDsNut').insertAdjacentHTML('beforeend',
       `<div class="lk-hang">
