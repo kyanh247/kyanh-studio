@@ -990,7 +990,10 @@ const CAT_LINK = 'link-concept';   // muc rieng cua tab Link Concept
 /* Giu nhan nay de 35 khoan chi cua chuyen di Da Lat (van con tren Firestore)
    khong tran sang cac tab ben Reply. Bo dong nay chi khi da xoa han du lieu do. */
 const CAT_CHI  = 'chi-phi';
-const CAT_AN   = [CAT_LINK, CAT_CHI];   // khong hien o bat ky tab nao ben Reply
+/* Mot ban ghi duy nhat giu danh sach TEN concept (lay tu sheet) duoc ghim tren web.
+   Concept tu sheet khong nam trong Firestore nen khong co cho ghi co ghim rieng tung cai. */
+const CAT_GHIM = 'ghim-concept';
+const CAT_AN   = [CAT_LINK, CAT_CHI, CAT_GHIM];   // khong hien o bat ky tab nao ben Reply
 function itemsReply(){ return items.filter(i=>!CAT_AN.includes(i.cat)); }
 /* Concept lay tu Google Sheet cua Ky Anh (file le chi chua sheet concept, tu keo tu file tong).
    Sua sheet la app doi theo. Concept nhap tay trong app (Firestore) trung ten thi ban trong app thang. */
@@ -1000,7 +1003,18 @@ let sheetConcepts = [], sheetLuc = 0;
 function itemsLink(){
   const tay = items.filter(i=>i.cat===CAT_LINK);
   const daCo = new Set(tay.map(i=>String(i.title||'').trim().toLowerCase()));
-  return tay.concat(sheetConcepts.filter(c=>!daCo.has(c.title.toLowerCase())));
+  const ghimWeb = new Set((docGhim()?.ten||[]).map(t=>String(t).toLowerCase()));
+  return tay.concat(sheetConcepts.filter(c=>!daCo.has(c.title.toLowerCase()))
+    .map(c=>({ ...c, ghimSheet:c.ghim, ghim: c.ghim || ghimWeb.has(c.title.toLowerCase()) })));
+}
+function docGhim(){ return items.find(i=>i.cat===CAT_GHIM); }
+/* Ghim / bo ghim mot concept tu sheet: sua danh sach ten trong ban ghi CAT_GHIM (chua co thi tao) */
+async function datGhimSheet(ten, ghim){
+  const d=docGhim(), k=ten.toLowerCase();
+  const ds=(d?.ten||[]).filter(t=>String(t).toLowerCase()!==k);
+  if(ghim) ds.push(ten);
+  return d ? upsertItem(d.id, { ten:ds })
+           : upsertItem(null, { cat:CAT_GHIM, title:'Danh sách concept ghim (đừng xoá)', content:'', ten:ds });
 }
 function docCSV(t){
   const rows=[]; let row=[], o='', q=false;
@@ -1905,8 +1919,28 @@ function moChonLink(c){
                + NHOM_GIA.map(n=>veNut(n,'Chưa có',true)).join('') : '');
 
   if(isAdmin && c.tuSheet){
-    $('lkDsNut').insertAdjacentHTML('beforeend',
-      `<p class="lk-nhan" style="text-transform:none;letter-spacing:0.02em;text-align:center">Concept này lấy từ Google Sheet — muốn sửa hay ghim thì làm trong sheet (cột Ghim, gõ x).</p>`);
+    const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
+    const ghiChu = t=>`<p class="lk-nhan" style="text-transform:none;letter-spacing:0.02em;text-align:center">${t}</p>`;
+    if(c.ghimSheet){
+      $('lkDsNut').insertAdjacentHTML('beforeend', ghiChu('Đang ghim bằng cột Ghim trong Google Sheet — bỏ ghim thì xoá chữ x trong sheet.'));
+    } else {
+      $('lkDsNut').insertAdjacentHTML('beforeend',
+        `<div class="lk-hang"><button class="lk-ghim${c.ghim?' dang-ghim':''}" id="lkGhim">
+           ${bieuTuongGhim}<span>${c.ghim?'Bỏ ghim':'Ghim lên đầu'}</span></button></div>`
+        + ghiChu('Concept này lấy từ Google Sheet — muốn sửa nội dung thì sửa trong sheet.'));
+      $('lkGhim').onclick = async()=>{
+        const nut=$('lkGhim'); nut.disabled=true;
+        const moiGhim = !c.ghim;
+        if(await datGhimSheet(c.title, moiGhim)){
+          c.ghim = moiGhim;
+          nut.classList.toggle('dang-ghim', moiGhim);
+          nut.querySelector('span').textContent = moiGhim ? 'Bỏ ghim' : 'Ghim lên đầu';
+          showToast(moiGhim ? 'Đã ghim ' + c.title : 'Đã bỏ ghim ' + c.title);
+          if(!fb) renderLinks();
+        }
+        nut.disabled=false;
+      };
+    }
   } else if(isAdmin){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
     $('lkDsNut').insertAdjacentHTML('beforeend',
