@@ -776,6 +776,21 @@ function tangDem(id){
   demCopy[id] = { n: d.n + 1, at: Date.now() };
   LS.set(DEM_KEY, JSON.stringify(demCopy));
   if (!LS.get(DEM_TU_KEY)) LS.set(DEM_TU_KEY, String(Date.now()));
+  // Cong them 1 vao so dem chung ca studio. Rules chi cho phep dung viec nay (n tang 1), ai cung ghi duoc.
+  if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+}
+/* So dem chung ca studio — collection `thongke`, moi mau mot ban ghi { n, at }.
+   demChung = null khi chua doc duoc (may don, mat mang lan dau, hoac Rules chua mo) -> chi hien so cua may nay. */
+const DEM_NGUON_KEY = 'kyanh-reply-dem-nguon';
+let demChung = null, demNguon = LS.get(DEM_NGUON_KEY)==='may' ? 'may' : 'chung';
+function demDang(){ return (demNguon==='chung' && demChung) ? demChung : demCopy; }
+function startThongKe(){
+  try {
+    fb.onSnapshot(fb.collection(fb.db, 'thongke'), snap=>{
+      demChung = {}; snap.forEach(d=>{ const v=d.data(); if(v && v.n>0) demChung[d.id] = { n:v.n, at:v.at||0 }; });
+      if(activeCat==='dung-nhieu') render(); else renderMenu();
+    }, e=>{ console.warn('Chưa đọc được thống kê chung:', e.code||e); demChung = null; if(activeCat==='dung-nhieu') render(); });
+  } catch(e){ console.warn(e); }
 }
 function loadCache(){ try { return JSON.parse(LS.get(CACHE_KEY) || 'null'); } catch(e){ return null; } }
 function saveCache(){ LS.set(CACHE_KEY, JSON.stringify(items)); }
@@ -826,6 +841,7 @@ function withId(x){ return { id: 'c-' + Math.random().toString(36).slice(2,10), 
 let colRef = null;
 function startFirestore() {
   colRef = fb.collection(fb.db, 'replies');
+  startThongKe();
   const q = fb.query(colRef, fb.orderBy('order', 'asc'));
   fb.onSnapshot(q, async (snap) => {
     if (snap.empty && !firstSnapshot && isAdmin) {
@@ -961,7 +977,7 @@ function countFor(catId){
   const nguon = itemsReply();          // khong tinh Link Concept vao cac tab ben Reply
   if (catId==='all') return nguon.length;
   if (catId==='recent') return recent.length;
-  if (catId==='dung-nhieu') return nguon.filter(i=>demCopy[i.id]).length;
+  if (catId==='dung-nhieu'){ const dem=demDang(); return nguon.filter(i=>dem[i.id]).length; }
   const parent = parentCat(catId);
   if (parent) return nguon.filter(i=>String(i.cat).startsWith(catId+'-')).length;
   return nguon.filter(i=>i.cat===catId).length;
@@ -982,6 +998,15 @@ function renderMenu(){
       const b=document.createElement('button');
       b.className='sub-tab'+(activeSubs[activeCat]===s.id?' active':'');
       b.textContent=s.label; b.onclick=()=>{activeSubs[activeCat]=s.id;render();};
+      subTabsEl.appendChild(b);
+    });
+  } else if (activeCat==='dung-nhieu' && demChung){
+    // Co so dem chung thi cho chon xem ca studio hay rieng may nay
+    subTabsEl.classList.add('show'); subTabsEl.innerHTML='';
+    [['chung','Cả studio'],['may','Máy này']].forEach(([id,nhan])=>{
+      const b=document.createElement('button');
+      b.className='sub-tab'+(demNguon===id?' active':'');
+      b.textContent=nhan; b.onclick=()=>{ demNguon=id; LS.set(DEM_NGUON_KEY,id); render(); };
       subTabsEl.appendChild(b);
     });
   } else subTabsEl.classList.remove('show');
@@ -1106,8 +1131,9 @@ function visibleItems(){
     list=recent.map(r=>map[r.id]).filter(Boolean);
   } else if (activeCat==='dung-nhieu'){
     // nhieu lan nhat len dau; bang nhau thi mau copy gan day hon dung truoc
-    list=nguon.filter(i=>demCopy[i.id])
-              .sort((a,b)=>demCopy[b.id].n-demCopy[a.id].n || demCopy[b.id].at-demCopy[a.id].at);
+    const dem=demDang();
+    list=nguon.filter(i=>dem[i.id])
+              .sort((a,b)=>dem[b.id].n-dem[a.id].n || dem[b.id].at-dem[a.id].at);
   } else if (parentCat(activeCat)) list=nguon.filter(i=>i.cat===activeSubs[activeCat]);
   else list=nguon.filter(i=>i.cat===activeCat);
   return {list, searching:false};
@@ -1121,8 +1147,8 @@ function render(){
   else if (activeCat==='recent' && list.length){ const n=document.createElement('p'); n.className='section-note'; n.textContent='Các mẫu bạn đã copy gần đây (riêng máy này)'; cardsEl.appendChild(n); }
   else if (activeCat==='dung-nhieu' && list.length){
     const n=document.createElement('p'); n.className='section-note';
-    const tu=+LS.get(DEM_TU_KEY), tong=list.reduce((s,i)=>s+demCopy[i.id].n,0);
-    n.textContent=`Xếp theo số lần copy — ${tong} lần${tu?' từ '+new Date(tu).toLocaleDateString('vi-VN'):''} (riêng máy này)`;
+    const dem=demDang(), chung=dem===demChung, tu=chung?0:+LS.get(DEM_TU_KEY), tong=list.reduce((s,i)=>s+dem[i.id].n,0);
+    n.textContent=`Xếp theo số lần copy — ${tong} lần${tu?' từ '+new Date(tu).toLocaleDateString('vi-VN'):''} ${chung?'(cả studio — mọi máy cộng lại)':'(riêng máy này)'}`;
     cardsEl.appendChild(n);
   }
   if (!list.length){
@@ -1140,9 +1166,9 @@ function render(){
 /* Tab Dung Nhieu: bang xep hang thay cho luoi the — hang, ten, thanh dai theo so lan, bam dong de copy */
 function bangXepHang(list){
   const wrap=document.createElement('div'); wrap.className='xh-list';
-  const max=demCopy[list[0].id].n;
+  const dem=demDang(), max=dem[list[0].id].n;
   list.forEach((item,k)=>{
-    const n=demCopy[item.id].n, nt=nenTang(item.cat);
+    const n=dem[item.id].n, nt=nenTang(item.cat);
     const row=document.createElement('button'); row.type='button';
     row.className='xh-row'+(k<3?' xh-top':'');
     row.setAttribute('aria-label',`Hạng ${k+1}: ${item.title}, ${n} lần — bấm để copy`);
@@ -1189,7 +1215,7 @@ function cardEl(item){
     <div class="clip-duoi">
       ${item.price?`<span class="clip-price">${esc(item.price)}</span>`:''}
       ${nhanThe(item)}
-      ${activeCat==='dung-nhieu'&&demCopy[item.id]?`<span class="clip-dem">${demCopy[item.id].n} lần</span>`:''}
+      ${activeCat==='dung-nhieu'&&demDang()[item.id]?`<span class="clip-dem">${demDang()[item.id].n} lần</span>`:''}
     </div>`;
   const more=card.querySelector('.btn-more');
   more.onclick=e=>{e.stopPropagation();openOptions(item,more);};
