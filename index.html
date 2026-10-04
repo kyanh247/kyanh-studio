@@ -1019,7 +1019,8 @@ function conceptTuSheet(rows){
   const cot=(...tu)=>h.findIndex(x=>tu.every(w=>x.includes(w)));
   const C={ dm:cot('danh mục'), ten:cot('tên'), gom:cot('đã gồm'), mod:cot('mod'),
             km:h.findIndex(x=>x.includes('giá tư vấn')&&!x.includes('đã gồm')), goc:cot('niêm yết'),
-            anh:cot('thumbnail'), fb:cot('facebook'), web:cot('website'), tt:cot('tiktok') };
+            anh:cot('thumbnail'), fb:cot('facebook'), web:cot('website'), tt:cot('tiktok'),
+            ghim:cot('ghim') };   // cot Ghim: o nao co chu (x, 1, ...) la ghim len dau
   const o=(r,i)=>i<0?'':String(r[i]||'').trim();
   const DANG=[['conceptual','conceptual'],['portrait','portrait'],['maternity','maternity'],['bầu','maternity'],
               ['birthday','birthday'],['couple','couple'],['holiday','holiday']];
@@ -1030,7 +1031,7 @@ function conceptTuSheet(rows){
     const gom=o(r,C.gom);
     const baoGom = gom ? BAO_GOM_MAC_DINH.replace(/\n(?=✔️)/, `\n- ${gom}\n`) : BAO_GOM_MAC_DINH;
     const ten=boldify(title,false);
-    return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km,
+    return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
              dang:(DANG.find(d=>dm.includes(d[0]))||[])[1]||'',
              content:o(r,C.web), link_fb:o(r,C.fb), link_tt:o(r,C.tt), image:o(r,C.anh),
              gia_fb: km ? giaFB(ten, km, goc, baoGom) : '',
@@ -1903,7 +1904,7 @@ function moChonLink(c){
 
   if(isAdmin && c.tuSheet){
     $('lkDsNut').insertAdjacentHTML('beforeend',
-      `<p class="lk-nhan" style="text-transform:none;letter-spacing:0.02em;text-align:center">Concept này lấy từ Google Sheet — muốn sửa thì sửa trong sheet.</p>`);
+      `<p class="lk-nhan" style="text-transform:none;letter-spacing:0.02em;text-align:center">Concept này lấy từ Google Sheet — muốn sửa hay ghim thì làm trong sheet (cột Ghim, gõ x).</p>`);
   } else if(isAdmin){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
     $('lkDsNut').insertAdjacentHTML('beforeend',
