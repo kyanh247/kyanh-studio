@@ -113,17 +113,19 @@
   .lc-tieu-de .lc-dem { margin-left: auto; letter-spacing: 0.02em; font-weight: 500; color: var(--gold-dark); }
 
   .lc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-  .lc-card { position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: all 0.25s ease; }
+  .lc-card { display: flex; flex-direction: column; position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: all 0.25s ease; }
   .lc-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
   .lc-card:active { transform: translateY(0) scale(0.995); }
-  .lc-thumb { aspect-ratio: 2 / 3; width: 100%; object-fit: cover; display: block; background: linear-gradient(160deg, #EFEAE3, #DCD3C8); }
-  .lc-name { padding: 0.45rem 0.45rem 0.55rem; font-size: 0.7rem; font-weight: 600; color: var(--ink-dark); line-height: 1.3; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: calc(2.6em + 0.9rem); }  /* chua san 2 dong de moi the cao bang nhau */
+  .lc-thumb { flex: none; aspect-ratio: 2 / 3; width: 100%; object-fit: cover; display: block; background: linear-gradient(160deg, #EFEAE3, #DCD3C8); }
+  /* Ten toi da 3 dong, dung margin (khong padding) de dong thu 4 khong lo ra de len gia.
+     The trong cung hang cao bang nhau nho luoi; gia luon nam sat day the. */
+  .lc-name { margin: 0.45rem 0.4rem 0; font-size: 0.7rem; font-weight: 600; color: var(--ink-dark); line-height: 1.3; text-align: center; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   /* Dau "nhap tay trong app" — cung kieu voi dau ghim, dung canh no neu the co ca hai */
   .lc-dau-ghim.lc-dau-tay { color: var(--muted); }
   .lc-dau-ghim + .lc-dau-tay { left: calc(0.35rem + 24px); }
   #lcGrid.anh-nho .lc-dau-ghim + .lc-dau-tay { left: calc(0.2rem + 18px); }
-  .lc-gia { margin-top: -0.3rem; padding: 0 0.3rem 0.5rem; font-size: 0.62rem; font-weight: 600; color: var(--gold-dark); text-align: center; white-space: nowrap; min-height: 1.45rem; }
-  #lcGrid.anh-nho .lc-gia { font-size: 0.48rem; margin-top: -0.2rem; padding-bottom: 0.3rem; min-height: 1rem; }
+  .lc-gia { margin-top: auto; padding: 0.3rem 0.3rem 0.5rem; font-size: 0.62rem; font-weight: 600; color: var(--gold-dark); text-align: center; white-space: nowrap; }
+  #lcGrid.anh-nho .lc-gia { font-size: 0.48rem; padding: 0.2rem 0.1rem 0.3rem; }
   .lc-card.copied { border-color: var(--gold); background: #FFFDFA; }
   .lc-card.copied::after { content: "✓"; position: absolute; top: 0.3rem; right: 0.3rem; width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 700; color: #fff; background: var(--gold); border-radius: 50%; box-shadow: 0 2px 8px rgba(184,149,110,0.35); animation: popBadge 0.25s ease; }
   .lc-toolbar { flex-wrap: wrap; }
@@ -137,7 +139,7 @@
   #lcGrid.anh-nho .lc-grid { grid-template-columns: repeat(6, 1fr); gap: 0.35rem; }
   @media (min-width: 640px) { #lcGrid.anh-nho .lc-grid { grid-template-columns: repeat(12, 1fr); gap: 0.4rem; } }
   #lcGrid.anh-nho .lc-card { border-radius: 7px; }
-  #lcGrid.anh-nho .lc-name { font-size: 0.52rem; padding: 0.3rem 0.2rem 0.35rem; min-height: calc(2.6em + 0.65rem); }
+  #lcGrid.anh-nho .lc-name { font-size: 0.52rem; margin: 0.3rem 0.15rem 0; }
   #lcGrid.anh-nho .lc-dau-ghim { width: 15px; height: 15px; top: 0.2rem; left: 0.2rem; }
   #lcGrid.anh-nho .lc-dau-ghim svg { width: 8px; height: 8px; }
   #lcGrid.anh-nho .lc-card.copied::after { width: 15px; height: 15px; font-size: 0.5rem; top: 0.2rem; right: 0.2rem; }
