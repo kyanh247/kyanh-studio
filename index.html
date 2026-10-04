@@ -227,6 +227,12 @@
   .xh-thanh i { display: block; height: 100%; border-radius: 4px; background: var(--gold); }
   .xh-so { flex: none; text-align: right; font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--gold-dark); line-height: 1; }
   .xh-so small { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.56rem; font-weight: 600; color: var(--muted); margin-top: 0.2rem; }
+  /* Tab Thong ke */
+  .tk-khoi + .tk-khoi { margin-top: 1.8rem; }
+  .tk-tong { text-align: center; font-size: 0.72rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .tk-tong b { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--gold-dark); font-weight: 700; }
+  .tk-trong { padding: 1.4rem 1rem; text-align: center; font-size: 0.78rem; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 12px; }
+  .xh-anh { flex: none; width: 34px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); background: #EFEAE3; }
   .clip-dem { margin-left: auto; font-size: 0.62rem; font-weight: 700; color: var(--gold-dark); border: 1px solid rgba(184,149,110,0.35); border-radius: 20px; padding: 0.08rem 0.55rem; white-space: nowrap; }
 
   .clip-form-badge { font-size: 0.55rem; font-weight: 600; letter-spacing: 0.03em; color: var(--gold-dark); background: rgba(184,149,110,0.12); border: 1px solid rgba(184,149,110,0.3); padding: 0.15rem 0.55rem; border-radius: 20px; }
@@ -422,9 +428,15 @@
     </div>
     <main id="lcGrid"></main>
   </div>
+
+  <!-- Phan Thong ke: mau tra loi va concept duoc copy nhieu nhat -->
+  <div id="viewThongKe" hidden>
+    <div class="sub-tabs" id="tkNguon"></div>
+    <main id="tkNoiDung"></main>
+  </div>
 </div>
 
-<!-- Thanh dock: 2 muc, luon thay, khong phai mo menu moi biet -->
+<!-- Thanh dock: 3 muc, luon thay, khong phai mo menu moi biet -->
 <nav class="dock" id="dock">
   <button class="dock-item active" data-view="reply">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -433,6 +445,10 @@
   <button class="dock-item" data-view="link">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
     <span>Concept</span>
+  </button>
+  <button class="dock-item" data-view="thongke">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+    <span>Thống kê</span>
   </button>
 </nav>
 
@@ -778,6 +794,7 @@ function tangDem(id){
   if (!LS.get(DEM_TU_KEY)) LS.set(DEM_TU_KEY, String(Date.now()));
   // Cong them 1 vao so dem chung ca studio. Rules chi cho phep dung viec nay (n tang 1), ai cung ghi duoc.
   if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+  if (activeView==='thongke') renderThongKe();
 }
 /* So dem chung ca studio — collection `thongke`, moi mau mot ban ghi { n, at }.
    demChung = null khi chua doc duoc (may don, mat mang lan dau, hoac Rules chua mo) -> chi hien so cua may nay. */
@@ -789,6 +806,7 @@ function startThongKe(){
     fb.onSnapshot(fb.collection(fb.db, 'thongke'), snap=>{
       demChung = {}; snap.forEach(d=>{ const v=d.data(); if(v && v.n>0) demChung[d.id] = { n:v.n, at:v.at||0 }; });
       if(activeCat==='dung-nhieu') render(); else renderMenu();
+      if(activeView==='thongke') renderThongKe();
     }, e=>{ console.warn('Chưa đọc được thống kê chung:', e.code||e); demChung = null; if(activeCat==='dung-nhieu') render(); });
   } catch(e){ console.warn(e); }
 }
@@ -1759,7 +1777,7 @@ document.querySelectorAll('.modal-x').forEach(b=>b.onclick=()=>{
 
 searchInput.addEventListener('input', render);
 /* ================= Ngan keo + chuyen phan ================= */
-const viewReply=$('viewReply'), viewLink=$('viewLink');
+const viewReply=$('viewReply'), viewLink=$('viewLink'), viewThongKe=$('viewThongKe');
 const appEyebrow=document.querySelector('.app-eyebrow');
 let activeView='reply';
 
@@ -1768,19 +1786,88 @@ let activeView='reply';
 const TIEU_DE_VIEW = {
   reply: 'Nội bộ · Trả lời nhanh',
   link:  'Nội bộ · Concept',
+  thongke: 'Nội bộ · Thống kê',
 };
 function doiView(v){
   activeView=v;
   viewReply.hidden  = v!=='reply';
   viewLink.hidden   = v!=='link';
+  viewThongKe.hidden = v!=='thongke';
   appEyebrow.textContent = TIEU_DE_VIEW[v] || TIEU_DE_VIEW.reply;
   document.querySelectorAll('.dock-item').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
   if(v==='link'){
     renderLinks();
     if(Date.now()-sheetLuc > 2*60*1000) napSheetConcept();   // mo tab Concept thi doc lai sheet, cach nhau it nhat 2 phut
   }
+  if(v==='thongke') renderThongKe();
 }
 document.querySelectorAll('.dock-item').forEach(b=>b.onclick=()=>doiView(b.dataset.view));
+
+/* ================= Thong ke ================= */
+/* Concept dem theo TEN (concept tu sheet khong co ma rieng): "Sea & Soul #1" -> "c-sea-soul-1" */
+function idConcept(ten){
+  return 'c-' + String(ten||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[đĐ]/g,'d')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,78);
+}
+function renderThongKe(){
+  const dem=demDang(), chung=dem===demChung;
+  const nguon=$('tkNguon'); nguon.innerHTML='';
+  nguon.classList.toggle('show', !!demChung);
+  if(demChung) [['chung','Cả studio'],['may','Máy này']].forEach(([id,nhan])=>{
+    const b=document.createElement('button');
+    b.className='sub-tab'+(demNguon===id?' active':'');
+    b.textContent=nhan; b.onclick=()=>{ demNguon=id; LS.set(DEM_NGUON_KEY,id); renderThongKe(); if(activeCat==='dung-nhieu') render(); };
+    nguon.appendChild(b);
+  });
+
+  const xep=(a,b)=>b.n-a.n || b.at-a.at;
+  const mau=itemsReply().filter(i=>dem[i.id]).sort((a,b)=>xep(dem[a.id],dem[b.id]));
+  /* Hai dong trung ten trong sheet dung chung mot so dem — chi hien dong dau */
+  const daThay=new Set();
+  const cons=itemsLink().map(c=>({ c, k:idConcept(c.title) }))
+    .filter(x=>dem[x.k] && !daThay.has(x.k) && daThay.add(x.k))
+    .sort((a,b)=>xep(dem[a.k],dem[b.k]));
+
+  const tongMau=mau.reduce((s,i)=>s+dem[i.id].n,0), tongCon=cons.reduce((s,x)=>s+dem[x.k].n,0);
+  const tu=chung?0:+LS.get(DEM_TU_KEY);
+  const el=$('tkNoiDung'); el.innerHTML='';
+  el.insertAdjacentHTML('beforeend',
+    `<p class="tk-tong"><b>${tongMau+tongCon}</b> lượt copy ${chung?'— cả studio, mọi máy cộng lại':'trên máy này'}${tu?' từ '+new Date(tu).toLocaleDateString('vi-VN'):''}</p>`);
+
+  const khoi=(tieuDe, so, noiDung, trong)=>{
+    const k=document.createElement('section'); k.className='tk-khoi';
+    k.innerHTML=`<div class="lc-tieu-de">${tieuDe}<span class="lc-dem">${so} lượt</span></div>`;
+    if(noiDung) k.appendChild(noiDung); else k.insertAdjacentHTML('beforeend', `<div class="tk-trong">${trong}</div>`);
+    el.appendChild(k);
+  };
+  khoi('Mẫu trả lời dùng nhiều', tongMau, mau.length ? bangXepHang(mau) : null,
+       'Chưa có lượt copy nào. Copy một mẫu bên tab Trả lời nhanh là nó hiện ở đây.');
+
+  let bangCon=null;
+  if(cons.length){
+    bangCon=document.createElement('div'); bangCon.className='xh-list';
+    const max=dem[cons[0].k].n;
+    cons.forEach(({c,k},i)=>{
+      const n=dem[k].n;
+      const row=document.createElement('button'); row.type='button';
+      row.className='xh-row'+(i<3?' xh-top':'');
+      row.setAttribute('aria-label',`Hạng ${i+1}: ${c.title}, ${n} lần — bấm để chọn link`);
+      row.innerHTML=`
+        <span class="xh-hang">${i+1}</span>
+        <img class="xh-anh" src="${esc(c.image||ANH_TRONG)}" alt="" loading="lazy" onerror="this.src='${ANH_TRONG}'">
+        <span class="xh-giua">
+          <span class="xh-ten">${esc(c.title)}</span>
+          <span class="xh-loai">${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · '))}</span>
+          <span class="xh-thanh"><i style="width:${Math.max(4,Math.round(n/max*100))}%"></i></span>
+        </span>
+        <span class="xh-so">${n}<small>lần</small></span>`;
+      row.onclick=()=>moChonLink(c);
+      bangCon.appendChild(row);
+    });
+  }
+  khoi('Concept dùng nhiều', tongCon, bangCon,
+       'Chưa có lượt copy nào. Copy link hoặc giá của một concept là nó hiện ở đây.');
+}
 
 /* ================= Link Concept ================= */
 /* Dang concept — dung chung danh sach voi tab Bang Gia ben Reply */
@@ -2000,6 +2087,7 @@ function moChonLink(c){
         b.classList.add('vua-copy');
         b.querySelector('.lk-phu').textContent = '✓ Đã copy';
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
+        tangDem(idConcept(c.title));
         setTimeout(()=>lkOverlay.classList.remove('show'), 650);
       } else showToast('Không copy được', true);
     };
