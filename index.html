@@ -236,6 +236,8 @@
   .tk-o span { display: block; margin-top: 0.3rem; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .tk-o small { display: block; margin-top: 0.15rem; font-size: 0.62rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tk-the { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 1rem 1rem 0.8rem; }
+  .tk-xem-het { display: block; width: 100%; margin-top: 0.6rem; padding: 0.7rem; font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold-dark); background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; }
+  .tk-xem-het:hover { border-color: var(--gold); background: rgba(184,149,110,0.06); }
   .tk-ghi-chu { text-align: center; font-size: 0.66rem; color: var(--muted); margin-top: 0.9rem; }
   .tk-trong { padding: 1.4rem 1rem; text-align: center; font-size: 0.78rem; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 12px; }
   /* Cot theo ngay: cot toi da 24px, dau tron 4px, chan vuong, moc tu mot duong day */
@@ -1875,6 +1877,9 @@ function idConcept(ten){
   return 'c-' + String(ten||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[đĐ]/g,'d')
     .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,78);
 }
+/* Hai bang xep hang chi hien 20 dong dau; bam "Xem tat ca" moi ve phan con lai */
+const TK_HIEN = 20;
+const tkMoHet = { mau:false, con:false };
 function renderThongKe(){
   const dem=demDang(), chung=dem===demChung;
   const xep=(a,b)=>b.n-a.n || b.at-a.at;
@@ -1945,14 +1950,23 @@ function renderThongKe(){
     : trong('Chưa có lượt copy nào.'));
 
   /* 4. Hai bang xep hang */
-  khoi('Mẫu trả lời dùng nhiều', tongMau+' lượt', mau.length ? bangXepHang(mau)
+  const nutXemHet=(loai, tong, donVi)=>{
+    if(tong<=TK_HIEN) return;
+    const b=document.createElement('button'); b.type='button'; b.className='tk-xem-het';
+    b.textContent = tkMoHet[loai] ? `Thu gọn, chỉ hiện ${TK_HIEN} ${donVi} đầu` : `Xem tất cả ${tong} ${donVi}`;
+    b.onclick=()=>{ tkMoHet[loai]=!tkMoHet[loai]; renderThongKe(); };
+    el.lastElementChild.appendChild(b);
+  };
+  khoi('Mẫu trả lời dùng nhiều', tongMau+' lượt', mau.length ? bangXepHang(tkMoHet.mau ? mau : mau.slice(0,TK_HIEN))
     : trong('Chưa có lượt copy nào. Copy một mẫu bên tab Trả lời nhanh là nó hiện ở đây.'));
+
+  nutXemHet('mau', mau.length, 'mẫu');
 
   let bangCon=trong('Chưa có lượt copy nào. Copy link hoặc giá của một concept là nó hiện ở đây.');
   if(cons.length){
     bangCon=document.createElement('div'); bangCon.className='xh-list';
     const max=dem[cons[0].k].n;
-    cons.forEach(({c,k},i)=>{
+    (tkMoHet.con ? cons : cons.slice(0,TK_HIEN)).forEach(({c,k},i)=>{
       const n=dem[k].n;
       const row=document.createElement('button'); row.type='button';
       row.className='xh-row'+(i<3?' xh-top':'');
@@ -1971,6 +1985,7 @@ function renderThongKe(){
     });
   }
   khoi('Concept dùng nhiều', tongCon+' lượt', bangCon);
+  nutXemHet('con', cons.length, 'concept');
 
   them(`<p class="tk-ghi-chu">${chung?'Số của cả studio — mọi máy cộng lại.':'Chưa nối được số chung của studio — tạm hiện số của máy này.'}</p>`);
 }
