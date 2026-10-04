@@ -456,7 +456,6 @@
 
   <!-- Phan Thong ke: mau tra loi va concept duoc copy nhieu nhat -->
   <div id="viewThongKe" hidden>
-    <div class="sub-tabs" id="tkNguon"></div>
     <main id="tkNoiDung"></main>
   </div>
 </div>
@@ -833,18 +832,52 @@ function tangDem(id){
   if (activeView==='thongke') renderThongKe();
 }
 /* So dem chung ca studio — collection `thongke`, moi mau mot ban ghi { n, at }.
-   demChung = null khi chua doc duoc (may don, mat mang lan dau, hoac Rules chua mo) -> chi hien so cua may nay. */
-const DEM_NGUON_KEY = 'kyanh-reply-dem-nguon';
-let demChung = null, demNguon = LS.get(DEM_NGUON_KEY)==='may' ? 'may' : 'chung';
-function demDang(){ return (demNguon==='chung' && demChung) ? demChung : demCopy; }
+   demChung = null khi chua doc duoc (may don, mat mang lan dau, hoac Rules chua mo) -> tam hien so cua may nay.
+   Khong con nut chon "May nay": Ky Anh chi can so ca studio (04/10/2026). */
+let demChung = null;
+function demDang(){ return demChung || demCopy; }
 function startThongKe(){
   try {
     fb.onSnapshot(fb.collection(fb.db, 'thongke'), snap=>{
       demChung = {}; snap.forEach(d=>{ const v=d.data(); if(v && v.n>0) demChung[d.id] = { n:v.n, at:v.at||0 }; });
       if(activeCat==='dung-nhieu') render(); else renderMenu();
       if(activeView==='thongke') renderThongKe();
+      gopSoCuVaoChung();
     }, e=>{ console.warn('Chưa đọc được thống kê chung:', e.code||e); demChung = null; if(activeCat==='dung-nhieu') render(); });
   } catch(e){ console.warn(e); }
+}
+/* Gop so dem cu cua may nay (dem rieng tu 28/09/2026) vao so chung — moi may lam dung mot lan.
+   Rules chi cho cong 1 moi lan ghi, nen can cong k thi ghi k lan.
+   DEM_GOP_KEY giu so con phai cong cua tung mau; tru TRUOC khi ghi vi lenh ghi da xep hang thi
+   Firestore se tu gui khi co mang, dong app giua chung cung khong bi cong lap. */
+const DEM_GOP_KEY = 'kyanh-reply-dem-gop';
+const DEM_CHUNG_TU = Date.UTC(2026, 9, 4, 5, 3, 22);   // luc ban dem chung dau tien len web
+let dangGop = false;
+async function gopSoCuVaoChung(){
+  if (dangGop || !fb || !demChung || !navigator.onLine) return;
+  let con;
+  try { con = JSON.parse(LS.get(DEM_GOP_KEY) || 'null'); } catch(e){ con = null; }
+  if (con === null) {
+    con = {};
+    for (const [id, d] of Object.entries(demCopy)) {
+      let k = d.n || 0;
+      // Mau copy sau khi da co dem chung thi mot phan da duoc cong roi — tru di cho khoi cong hai lan
+      if ((d.at||0) >= DEM_CHUNG_TU) k -= Math.min(k, (demChung[id]||{}).n || 0);
+      if (k > 0) con[id] = k;
+    }
+    LS.set(DEM_GOP_KEY, JSON.stringify(con));
+  }
+  if (!Object.keys(con).length) return;
+  dangGop = true;
+  for (const id of Object.keys(con)) {
+    while (con[id] > 0) {
+      con[id]--; if (!con[id]) delete con[id];
+      LS.set(DEM_GOP_KEY, JSON.stringify(con));
+      try { await fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }); }
+      catch(e){ delete con[id]; LS.set(DEM_GOP_KEY, JSON.stringify(con)); break; }   // mau da bi xoa / khong duoc phep: bo qua mau nay
+    }
+  }
+  dangGop = false;
 }
 function loadCache(){ try { return JSON.parse(LS.get(CACHE_KEY) || 'null'); } catch(e){ return null; } }
 function saveCache(){ LS.set(CACHE_KEY, JSON.stringify(items)); }
@@ -1054,15 +1087,6 @@ function renderMenu(){
       b.textContent=s.label; b.onclick=()=>{activeSubs[activeCat]=s.id;render();};
       subTabsEl.appendChild(b);
     });
-  } else if (activeCat==='dung-nhieu' && demChung){
-    // Co so dem chung thi cho chon xem ca studio hay rieng may nay
-    subTabsEl.classList.add('show'); subTabsEl.innerHTML='';
-    [['chung','Cả studio'],['may','Máy này']].forEach(([id,nhan])=>{
-      const b=document.createElement('button');
-      b.className='sub-tab'+(demNguon===id?' active':'');
-      b.textContent=nhan; b.onclick=()=>{ demNguon=id; LS.set(DEM_NGUON_KEY,id); render(); };
-      subTabsEl.appendChild(b);
-    });
   } else subTabsEl.classList.remove('show');
 }
 const CAT_LINK = 'link-concept';   // muc rieng cua tab Link Concept
@@ -1201,8 +1225,8 @@ function render(){
   else if (activeCat==='recent' && list.length){ const n=document.createElement('p'); n.className='section-note'; n.textContent='Các mẫu bạn đã copy gần đây (riêng máy này)'; cardsEl.appendChild(n); }
   else if (activeCat==='dung-nhieu' && list.length){
     const n=document.createElement('p'); n.className='section-note';
-    const dem=demDang(), chung=dem===demChung, tu=chung?0:+LS.get(DEM_TU_KEY), tong=list.reduce((s,i)=>s+dem[i.id].n,0);
-    n.textContent=`Xếp theo số lần copy — ${tong} lần${tu?' từ '+new Date(tu).toLocaleDateString('vi-VN'):''} ${chung?'(cả studio — mọi máy cộng lại)':'(riêng máy này)'}`;
+    const dem=demDang(), chung=dem===demChung, tong=list.reduce((s,i)=>s+dem[i.id].n,0);
+    n.textContent=`Xếp theo số lần copy — ${tong} lần ${chung?'(cả studio, mọi máy cộng lại)':'(chưa nối được số chung, tạm hiện số của máy này)'}`;
     cardsEl.appendChild(n);
   }
   if (!list.length){
@@ -1848,15 +1872,6 @@ function idConcept(ten){
 }
 function renderThongKe(){
   const dem=demDang(), chung=dem===demChung;
-  const nguon=$('tkNguon'); nguon.innerHTML='';
-  nguon.classList.toggle('show', !!demChung);
-  if(demChung) [['chung','Cả studio'],['may','Máy này']].forEach(([id,nhan])=>{
-    const b=document.createElement('button');
-    b.className='sub-tab'+(demNguon===id?' active':'');
-    b.textContent=nhan; b.onclick=()=>{ demNguon=id; LS.set(DEM_NGUON_KEY,id); renderThongKe(); if(activeCat==='dung-nhieu') render(); };
-    nguon.appendChild(b);
-  });
-
   const xep=(a,b)=>b.n-a.n || b.at-a.at;
   const mau=itemsReply().filter(i=>dem[i.id]).sort((a,b)=>xep(dem[a.id],dem[b.id]));
   /* Hai dong trung ten trong sheet dung chung mot so dem — chi hien dong dau */
@@ -1952,8 +1967,7 @@ function renderThongKe(){
   }
   khoi('Concept dùng nhiều', tongCon+' lượt', bangCon);
 
-  const tu=chung?0:+LS.get(DEM_TU_KEY);
-  them(`<p class="tk-ghi-chu">${chung?'Số của cả studio — mọi máy cộng lại.':'Số riêng của máy này'+(tu?', đếm từ '+new Date(tu).toLocaleDateString('vi-VN'):'')+'.'}</p>`);
+  them(`<p class="tk-ghi-chu">${chung?'Số của cả studio — mọi máy cộng lại.':'Chưa nối được số chung của studio — tạm hiện số của máy này.'}</p>`);
 }
 /* O chu nho hien khi re chuot / cham vao mot cot hay mot thanh trong bieu do */
 const tkMeo=document.createElement('div'); tkMeo.className='tk-meo'; tkMeo.hidden=true; document.body.appendChild(tkMeo);
