@@ -254,13 +254,38 @@
   .tk-truc span { flex: 1 1 0; text-align: center; font-size: 0.54rem; color: var(--muted); white-space: nowrap; }
   .tk-truc span.nay { color: var(--ink-dark); font-weight: 700; }
   /* Thanh ngang theo nhom */
-  .tk-nhom { display: grid; grid-template-columns: minmax(5.5rem, 34%) 1fr auto; align-items: center; gap: 0.45rem 0.7rem; }
+  /* ten | thanh (ngan, toi da 38% the) | so */
+  .tk-nhom { display: grid; grid-template-columns: 1fr minmax(2.5rem, 38%) auto; align-items: center; gap: 0.45rem 0.6rem; }
   .tk-nhom .ten { font-size: 0.7rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tk-nhom .ray { height: 10px; }
+  .tk-nhom .ray { height: 8px; }
   .tk-nhom .ray i { display: block; height: 100%; min-width: 2px; border-radius: 0 4px 4px 0; background: var(--gold); }
   .tk-nhom .so { font-size: 0.7rem; font-weight: 700; color: var(--ink-dark); text-align: right; min-width: 1.6rem; }
-  .tk-hai { display: grid; gap: 0.8rem; }
-  @media (min-width: 640px) { .tk-hai { grid-template-columns: 1fr 1fr; } }
+  /* Chia doi ca tren dien thoai (Ky Anh chon 04/10/2026). minmax(0,1fr) de cot khong bi noi dung dai day rong ra */
+  .tk-hai { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.8rem; align-items: start; }
+  .tk-hai > div { min-width: 0; }
+  .tk-hai h4.tk-dau-cot { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.55rem; }
+  .tk-hai h4.tk-dau-cot span { margin-left: auto; letter-spacing: 0.02em; font-weight: 500; color: var(--gold-dark); text-transform: none; white-space: nowrap; }
+  /* Thanh trong bang xep hang chi dai toi da 60% cho do nang mat */
+  .tk-hai .xh-thanh { max-width: 60%; }
+  @media (max-width: 639px) {
+    .tk-hai { gap: 0.5rem; }
+    .tk-hai .tk-the { padding: 0.8rem 0.65rem 0.65rem; }
+    /* Cot hep: ten nhom nam rieng mot dong, thanh + so nam dong duoi */
+    .tk-hai .tk-nhom { grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 0.5rem; }
+    .tk-hai .tk-nhom .ten { grid-column: 1 / -1; font-size: 0.64rem; margin-top: 0.35rem; }
+    .tk-hai .tk-nhom .ten:first-child { margin-top: 0; }
+    .tk-hai .tk-nhom .ray { max-width: 70%; }
+    /* Dong xep hang gon lai, ten duoc xuong 2 dong */
+    .tk-hai .xh-row { gap: 0.45rem; padding: 0.6rem 0.55rem; align-items: flex-start; }
+    .tk-hai .xh-hang { width: 1.25rem; height: 1.25rem; font-size: 0.58rem; }
+    .tk-hai .xh-anh { width: 24px; }
+    .tk-hai .xh-ten { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; font-size: 0.68rem; line-height: 1.3; }
+    .tk-hai .xh-loai { font-size: 0.54rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tk-hai .xh-so { font-size: 0.9rem; }
+    .tk-hai .xh-so small { font-size: 0.5rem; margin-top: 0.1rem; }
+    .tk-hai .tk-xem-het { font-size: 0.6rem; padding: 0.6rem 0.3rem; }
+    .tk-hai .tk-trong { padding: 1rem 0.6rem; font-size: 0.68rem; }
+  }
   .tk-hai h4 { font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem; }
   .tk-meo { position: fixed; z-index: 80; padding: 0.35rem 0.6rem; background: var(--ink-dark); color: #fff; font-size: 0.66rem; border-radius: 6px; pointer-events: none; white-space: nowrap; transform: translate(-50%, -130%); }
   .tk-meo[hidden] { display: none; }
@@ -1953,18 +1978,22 @@ function renderThongKe(){
        </div>`
     : trong('Chưa có lượt copy nào.'));
 
-  /* 4. Hai bang xep hang */
-  const nutXemHet=(loai, tong, donVi)=>{
-    if(tong<=TK_HIEN) return;
-    const b=document.createElement('button'); b.type='button'; b.className='tk-xem-het';
-    b.textContent = tkMoHet[loai] ? `Thu gọn, chỉ hiện ${TK_HIEN} ${donVi} đầu` : `Xem tất cả ${tong} ${donVi}`;
-    b.onclick=()=>{ tkMoHet[loai]=!tkMoHet[loai]; renderThongKe(); };
-    el.lastElementChild.appendChild(b);
+  /* 4. Hai bang xep hang, nam canh nhau: mau tra loi | concept */
+  const hai=document.createElement('div'); hai.className='tk-hai';
+  const cot=(tieuDe, so, noiDung, loai, tong, donVi)=>{
+    const c=document.createElement('div');
+    c.innerHTML=`<h4 class="tk-dau-cot">${tieuDe}<span>${so} lượt</span></h4>`;
+    if(typeof noiDung==='string') c.insertAdjacentHTML('beforeend', noiDung); else c.appendChild(noiDung);
+    if(tong>TK_HIEN){
+      const b=document.createElement('button'); b.type='button'; b.className='tk-xem-het';
+      b.textContent = tkMoHet[loai] ? `Thu gọn còn ${TK_HIEN} ${donVi}` : `Xem tất cả ${tong} ${donVi}`;
+      b.onclick=()=>{ tkMoHet[loai]=!tkMoHet[loai]; renderThongKe(); };
+      c.appendChild(b);
+    }
+    hai.appendChild(c);
   };
-  khoi('Mẫu trả lời dùng nhiều', tongMau+' lượt', mau.length ? bangXepHang(tkMoHet.mau ? mau : mau.slice(0,TK_HIEN))
-    : trong('Chưa có lượt copy nào. Copy một mẫu bên tab Trả lời nhanh là nó hiện ở đây.'));
-
-  nutXemHet('mau', mau.length, 'mẫu');
+  cot('Mẫu trả lời', tongMau, mau.length ? bangXepHang(tkMoHet.mau ? mau : mau.slice(0,TK_HIEN))
+    : trong('Chưa có lượt copy nào.'), 'mau', mau.length, 'mẫu');
 
   let bangCon=trong('Chưa có lượt copy nào. Copy link hoặc giá của một concept là nó hiện ở đây.');
   if(cons.length){
@@ -1980,7 +2009,7 @@ function renderThongKe(){
         <img class="xh-anh" src="${esc(c.image||ANH_TRONG)}" alt="" loading="lazy" onerror="this.src='${ANH_TRONG}'">
         <span class="xh-giua">
           <span class="xh-ten">${esc(c.title)}</span>
-          <span class="xh-loai">${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · '))}</span>
+          <span class="xh-loai">${esc([nhanDang(c.dang).split(' - ')[0], c.model].filter(Boolean).join(' · '))}</span>
           <span class="xh-thanh"><i style="width:${Math.max(4,Math.round(n/max*100))}%"></i></span>
         </span>
         <span class="xh-so">${n}<small>lần</small></span>`;
@@ -1988,8 +2017,8 @@ function renderThongKe(){
       bangCon.appendChild(row);
     });
   }
-  khoi('Concept dùng nhiều', tongCon+' lượt', bangCon);
-  nutXemHet('con', cons.length, 'concept');
+  cot('Concept', tongCon, bangCon, 'con', cons.length, 'concept');
+  khoi('Dùng nhiều nhất', (tongMau+tongCon)+' lượt', hai);
 
   them(`<p class="tk-ghi-chu">${chung?'Số của cả studio — mọi máy cộng lại.':'Chưa nối được số chung của studio — tạm hiện số của máy này.'}</p>`);
 }
