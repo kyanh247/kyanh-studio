@@ -227,11 +227,36 @@
   .xh-thanh i { display: block; height: 100%; border-radius: 4px; background: var(--gold); }
   .xh-so { flex: none; text-align: right; font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--gold-dark); line-height: 1; }
   .xh-so small { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.56rem; font-weight: 600; color: var(--muted); margin-top: 0.2rem; }
-  /* Tab Thong ke */
-  .tk-khoi + .tk-khoi { margin-top: 1.8rem; }
-  .tk-tong { text-align: center; font-size: 0.72rem; color: var(--muted); margin-bottom: 1.2rem; }
-  .tk-tong b { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--gold-dark); font-weight: 700; }
+  /* Tab Thong ke — bieu do chi dung mot mau vang dong cua app; chu so luon la mau chu, khong to mau */
+  .tk-khoi { margin-top: 1.6rem; }
+  .tk-o { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+  .tk-o > div { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 0.85rem 0.6rem 0.75rem; text-align: center; min-width: 0; }
+  .tk-o b { display: block; font-family: 'Playfair Display', serif; font-size: 1.55rem; font-weight: 700; color: var(--ink-dark); line-height: 1.1; }
+  .tk-o span { display: block; margin-top: 0.3rem; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .tk-o small { display: block; margin-top: 0.15rem; font-size: 0.62rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tk-the { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 1rem 1rem 0.8rem; }
+  .tk-ghi-chu { text-align: center; font-size: 0.66rem; color: var(--muted); margin-top: 0.9rem; }
   .tk-trong { padding: 1.4rem 1rem; text-align: center; font-size: 0.78rem; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 12px; }
+  /* Cot theo ngay: cot toi da 24px, dau tron 4px, chan vuong, moc tu mot duong day */
+  .tk-ngay { display: flex; align-items: flex-end; gap: 2px; height: 132px; padding-top: 1.1rem; border-bottom: 1px solid var(--line); }
+  .tk-cot { position: relative; flex: 1 1 0; height: 100%; display: flex; align-items: flex-end; justify-content: center; background: none; border: none; padding: 0; cursor: default; }
+  .tk-cot i { display: block; width: 100%; max-width: 24px; border-radius: 4px 4px 0 0; background: var(--gold); transition: background 0.15s ease; }
+  .tk-cot:hover i, .tk-cot:focus-visible i { background: var(--gold-dark); }
+  .tk-cot em { position: absolute; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 0.6rem; font-weight: 700; color: var(--ink-dark); white-space: nowrap; pointer-events: none; }
+  .tk-truc { display: flex; gap: 2px; margin-top: 0.35rem; }
+  .tk-truc span { flex: 1 1 0; text-align: center; font-size: 0.54rem; color: var(--muted); white-space: nowrap; }
+  .tk-truc span.nay { color: var(--ink-dark); font-weight: 700; }
+  /* Thanh ngang theo nhom */
+  .tk-nhom { display: grid; grid-template-columns: minmax(5.5rem, 34%) 1fr auto; align-items: center; gap: 0.45rem 0.7rem; }
+  .tk-nhom .ten { font-size: 0.7rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tk-nhom .ray { height: 10px; }
+  .tk-nhom .ray i { display: block; height: 100%; min-width: 2px; border-radius: 0 4px 4px 0; background: var(--gold); }
+  .tk-nhom .so { font-size: 0.7rem; font-weight: 700; color: var(--ink-dark); text-align: right; min-width: 1.6rem; }
+  .tk-hai { display: grid; gap: 0.8rem; }
+  @media (min-width: 640px) { .tk-hai { grid-template-columns: 1fr 1fr; } }
+  .tk-hai h4 { font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem; }
+  .tk-meo { position: fixed; z-index: 80; padding: 0.35rem 0.6rem; background: var(--ink-dark); color: #fff; font-size: 0.66rem; border-radius: 6px; pointer-events: none; white-space: nowrap; transform: translate(-50%, -130%); }
+  .tk-meo[hidden] { display: none; }
   .xh-anh { flex: none; width: 34px; aspect-ratio: 2/3; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); background: #EFEAE3; }
   .clip-dem { margin-left: auto; font-size: 0.62rem; font-weight: 700; color: var(--gold-dark); border: 1px solid rgba(184,149,110,0.35); border-radius: 20px; padding: 0.08rem 0.55rem; white-space: nowrap; }
 
@@ -786,14 +811,25 @@ function saveRecent(){ LS.set(RECENT_KEY, JSON.stringify(recent)); }
    demCopy = { id: { n: so lan, at: lan cuoi } }; DEM_TU_KEY la ngay bat dau dem */
 const DEM_KEY = 'kyanh-reply-dem-copy', DEM_TU_KEY = 'kyanh-reply-dem-tu';
 let demCopy = {};
-function loadDem(){ try { demCopy = JSON.parse(LS.get(DEM_KEY) || '{}') || {}; } catch(e){ demCopy = {}; } }
+const DEM_NGAY_KEY = 'kyanh-reply-dem-ngay';
+let demNgay = {};
+function maNgay(d){ return 'd-' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function loadDem(){
+  try { demCopy = JSON.parse(LS.get(DEM_KEY) || '{}') || {}; } catch(e){ demCopy = {}; }
+  try { demNgay = JSON.parse(LS.get(DEM_NGAY_KEY) || '{}') || {}; } catch(e){ demNgay = {}; }
+}
 function tangDem(id){
   const d = demCopy[id] || { n: 0 };
   demCopy[id] = { n: d.n + 1, at: Date.now() };
   LS.set(DEM_KEY, JSON.stringify(demCopy));
   if (!LS.get(DEM_TU_KEY)) LS.set(DEM_TU_KEY, String(Date.now()));
   // Cong them 1 vao so dem chung ca studio. Rules chi cho phep dung viec nay (n tang 1), ai cung ghi duoc.
-  if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+  // Dem them theo ngay (ban ghi "d-2026-10-04") de ve bieu do luot copy moi ngay
+  const ngay = maNgay(new Date());
+  demNgay[ngay] = (demNgay[ngay]||0) + 1;
+  LS.set(DEM_NGAY_KEY, JSON.stringify(demNgay));
+  if (fb) for (const k of [id, ngay])
+    fb.setDoc(fb.doc(fb.db, 'thongke', k), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
   if (activeView==='thongke') renderThongKe();
 }
 /* So dem chung ca studio — collection `thongke`, moi mau mot ban ghi { n, at }.
@@ -1800,6 +1836,7 @@ function doiView(v){
     if(Date.now()-sheetLuc > 2*60*1000) napSheetConcept();   // mo tab Concept thi doc lai sheet, cach nhau it nhat 2 phut
   }
   if(v==='thongke') renderThongKe();
+  tkMeo.hidden=true;
 }
 document.querySelectorAll('.dock-item').forEach(b=>b.onclick=()=>doiView(b.dataset.view));
 
@@ -1827,23 +1864,71 @@ function renderThongKe(){
   const cons=itemsLink().map(c=>({ c, k:idConcept(c.title) }))
     .filter(x=>dem[x.k] && !daThay.has(x.k) && daThay.add(x.k))
     .sort((a,b)=>xep(dem[a.k],dem[b.k]));
-
   const tongMau=mau.reduce((s,i)=>s+dem[i.id].n,0), tongCon=cons.reduce((s,x)=>s+dem[x.k].n,0);
-  const tu=chung?0:+LS.get(DEM_TU_KEY);
-  const el=$('tkNoiDung'); el.innerHTML='';
-  el.insertAdjacentHTML('beforeend',
-    `<p class="tk-tong"><b>${tongMau+tongCon}</b> lượt copy ${chung?'— cả studio, mọi máy cộng lại':'trên máy này'}${tu?' từ '+new Date(tu).toLocaleDateString('vi-VN'):''}</p>`);
 
-  const khoi=(tieuDe, so, noiDung, trong)=>{
+  /* 14 ngay gan nhat, cu -> moi */
+  const soNgay=d=>chung ? ((demChung[d]||{}).n||0) : (demNgay[d]||0);
+  const ngay=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); ngay.push({ d, n:soNgay(maNgay(d)) }); }
+  const homNay=ngay[13].n, maxNgay=Math.max(...ngay.map(x=>x.n));
+
+  const el=$('tkNoiDung'); el.innerHTML='';
+  const them=html=>el.insertAdjacentHTML('beforeend', html);
+  const khoi=(tieuDe, phu, noiDung)=>{
     const k=document.createElement('section'); k.className='tk-khoi';
-    k.innerHTML=`<div class="lc-tieu-de">${tieuDe}<span class="lc-dem">${so} lượt</span></div>`;
-    if(noiDung) k.appendChild(noiDung); else k.insertAdjacentHTML('beforeend', `<div class="tk-trong">${trong}</div>`);
+    k.innerHTML=`<div class="lc-tieu-de">${tieuDe}<span class="lc-dem">${phu}</span></div>`;
+    if(typeof noiDung==='string') k.insertAdjacentHTML('beforeend', noiDung); else k.appendChild(noiDung);
     el.appendChild(k);
   };
-  khoi('Mẫu trả lời dùng nhiều', tongMau, mau.length ? bangXepHang(mau) : null,
-       'Chưa có lượt copy nào. Copy một mẫu bên tab Trả lời nhanh là nó hiện ở đây.');
+  const trong=t=>`<div class="tk-trong">${t}</div>`;
 
-  let bangCon=null;
+  /* 1. Ba o so */
+  them(`<div class="tk-o">
+    <div><b>${tongMau+tongCon}</b><span>Tổng lượt copy</span><small>${homNay} hôm nay</small></div>
+    <div><b>${tongMau}</b><span>Mẫu trả lời</span><small>${mau.length} mẫu</small></div>
+    <div><b>${tongCon}</b><span>Concept</span><small>${cons.length} concept</small></div>
+  </div>`);
+
+  /* 2. Luot copy moi ngay */
+  khoi('Lượt copy 14 ngày gần đây', maxNgay ? `nhiều nhất ${maxNgay} lượt/ngày` : '', maxNgay
+    ? `<div class="tk-the">
+         <div class="tk-ngay">${ngay.map((x,i)=>{
+            const cao=x.n ? Math.max(3, Math.round(x.n/maxNgay*100)) : 0;
+            /* chi ghi so len cot cao nhat va cot hom nay — ghi het thi roi mat */
+            const ghi = x.n && (x.n===maxNgay || i===13);
+            return `<button type="button" class="tk-cot" data-meo="${x.d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'})}: ${x.n} lượt" aria-label="${x.d.toLocaleDateString('vi-VN')}: ${x.n} lượt copy">
+              ${ghi?`<em style="bottom:calc(${cao}% + 3px)">${x.n}</em>`:''}<i style="height:${cao}%"></i></button>`;
+         }).join('')}</div>
+         <div class="tk-truc">${ngay.map((x,i)=>`<span class="${i===13?'nay':''}">${(i%2===1||i===13)?x.d.getDate()+'/'+(x.d.getMonth()+1):''}</span>`).join('')}</div>
+       </div>`
+    : trong('Chưa có số theo ngày. Biểu đồ bắt đầu đếm từ hôm nay, mỗi ngày một cột.'));
+
+  /* 3. Theo nhom */
+  const gom=(ds, layNhom, layN)=>{
+    const m=new Map(); ds.forEach(x=>{ const k=layNhom(x)||'Khác'; m.set(k,(m.get(k)||0)+layN(x)); });
+    return [...m].sort((a,b)=>b[1]-a[1]);
+  };
+  const thanh=rows=>{
+    const max=rows.length?rows[0][1]:1;
+    return `<div class="tk-nhom">${rows.map(([ten,v])=>`
+      <span class="ten" title="${esc(ten)}">${esc(ten)}</span>
+      <span class="ray" data-meo="${esc(ten)}: ${v} lượt"><i style="width:${Math.max(2,Math.round(v/max*100))}%"></i></span>
+      <span class="so">${v}</span>`).join('')}</div>`;
+  };
+  const chuaCo='<p class="tk-ghi-chu" style="margin:0">Chưa có lượt copy</p>';
+  const nhomMau=gom(mau, i=>CAT_LABELS[i.cat], i=>dem[i.id].n);
+  const nhomCon=gom(cons, x=>nhanDang(x.c.dang).split(' - ')[0], x=>dem[x.k].n);   // "Portrait - Ảnh Chân Dung" -> "Portrait" cho vừa cột
+  khoi('Dùng nhiều theo nhóm', '', (nhomMau.length||nhomCon.length)
+    ? `<div class="tk-hai">
+         <div class="tk-the"><h4>Mẫu trả lời</h4>${nhomMau.length?thanh(nhomMau):chuaCo}</div>
+         <div class="tk-the"><h4>Concept</h4>${nhomCon.length?thanh(nhomCon):chuaCo}</div>
+       </div>`
+    : trong('Chưa có lượt copy nào.'));
+
+  /* 4. Hai bang xep hang */
+  khoi('Mẫu trả lời dùng nhiều', tongMau+' lượt', mau.length ? bangXepHang(mau)
+    : trong('Chưa có lượt copy nào. Copy một mẫu bên tab Trả lời nhanh là nó hiện ở đây.'));
+
+  let bangCon=trong('Chưa có lượt copy nào. Copy link hoặc giá của một concept là nó hiện ở đây.');
   if(cons.length){
     bangCon=document.createElement('div'); bangCon.className='xh-list';
     const max=dem[cons[0].k].n;
@@ -1865,9 +1950,24 @@ function renderThongKe(){
       bangCon.appendChild(row);
     });
   }
-  khoi('Concept dùng nhiều', tongCon, bangCon,
-       'Chưa có lượt copy nào. Copy link hoặc giá của một concept là nó hiện ở đây.');
+  khoi('Concept dùng nhiều', tongCon+' lượt', bangCon);
+
+  const tu=chung?0:+LS.get(DEM_TU_KEY);
+  them(`<p class="tk-ghi-chu">${chung?'Số của cả studio — mọi máy cộng lại.':'Số riêng của máy này'+(tu?', đếm từ '+new Date(tu).toLocaleDateString('vi-VN'):'')+'.'}</p>`);
 }
+/* O chu nho hien khi re chuot / cham vao mot cot hay mot thanh trong bieu do */
+const tkMeo=document.createElement('div'); tkMeo.className='tk-meo'; tkMeo.hidden=true; document.body.appendChild(tkMeo);
+function hienMeo(e){
+  const o=e.target.closest && e.target.closest('[data-meo]');
+  if(!o){ tkMeo.hidden=true; return; }
+  const r=o.getBoundingClientRect(), cot=o.classList.contains('tk-cot') && o.querySelector('i');
+  tkMeo.textContent=o.dataset.meo; tkMeo.hidden=false;
+  tkMeo.style.left=Math.min(window.innerWidth-70, Math.max(70, r.left+r.width/2))+'px';
+  tkMeo.style.top=Math.max(34, cot ? cot.getBoundingClientRect().top : r.top)+'px';
+}
+['pointerover','focusin','click'].forEach(k=>$('tkNoiDung').addEventListener(k, hienMeo));
+$('tkNoiDung').addEventListener('pointerleave', ()=>{ tkMeo.hidden=true; });
+window.addEventListener('scroll', ()=>{ tkMeo.hidden=true; }, { passive:true });
 
 /* ================= Link Concept ================= */
 /* Dang concept — dung chung danh sach voi tab Bang Gia ben Reply */
