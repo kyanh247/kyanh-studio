@@ -16,6 +16,8 @@
 <meta name="apple-mobile-web-app-title" content="KAS Reply | Clipboard">
 <meta name="application-name" content="KAS Reply | Clipboard">
 <meta name="mobile-web-app-capable" content="yes">
+<!-- iPhone tu bien day so (STK, MST, so dien thoai) thanh link goi dien: bam the de copy lai nhay sang goi/Zalo. Tat di. -->
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -63,6 +65,8 @@
   .dock-item::before { content: ""; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 30px; height: 2px; border-radius: 0 0 2px 2px; background: transparent; transition: background 0.2s ease; }
   .dock-item svg { width: 20px; height: 20px; transition: stroke-width 0.2s ease; }
   .dock-item[hidden] { display: none; }
+  /* Phong khi may van tu chen link vao day so: link do khong bam duoc, trong nhu chu thuong */
+  a[href^="tel:"], a[href^="sms:"], a[x-apple-data-detectors] { pointer-events: none; color: inherit !important; text-decoration: none !important; }
   .dock-item:hover { color: var(--gold-dark); }
   .dock-item.active { color: var(--gold-dark); font-weight: 700; }
   .dock-item.active::before { background: var(--gold); }
