@@ -76,3 +76,26 @@ if RA_NGOAI:
     for f in cu[:-12]:
         os.remove(os.path.join(RA_NGOAI, f))
         print(f"  don ban cu: {f}")
+
+    # Sao luu them sheet concept (tab Concept cua app doc thang tu Google Sheet nay).
+    # Sheet ma loi (#REF!) thi KHONG luu, de ban tot gan nhat khong bi day ra khoi 12 ban.
+    SHEET = ("https://docs.google.com/spreadsheets/d/"
+             "1xhYHsQDVgUaIzj8_i0wBFDqa5k7OsUjPqgVc-Jn2CaE/export?format=csv")
+    try:
+        with urllib.request.urlopen(SHEET) as r:
+            csv_text = r.read().decode("utf-8")
+        so_dong = sum(1 for d in csv_text.splitlines() if d.strip(", \t"))
+        if csv_text.lstrip().startswith("#") or so_dong < 5:
+            print(f"CANH BAO: sheet concept dang loi ({csv_text.strip()[:30]!r}) — khong luu, giu ban cu.")
+        else:
+            ra = os.path.join(RA_NGOAI, f"concept-{moc}.csv")
+            with open(ra, "w", encoding="utf-8-sig", newline="") as f:
+                f.write(csv_text)
+            print(f"Da sao luu sheet concept ({so_dong - 1} dong) -> {ra}")
+            cu = sorted(f for f in os.listdir(RA_NGOAI)
+                        if f.startswith("concept-") and f.endswith(".csv"))
+            for f in cu[:-12]:
+                os.remove(os.path.join(RA_NGOAI, f))
+                print(f"  don ban cu: {f}")
+    except Exception as e:
+        print(f"CANH BAO: khong tai duoc sheet concept ({e}) — bo qua, mau tra loi van da luu.")
