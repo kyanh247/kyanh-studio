@@ -73,7 +73,7 @@
   .dock-item.active svg { stroke-width: 2.3; }
 
 
-  .lc-loc-wrap { position: relative; flex: 0 1 44%; min-width: 0; display: flex; }
+  .lc-loc-wrap { position: relative; flex: 0 1 24%; min-width: 0; display: flex; }
   .lc-filter { flex: 1 1 auto; width: 100%; min-width: 0; text-overflow: ellipsis; padding: 0.8rem 2.2rem 0.8rem 0.9rem; font-size: 0.78rem; font-family: 'Montserrat', sans-serif; color: var(--ink); background-color: #fff; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; }
   .lc-filter:focus { outline: none; border-color: var(--gold); }
   .lc-filter.dang-loc { border-color: var(--gold); color: var(--gold-dark); font-weight: 600; background-image: none; }  /* dang loc: nut xoa thay cho mui ten */
@@ -136,10 +136,31 @@
   .lc-card.copied { border-color: var(--gold); background: #FFFDFA; }
   .lc-card.copied::after { content: "✓"; position: absolute; top: 0.3rem; right: 0.3rem; width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; font-size: 0.66rem; font-weight: 700; color: #fff; background: var(--gold); border-radius: 50%; box-shadow: 0 2px 8px rgba(184,149,110,0.35); animation: popBadge 0.25s ease; }
   .lc-toolbar { flex-wrap: wrap; }
+
+  /* ===== Dropdown tuy bien — cung kieu voi CRM Mini (thay menu mac dinh cua he dieu hanh).
+     <select> goc van con (an) nen code doc/ghi .value va nghe 'change' khong phai sua. ===== */
+  .ka-sel { position: relative; display: block; width: 100%; min-width: 0; }
+  .ka-sel-native { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
+  .ka-sel-btn { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%; text-align: left; cursor: pointer; background-image: none !important; }
+  .ka-sel-btn .ka-sel-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ka-sel-btn::after { content: ''; flex: none; width: 12px; height: 12px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B8178' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat center / 12px; transition: transform .18s ease; }
+  .ka-sel-btn.open::after { transform: rotate(180deg); }
+  .ka-sel-btn.open { border-color: var(--gold); }
+  .ka-sel-btn.lc-filter { padding-right: 0.9rem; }
+  .ka-sel-btn.lc-filter.dang-loc { padding-right: 2.4rem; }   /* chua cho cho nut x bo loc */
+  .ka-sel-btn.lc-filter.dang-loc::after { display: none; }
+  .ka-sel-btn.f-select { padding-right: 1rem; }
+  .ka-sel-menu { position: fixed; z-index: 450; display: none; min-width: 160px; max-height: 300px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 32px rgba(40,30,20,.18); padding: 6px; font-family: 'Montserrat', sans-serif; -webkit-overflow-scrolling: touch; }
+  .ka-sel-menu.open { display: block; }
+  .ka-sel-opt { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.6rem 0.75rem; border-radius: 6px; font-size: 0.8rem; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .ka-sel-opt.active, .ka-sel-opt:hover { background: #F4EFE8; }
+  .ka-sel-opt.selected { color: var(--gold-dark); font-weight: 600; }
+  .ka-sel-opt.selected::after { content: ''; flex: none; width: 12px; height: 12px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B8956E' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") no-repeat center / 12px; }
+  .ka-sel-opt small { color: var(--muted); font-weight: 500; font-size: 0.7rem; }
   /* Dien thoai: chu trong o loc dai hon be ngang o -> cho xuong hang rieng cho du cho */
   @media (max-width: 560px) {
     .lc-toolbar .search-wrap { flex: 1 1 100%; }
-    .lc-loc-wrap { flex: 1 1 auto; }
+    .lc-loc-wrap { flex: 1 1 0; }
   }
   @media (min-width: 640px) { .lc-grid { grid-template-columns: repeat(6, 1fr); gap: 0.7rem; } }
   /* Anh nho: gap doi so cot -> moi anh con mot nua */
@@ -476,6 +497,10 @@
       <div class="lc-loc-wrap">
         <select class="lc-filter" id="lcFilter" title="Lọc theo dạng concept"></select>
         <button type="button" class="xoa-tim" id="lcXoaLoc" title="Bỏ lọc" aria-label="Bỏ lọc dạng concept" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="lc-loc-wrap">
+        <select class="lc-filter" id="lcModelLoc" title="Lọc theo tên mẫu (model)"><option value="">Tất cả mẫu</option></select>
+        <button type="button" class="xoa-tim" id="lcXoaModel" title="Bỏ lọc" aria-label="Bỏ lọc tên mẫu" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="chon-cot" id="lcCoAnh" role="group" aria-label="Cỡ ảnh">
         <button type="button" data-co="lon" title="Ảnh lớn" aria-label="Ảnh lớn"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/></svg></button>
@@ -2061,17 +2086,39 @@ const ANH_TRONG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
    </svg>`);
 
 /* Do danh sach dang vao o loc va o chon trong khung nhap */
-$('lcFilter').innerHTML = '<option value="">Tất cả dạng concept</option>' +
+$('lcFilter').innerHTML = '<option value="">Tất cả dạng</option>' +
   LC_DANG.map(d=>`<option value="${d.id}">${esc(d.nhan)}</option>`).join('');
 $('lcDang').innerHTML = LC_DANG.map(d=>`<option value="${d.id}">${esc(d.nhan)}</option>`).join('');
 
+/* Sau khi mot <select> duoc doi sang dropdown tuy bien thi cai nhin thay la cai nut — class giao dien phai gan len nut */
+function nutChon(id){ const o=$(id); return o._kaBtn || o; }
+/* Mot concept co the co nhieu model: "Thu Thảo, Minh Thy" hoac "Thu Thảo + Minh Thy" */
+function tenModel(c){ return String(c.model||'').split(/[,+]/).map(t=>t.trim()).filter(Boolean); }
+/* Danh sach model trong o loc lay tu du lieu (cot Mod trong sheet), kem so concept cua tung nguoi */
+let dsModelDaVe = '';
+function capNhatDsModel(){
+  const dem=new Map();
+  itemsLink().forEach(c=>tenModel(c).forEach(t=>dem.set(t,(dem.get(t)||0)+1)));
+  const ds=[...dem].sort((a,b)=>a[0].localeCompare(b[0],'vi'));
+  const khoa=ds.map(x=>x.join(':')).join('|');
+  if(khoa===dsModelDaVe) return;
+  dsModelDaVe=khoa;
+  const o=$('lcModelLoc'), dangChon=o.value;
+  o.innerHTML='<option value="">Tất cả mẫu</option>' + ds.map(([t,k])=>`<option value="${esc(t)}" data-phu="${k}">${esc(t)}</option>`).join('');
+  o.value = dem.has(dangChon) ? dangChon : '';
+}
 function renderLinks(){
   const q=($('lcSearch').value||'').trim().toLowerCase();
   const dang=$('lcFilter').value;
-  $('lcFilter').classList.toggle('dang-loc', !!dang);
+  nutChon('lcFilter').classList.toggle('dang-loc', !!dang);
   $('lcXoaLoc').hidden = !dang;
+  capNhatDsModel();
+  const mau=$('lcModelLoc').value;
+  nutChon('lcModelLoc').classList.toggle('dang-loc', !!mau);
+  $('lcXoaModel').hidden = !mau;
   let ds = itemsLink();
   if(dang) ds = ds.filter(c=>c.dang===dang);
+  if(mau)  ds = ds.filter(c=>tenModel(c).includes(mau));
   if(q)    ds = xepTheoDiem(ds, q, c=>c.model);
   const grid=$('lcGrid');
 
@@ -2080,7 +2127,7 @@ function renderLinks(){
     grid.innerHTML = `<div class="empty">`
       + (chuaCoGi
           ? '<h3>Chưa có concept nào</h3>' + (isAdmin ? 'Nhấn dấu + để thêm concept đầu tiên.' : 'Khu vực này đang trống.')
-          : '<h3>Không tìm thấy</h3>' + (dang ? `Chưa có concept nào thuộc ${esc(nhanDang(dang))}.` : ''))
+          : '<h3>Không tìm thấy</h3>' + ((dang||mau) ? `Chưa có concept nào${mau?' của mẫu '+esc(mau):''}${dang?' thuộc '+esc(nhanDang(dang)):''}.` : ''))
       + `</div>`;
     return;
   }
@@ -2139,6 +2186,8 @@ datCoAnh(LS.get(CO_ANH_KEY)==='nho' ? 'nho' : 'lon');
 $('lcSearch').addEventListener('input', renderLinks);
 $('lcFilter').addEventListener('change', renderLinks);
 $('lcXoaLoc').onclick = ()=>{ $('lcFilter').value=''; renderLinks(); };
+$('lcModelLoc').addEventListener('change', renderLinks);
+$('lcXoaModel').onclick = ()=>{ $('lcModelLoc').value=''; renderLinks(); };
 
 /* ---------- Cham vao concept -> chon link ---------- */
 /* truong: ten hien thi, ten truong trong du lieu, bieu tuong */
@@ -2404,6 +2453,158 @@ document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) kiemTra
 window.addEventListener('focus', kiemTraBanMoi);
 // Đóng khung xong mà đang chờ bản mới thì tải lại luôn
 setInterval(taiLaiBanMoi, 3000);
+
+/* ============================================================
+   DROPDOWN TUY BIEN — mang tu CRM Mini sang cho dong bo giao dien.
+   <select> goc giu nguyen (an) nen moi cho doc/ghi .value, nghe 'change' khong can sua.
+   ============================================================ */
+const kaSelMenu = document.createElement('div');
+kaSelMenu.className = 'ka-sel-menu';
+kaSelMenu.setAttribute('role', 'listbox');
+document.body.appendChild(kaSelMenu);
+const kaSelRegistry = [];   // { select, btn, label }
+let kaSelCur = null;        // o dang mo
+let kaSelActive = -1;       // dong dang duoc lam noi bang ban phim
+
+function kaSelRefresh(entry){
+  const opt = entry.select.options[entry.select.selectedIndex];
+  entry.label.textContent = opt ? opt.textContent.trim() : '';
+}
+function kaSelRenderMenu(){
+  const { select } = kaSelCur;
+  kaSelMenu.innerHTML = Array.from(select.options).map((o, i) =>
+    `<div class="ka-sel-opt${i === select.selectedIndex ? ' selected' : ''}${i === kaSelActive ? ' active' : ''}" role="option" data-i="${i}"><span>${esc(o.textContent.trim())}${o.dataset.phu ? ` <small>${esc(o.dataset.phu)}</small>` : ''}</span></div>`
+  ).join('');
+}
+function kaSelPosition(){
+  if (!kaSelCur) return;
+  const r = kaSelCur.btn.getBoundingClientRect();
+  kaSelMenu.style.minWidth = Math.max(160, r.width) + 'px';
+  kaSelMenu.style.maxHeight = Math.min(300, innerHeight - 16) + 'px';
+  const h = kaSelMenu.offsetHeight, w = kaSelMenu.offsetWidth;
+  let top = r.bottom + 4;
+  if (top + h > innerHeight - 8 && r.top - h - 4 > 8) top = r.top - h - 4;   // het cho thi lat len tren
+  kaSelMenu.style.top = Math.max(8, Math.min(top, innerHeight - h - 8)) + 'px';
+  kaSelMenu.style.left = Math.min(Math.max(8, r.left), innerWidth - w - 8) + 'px';
+}
+function kaSelOpen(entry){
+  if (kaSelCur === entry) return;
+  if (kaSelCur) kaSelClose();
+  kaSelCur = entry;
+  kaSelActive = entry.select.selectedIndex;
+  kaSelRenderMenu();
+  kaSelMenu.classList.add('open');
+  entry.btn.classList.add('open');
+  entry.btn.setAttribute('aria-expanded', 'true');
+  kaSelPosition();
+  const act = kaSelMenu.querySelector('.selected');
+  if (act) act.scrollIntoView({ block: 'nearest' });
+}
+function kaSelClose(){
+  if (!kaSelCur) return;
+  kaSelCur.btn.classList.remove('open');
+  kaSelCur.btn.setAttribute('aria-expanded', 'false');
+  kaSelMenu.classList.remove('open');
+  kaSelCur = null;
+  kaSelActive = -1;
+}
+function kaSelChoose(i){
+  const entry = kaSelCur;
+  if (!entry) return;
+  const select = entry.select;
+  const changed = select.selectedIndex !== i;
+  select.selectedIndex = i;
+  kaSelRefresh(entry);
+  kaSelClose();
+  entry.btn.focus();
+  if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+function kaSelEnhance(select){
+  if (select.dataset.kaEnhanced) return;
+  select.dataset.kaEnhanced = '1';
+  const wrap = document.createElement('span');
+  wrap.className = 'ka-sel';
+  select.parentNode.insertBefore(wrap, select);
+  wrap.appendChild(select);
+
+  // Nut hien thi ke thua class cua select de giu nguyen giao dien / can le
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'ka-sel-btn ' + select.className;
+  btn.setAttribute('aria-haspopup', 'listbox');
+  btn.setAttribute('aria-expanded', 'false');
+  if (select.title) btn.title = select.title;
+  const label = document.createElement('span');
+  label.className = 'ka-sel-label';
+  btn.appendChild(label);
+  wrap.insertBefore(btn, select);
+
+  select.className = 'ka-sel-native';
+  select.tabIndex = -1;
+  select.setAttribute('aria-hidden', 'true');
+  select._kaBtn = btn;
+
+  const entry = { select, btn, label };
+  kaSelRegistry.push(entry);
+  kaSelRefresh(entry);
+
+  // Code gan select.value = '...' truc tiep (bo loc, mo form sua...) -> cap nhat chu tren nut
+  const proto = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+  Object.defineProperty(select, 'value', {
+    configurable: true,
+    get(){ return proto.get.call(this); },
+    set(v){ proto.set.call(this, v); kaSelRefresh(entry); }
+  });
+  // Danh sach lua chon doi (vd danh sach model) -> cap nhat nut + menu dang mo
+  new MutationObserver(() => {
+    kaSelRefresh(entry);
+    if (kaSelCur === entry) { kaSelRenderMenu(); kaSelPosition(); }
+  }).observe(select, { childList: true, subtree: true, characterData: true });
+  select.addEventListener('change', () => kaSelRefresh(entry));
+
+  btn.addEventListener('click', () => { kaSelCur === entry ? kaSelClose() : kaSelOpen(entry); });
+  btn.addEventListener('keydown', (e) => {
+    const n = select.options.length;
+    if (kaSelCur !== entry) {
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) { e.preventDefault(); kaSelOpen(entry); }
+      return;
+    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); kaSelActive = Math.min(n - 1, kaSelActive + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); kaSelActive = Math.max(0, kaSelActive - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); kaSelActive = 0; }
+    else if (e.key === 'End') { e.preventDefault(); kaSelActive = n - 1; }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kaSelChoose(kaSelActive < 0 ? select.selectedIndex : kaSelActive); return; }
+    else if (e.key === 'Tab') { kaSelClose(); return; }
+    else return;
+    kaSelRenderMenu();
+    const a = kaSelMenu.querySelector('.active');
+    if (a) a.scrollIntoView({ block: 'nearest' });
+  });
+}
+kaSelMenu.addEventListener('mousedown', e => e.preventDefault());   // giu focus o nut
+kaSelMenu.addEventListener('click', e => {
+  const o = e.target.closest('.ka-sel-opt');
+  if (o) kaSelChoose(parseInt(o.dataset.i, 10));
+});
+document.addEventListener('pointerdown', e => {
+  if (!kaSelCur) return;
+  if (kaSelMenu.contains(e.target) || kaSelCur.btn.contains(e.target)) return;
+  kaSelClose();
+});
+// Esc khi menu dang mo: chi dong menu, khong dong khung ben duoi
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && kaSelCur) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    const b = kaSelCur.btn;
+    kaSelClose();
+    b.focus();
+  }
+}, true);
+window.addEventListener('scroll', e => { if (kaSelCur && !kaSelMenu.contains(e.target)) kaSelPosition(); }, true);
+window.addEventListener('resize', () => { if (kaSelCur) kaSelPosition(); });
+document.querySelectorAll('select.lc-filter, select.f-select').forEach(kaSelEnhance);
+
 
 init();
 </script>
