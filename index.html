@@ -262,6 +262,8 @@
   .xh-so small { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.56rem; font-weight: 600; color: var(--muted); margin-top: 0.2rem; }
   /* Tab Thong ke — bieu do chi dung mot mau vang dong cua app; chu so luon la mau chu, khong to mau */
   .tk-khoi { margin-top: 1.6rem; }
+  .tk-chon { justify-content: center; margin-bottom: 1rem; }
+  .tk-chon .lc-loc-wrap { flex: 0 1 9.5rem; order: 0; }
   .tk-o { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
   .tk-o > div { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 0.85rem 0.6rem 0.75rem; text-align: center; min-width: 0; }
   .tk-o b { display: block; font-family: 'Playfair Display', serif; font-size: 1.55rem; font-weight: 700; color: var(--ink-dark); line-height: 1.1; }
@@ -524,6 +526,10 @@
 
   <!-- Phan Thong ke: mau tra loi va concept duoc copy nhieu nhat -->
   <div id="viewThongKe" hidden>
+    <div class="toolbar tk-chon">
+      <div class="lc-loc-wrap"><select class="lc-filter" id="tkThangChon" title="Chọn tháng"></select></div>
+      <div class="lc-loc-wrap"><select class="lc-filter" id="tkNamChon" title="Chọn năm"></select></div>
+    </div>
     <main id="tkNoiDung"></main>
   </div>
 </div>
@@ -895,7 +901,10 @@ function tangDem(id){
   const ngay = maNgay(new Date());
   demNgay[ngay] = (demNgay[ngay]||0) + 1;
   LS.set(DEM_NGAY_KEY, JSON.stringify(demNgay));
-  if (fb) for (const k of [id, ngay])
+  // ... va theo thang cho tung mau (ban ghi "d-2026-10-m-<ma>") de tab Thong ke loc duoc theo thang
+  const ym = ngay.slice(2, 9), thang = khoaThang(id, ym);
+  if (tkDu[ym]) { const m = tkDu[ym]; m.muc[thang] = { n: ((m.muc[thang]||{}).n||0) + 1, at: Date.now() }; m.ngay[ngay] = (m.ngay[ngay]||0) + 1; }
+  if (fb) for (const k of [id, ngay, thang])
     fb.setDoc(fb.doc(fb.db, 'thongke', k), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
   if (activeView==='thongke') renderThongKe();
 }
@@ -904,15 +913,55 @@ function tangDem(id){
    Khong con nut chon "May nay": Ky Anh chi can so ca studio (04/10/2026). */
 let demChung = null;
 function demDang(){ return demChung || demCopy; }
+/* Ban ghi bat dau bang "d-" la so theo ngay / theo thang — nhieu dan theo thoi gian, chi tab Thong ke moi can.
+   May nao mo app cung nghe so tong, nen chi nghe hai khoang ma hai ben "d-": [dau, "d-") va ["d.", cuoi). */
 function startThongKe(){
+  const phan = [null, null];
+  const gop = ()=>{
+    if(!phan[0] || !phan[1]) return;
+    demChung = { ...phan[0], ...phan[1] };
+    if(activeCat==='dung-nhieu') render(); else renderMenu();
+    gopSoCuVaoChung();
+  };
+  const loi = e=>{ console.warn('Chưa đọc được thống kê chung:', e.code||e); demChung = null; if(activeCat==='dung-nhieu') render(); };
   try {
-    fb.onSnapshot(fb.collection(fb.db, 'thongke'), snap=>{
-      demChung = {}; snap.forEach(d=>{ const v=d.data(); if(v && v.n>0) demChung[d.id] = { n:v.n, at:v.at||0 }; });
-      if(activeCat==='dung-nhieu') render(); else renderMenu();
-      if(activeView==='thongke') renderThongKe();
-      gopSoCuVaoChung();
-    }, e=>{ console.warn('Chưa đọc được thống kê chung:', e.code||e); demChung = null; if(activeCat==='dung-nhieu') render(); });
+    const col = fb.collection(fb.db, 'thongke'), ma = fb.documentId();
+    [ fb.query(col, fb.where(ma, '<', 'd-')), fb.query(col, fb.where(ma, '>=', 'd.')) ].forEach((q, i)=>
+      fb.onSnapshot(q, snap=>{
+        const o = {}; snap.forEach(d=>{ const v=d.data(); if(v && v.n>0) o[d.id] = { n:v.n, at:v.at||0 }; });
+        phan[i] = o; gop();
+      }, loi));
   } catch(e){ console.warn(e); }
+}
+
+/* ---- So theo thang (cho tab Thong ke) ----
+   Rules chi cho tao ban ghi co ma dang "c-..." / "d-..." viet thuong, nen ma mau tra loi (co chu hoa)
+   duoc doi sang hex:  d-2026-10-m-<hex ma mau>   |   concept:  d-2026-10-c-<ten khong dau>   |   ngay:  d-2026-10-04 */
+function khoaThang(id, ym){
+  return id.startsWith('c-')
+    ? `d-${ym}-c-${id.slice(2, 62)}`
+    : `d-${ym}-m-${Array.from(id, ch=>ch.charCodeAt(0).toString(16).padStart(2,'0')).join('')}`;
+}
+/* So nen: dem theo thang chi co tu khi ban nay len web. Cac luot copy truoc do (dem tu 28/09/2026) khong ghi thang,
+   nen chup tong cua tung mau luc lam ban nay (13/10/2026 00:43) va tinh het vao thang 10/2026. */
+const TK_NEN = { ym: '2026-10', so: {"0pweV4WaYU3EnSY1Ex57":2,"29Nrjd09mSJGZamqikHf":2,"2ggY22a42nnGtqFCUgVe":20,"3s1V9bvuuJq5YXRkxJyl":3,"4CXoqz1JHMgGDZ8R92iE":1,"6Gq93E4Zcd0uOYqWDph0":13,"8IpM1WS1S1Gcog2DCjCG":8,"8yV8gnGh3mvwCoTjTX1x":4,"AbXtPU6QF5nm0sSpXVHD":2,"Bn3o8Uzk4Wm2hjgvxcHh":9,"E1oSyWEjZwh6lFQPMeUB":3,"FN0nKPzWnpK1UXz9Nzjb":4,"GdBIB0vlxdcqA7QfEsiX":1,"I0sekdyJvLdjbsoY3PR4":9,"I8vzlELWYthyasO5vwGC":1,"IJCQ9UbWeA8sHMfliIL0":2,"JUigTPFiv7kQalnFcITS":2,"Jycy4RnIBw95XhDkYzIF":4,"KGslTR6AOwVfwZ5GpYIc":1,"OYIN6YXutIpLg0PjE0rt":2,"P1KJsNuQOQEQva666DSE":2,"P5i4cIGZmdKLBlaQDUDz":2,"Yg6hVdarblpfBm5ELfNa":4,"Yhtjda79a6BiO2jVDwig":5,"Yq1XEoPT6zNOhKznd4J6":3,"YwKBN5hwvqG7871hJw1s":11,"ZHbfDdQtIk1aTXXLdoZc":20,"bOUpOqNI0ANFW8XhzjPd":13,"bwCVv9KpAnbjFpyNMve1":2,"c-angel-muse-1":1,"c-double-the-attitude":2,"c-ethereal-concept-1":1,"c-ice-gaze-1-khoac-long-nau":1,"c-it-s-my-birthday-10":2,"c-it-s-my-birthday-11":4,"c-it-s-my-birthday-4":2,"c-moment-of-miracle-4":1,"c-portraits-collection-1":2,"c-portraits-collection-13":2,"c-portraits-collection-14":9,"c-portraits-collection-15":1,"c-portraits-collection-16":4,"c-portraits-collection-17":2,"c-portraits-collection-18":2,"c-portraits-collection-19":4,"c-portraits-collection-2":2,"c-portraits-collection-20":5,"c-portraits-collection-21":3,"c-portraits-collection-22":4,"c-portraits-collection-3":1,"c-portraits-collection-6":2,"c-sea-soul-1":2,"c-sea-soul-5":1,"c-sen-sac-3":1,"c-sen-sac-6-yem-hong-dd":1,"c-sen-sac-7":2,"c-the-new-look-2":1,"c-the-pure-beauty-2-ao-trang":1,"c-the-pure-beauty-3-ao-xanh":2,"c-the-pure-beauty-3-khach-thuc-te":1,"c-the-pure-beauty-ao-den":2,"c-the-pure-beauty-vay-hong":1,"c-van-sa":2,"c-whisper-of-petals-1":2,"c-whisper-of-petals-1-vay-nau":1,"f69VBfjxavBoI6Ugc08f":32,"fwQErqGrWohWUXwbpDvO":2,"gP8ns0vP6W7wfTPPxXW9":1,"ga3mUSxJfQXh8Zch9FDN":2,"hYPlo3pSUTx0lWbUUH5a":1,"lEJFynXzxAcWZSkUp3qI":8,"mZo29XDKvO6J8jaZl21q":1,"oIYMTqP4t1cyMIFYrZYn":1,"pgmRXFB87RkOvzqPR5Vb":18,"reXLkX5xi9NZAu2iLhtj":9,"snlvqlwU6R7QX7BfbrpJ":3,"v2RWhiiQyJWZN1FrqztE":13,"wU6x68ocIjqAyjhBnGdh":4,"weKUYoheWiDug9BpIpMF":2} };
+const tkDu = {};          // ym -> { ngay:{ 'd-2026-10-04': n }, muc:{ khoaThang: {n, at} } }
+let tkDangTai = '';
+async function napThang(ym){
+  if(!fb || tkDangTai===ym) return;
+  tkDangTai = ym;
+  try {
+    const col = fb.collection(fb.db, 'thongke'), ma = fb.documentId();
+    const snap = await fb.getDocs(fb.query(col, fb.where(ma, '>=', `d-${ym}-`), fb.where(ma, '<', `d-${ym}.`)));
+    const du = { ngay:{}, muc:{} };
+    snap.forEach(d=>{
+      const v = d.data(); if(!v || !(v.n>0)) return;
+      if(/^d-\d{4}-\d{2}-\d{2}$/.test(d.id)) du.ngay[d.id] = v.n; else du.muc[d.id] = { n:v.n, at:v.at||0 };
+    });
+    tkDu[ym] = du;
+  } catch(e){ console.warn('Không tải được số liệu tháng', ym, e.code||e); tkDu[ym] = tkDu[ym] || null; }
+  tkDangTai = '';
+  if(activeView==='thongke') renderThongKe();
 }
 /* Gop so dem cu cua may nay (dem rieng tu 28/09/2026) vao so chung — moi may lam dung mot lan.
    Rules chi cho cong 1 moi lan ghi, nen can cong k thi ghi k lan.
@@ -1313,9 +1362,9 @@ function render(){
   list.forEach(it=>cardsEl.appendChild(cardEl(it)));
 }
 /* Tab Dung Nhieu: bang xep hang thay cho luoi the — hang, ten, thanh dai theo so lan, bam dong de copy */
-function bangXepHang(list){
+function bangXepHang(list, dem=demDang()){
   const wrap=document.createElement('div'); wrap.className='xh-list';
-  const dem=demDang(), max=dem[list[0].id].n;
+  const max=dem[list[0].id].n;
   list.forEach((item,k)=>{
     const n=dem[item.id].n, nt=nenTang(item.cat);
     const row=document.createElement('button'); row.type='button';
@@ -1931,7 +1980,7 @@ function doiView(v){
     renderLinks();
     if(Date.now()-sheetLuc > 2*60*1000) napSheetConcept();   // mo tab Concept thi doc lai sheet, cach nhau it nhat 2 phut
   }
-  if(v==='thongke') renderThongKe();
+  if(v==='thongke'){ renderThongKe(); napThang(tkYm()); }
   tkMeo.hidden=true;
 }
 document.querySelectorAll('.dock-item').forEach(b=>b.onclick=()=>doiView(b.dataset.view));
@@ -1945,8 +1994,31 @@ function idConcept(ten){
 /* Hai bang xep hang chi hien 20 dong dau; bam "Xem tat ca" moi ve phan con lai */
 const TK_HIEN = 20;
 const tkMoHet = { mau:false, con:false };
+/* Thang dang xem — mac dinh thang hien tai. Ky Anh chi can xem theo thang (13/10/2026). */
+const tkChon = { y: new Date().getFullYear(), m: new Date().getMonth()+1 };
+const tkYm = ()=>`${tkChon.y}-${String(tkChon.m).padStart(2,'0')}`;
+$('tkThangChon').innerHTML = Array.from({length:12}, (_,i)=>`<option value="${i+1}">Tháng ${i+1}</option>`).join('');
+$('tkNamChon').innerHTML = Array.from({length: Math.max(1, new Date().getFullYear()-2026+1)}, (_,i)=>`<option value="${2026+i}">Năm ${2026+i}</option>`).join('');
+$('tkThangChon').value = tkChon.m; $('tkNamChon').value = tkChon.y;
+const tkDoiThang = ()=>{ tkChon.m = +$('tkThangChon').value; tkChon.y = +$('tkNamChon').value; tkMoHet.mau = tkMoHet.con = false; renderThongKe(); napThang(tkYm()); };
+$('tkThangChon').addEventListener('change', tkDoiThang);
+$('tkNamChon').addEventListener('change', tkDoiThang);
+
 function renderThongKe(){
-  const dem=demDang(), chung=dem===demChung;
+  const ym=tkYm(), du=tkDu[ym], nay=new Date(), laThangNay = ym===maNgay(nay).slice(2,9);
+  const tenThang=`tháng ${tkChon.m}/${tkChon.y}`;
+  if(!du){
+    $('tkNoiDung').innerHTML = `<div class="tk-trong" style="margin-top:1rem">${du===null || !fb
+      ? 'Chưa tải được số liệu '+tenThang+'. Kiểm tra mạng rồi mở lại tab này.' : 'Đang tải số liệu '+tenThang+'…'}</div>`;
+    return;
+  }
+  /* So cua tung mau trong thang dang xem (+ so nen neu la thang 10/2026) */
+  const nen = ym===TK_NEN.ym ? TK_NEN.so : {};
+  const dem={};
+  const ghi=(id)=>{ const d=du.muc[khoaThang(id, ym)], k=((d||{}).n||0) + (nen[id]||0); if(k>0) dem[id]={ n:k, at:(d||{}).at||0 }; };
+  itemsReply().forEach(i=>ghi(i.id));
+  itemsLink().forEach(c=>ghi(idConcept(c.title)));
+
   const xep=(a,b)=>b.n-a.n || b.at-a.at;
   const mau=itemsReply().filter(i=>dem[i.id]).sort((a,b)=>xep(dem[a.id],dem[b.id]));
   /* Hai dong trung ten trong sheet dung chung mot so dem — chi hien dong dau */
@@ -1956,10 +2028,11 @@ function renderThongKe(){
     .sort((a,b)=>xep(dem[a.k],dem[b.k]));
   const tongMau=mau.reduce((s,i)=>s+dem[i.id].n,0), tongCon=cons.reduce((s,x)=>s+dem[x.k].n,0);
 
-  /* 14 ngay gan nhat, cu -> moi */
-  const soNgay=d=>chung ? ((demChung[d]||{}).n||0) : (demNgay[d]||0);
-  const ngay=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); ngay.push({ d, n:soNgay(maNgay(d)) }); }
-  const homNay=ngay[13].n, maxNgay=Math.max(...ngay.map(x=>x.n));
+  /* Tung ngay trong thang */
+  const soNgayTrongThang=new Date(tkChon.y, tkChon.m, 0).getDate();
+  const ngay=[]; for(let i=1;i<=soNgayTrongThang;i++){ const d=new Date(tkChon.y, tkChon.m-1, i); ngay.push({ d, n:du.ngay[maNgay(d)]||0 }); }
+  const iNay = laThangNay ? nay.getDate()-1 : -1;
+  const homNay = iNay>=0 ? ngay[iNay].n : 0, maxNgay=Math.max(...ngay.map(x=>x.n));
 
   const el=$('tkNoiDung'); el.innerHTML='';
   const them=html=>el.insertAdjacentHTML('beforeend', html);
@@ -1973,24 +2046,24 @@ function renderThongKe(){
 
   /* 1. Ba o so */
   them(`<div class="tk-o">
-    <div><b>${tongMau+tongCon}</b><span>Tổng lượt copy</span><small>${homNay} hôm nay</small></div>
+    <div><b>${tongMau+tongCon}</b><span>Tổng lượt copy</span><small>${laThangNay ? homNay+' hôm nay' : tenThang}</small></div>
     <div><b>${tongMau}</b><span>Mẫu trả lời</span><small>${mau.length} mẫu</small></div>
     <div><b>${tongCon}</b><span>Concept</span><small>${cons.length} concept</small></div>
   </div>`);
 
-  /* 2. Luot copy moi ngay */
-  khoi('Lượt copy 14 ngày gần đây', maxNgay ? `nhiều nhất ${maxNgay} lượt/ngày` : '', maxNgay
+  /* 2. Luot copy tung ngay trong thang */
+  khoi('Lượt copy từng ngày · '+tenThang, maxNgay ? `nhiều nhất ${maxNgay} lượt/ngày` : '', maxNgay
     ? `<div class="tk-the">
          <div class="tk-ngay">${ngay.map((x,i)=>{
             const cao=x.n ? Math.max(3, Math.round(x.n/maxNgay*100)) : 0;
             /* chi ghi so len cot cao nhat va cot hom nay — ghi het thi roi mat */
-            const ghi = x.n && (x.n===maxNgay || i===13);
+            const ghiSo = x.n && (x.n===maxNgay || i===iNay);
             return `<button type="button" class="tk-cot" data-meo="${x.d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'})}: ${x.n} lượt" aria-label="${x.d.toLocaleDateString('vi-VN')}: ${x.n} lượt copy">
-              ${ghi?`<em style="bottom:calc(${cao}% + 3px)">${x.n}</em>`:''}<i style="height:${cao}%"></i></button>`;
+              ${ghiSo?`<em style="bottom:calc(${cao}% + 3px)">${x.n}</em>`:''}<i style="height:${cao}%"></i></button>`;
          }).join('')}</div>
-         <div class="tk-truc">${ngay.map((x,i)=>`<span class="${i===13?'nay':''}">${(i%2===1||i===13)?x.d.getDate()+'/'+(x.d.getMonth()+1):''}</span>`).join('')}</div>
+         <div class="tk-truc">${ngay.map((x,i)=>`<span class="${i===iNay?'nay':''}">${(i===0||(i+1)%5===0||i===iNay)?(i+1):''}</span>`).join('')}</div>
        </div>`
-    : trong('Chưa có số theo ngày. Biểu đồ bắt đầu đếm từ hôm nay, mỗi ngày một cột.'));
+    : trong('Chưa có lượt copy nào được ghi theo ngày trong '+tenThang+'.'));
 
   /* 3. Theo nhom */
   const gom=(ds, layNhom, layN)=>{
@@ -2028,7 +2101,7 @@ function renderThongKe(){
     }
     hai.appendChild(c);
   };
-  cot('Mẫu trả lời', tongMau, mau.length ? bangXepHang(tkMoHet.mau ? mau : mau.slice(0,TK_HIEN))
+  cot('Mẫu trả lời', tongMau, mau.length ? bangXepHang(tkMoHet.mau ? mau : mau.slice(0,TK_HIEN), dem)
     : trong('Chưa có lượt copy nào.'), 'mau', mau.length, 'mẫu');
 
   let bangCon=trong('Chưa có lượt copy nào. Copy link hoặc giá của một concept là nó hiện ở đây.');
@@ -2056,7 +2129,7 @@ function renderThongKe(){
   cot('Concept', tongCon, bangCon, 'con', cons.length, 'concept');
   khoi('Dùng nhiều nhất', (tongMau+tongCon)+' lượt', hai);
 
-  them(`<p class="tk-ghi-chu">${chung?'Số của cả studio — mọi máy cộng lại.':'Chưa nối được số chung của studio — tạm hiện số của máy này.'}</p>`);
+  them(`<p class="tk-ghi-chu">Số của cả studio trong ${tenThang}, mọi máy cộng lại.${ym===TK_NEN.ym ? ' Tháng 10/2026 gồm cả các lượt copy từ 28/09, lúc app bắt đầu đếm.' : ''}</p>`);
 }
 /* O chu nho hien khi re chuot / cham vao mot cot hay mot thanh trong bieu do */
 const tkMeo=document.createElement('div'); tkMeo.className='tk-meo'; tkMeo.hidden=true; document.body.appendChild(tkMeo);
