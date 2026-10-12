@@ -73,7 +73,7 @@
   .dock-item.active svg { stroke-width: 2.3; }
 
 
-  .lc-loc-wrap { position: relative; flex: 0 1 24%; min-width: 0; display: flex; }
+  .lc-loc-wrap { position: relative; flex: 0 1 17%; min-width: 0; display: flex; }
   .lc-filter { flex: 1 1 auto; width: 100%; min-width: 0; text-overflow: ellipsis; padding: 0.8rem 2.2rem 0.8rem 0.9rem; font-size: 0.78rem; font-family: 'Montserrat', sans-serif; color: var(--ink); background-color: #fff; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B8178' d='M6 9L1 4h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; }
   .lc-filter:focus { outline: none; border-color: var(--gold); }
   .lc-filter.dang-loc { border-color: var(--gold); color: var(--gold-dark); font-weight: 600; background-image: none; }  /* dang loc: nut xoa thay cho mui ten */
@@ -159,8 +159,13 @@
   .ka-sel-opt small { color: var(--muted); font-weight: 500; font-size: 0.7rem; }
   /* Dien thoai: chu trong o loc dai hon be ngang o -> cho xuong hang rieng cho du cho */
   @media (max-width: 560px) {
-    .lc-toolbar .search-wrap { flex: 1 1 100%; }
-    .lc-loc-wrap { flex: 1 1 0; }
+    /* Hang 1: o tim + nut co anh (+ nut them). Hang 2: ba o loc chia deu */
+    .lc-toolbar .search-wrap { flex: 1 1 55%; order: 1; }   /* du rong de ba o loc phai xuong hang duoi */
+    .lc-toolbar .chon-cot, .lc-toolbar .btn-add { order: 2; }
+    .lc-loc-wrap { flex: 1 1 28%; order: 3; }
+    .lc-toolbar .ka-sel-btn.lc-filter { font-size: 0.72rem; padding-left: 0.65rem; padding-right: 0.6rem; gap: 0.3rem; }
+    .lc-toolbar .ka-sel-btn.lc-filter.dang-loc { padding-right: 2.1rem; }
+    .lc-toolbar .lc-loc-wrap .xoa-tim { right: 0.3rem; width: 24px; height: 24px; }
   }
   @media (min-width: 640px) { .lc-grid { grid-template-columns: repeat(6, 1fr); gap: 0.7rem; } }
   /* Anh nho: gap doi so cot -> moi anh con mot nua */
@@ -501,6 +506,10 @@
       <div class="lc-loc-wrap">
         <select class="lc-filter" id="lcModelLoc" title="Lọc theo tên mẫu (model)"><option value="">Tất cả mẫu</option></select>
         <button type="button" class="xoa-tim" id="lcXoaModel" title="Bỏ lọc" aria-label="Bỏ lọc tên mẫu" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="lc-loc-wrap">
+        <select class="lc-filter" id="lcGiaLoc" title="Lọc theo giá"><option value="">Tất cả giá</option></select>
+        <button type="button" class="xoa-tim" id="lcXoaGia" title="Bỏ lọc" aria-label="Bỏ lọc giá" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="chon-cot" id="lcCoAnh" role="group" aria-label="Cỡ ảnh">
         <button type="button" data-co="lon" title="Ảnh lớn" aria-label="Ảnh lớn"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/></svg></button>
@@ -2095,6 +2104,21 @@ function nutChon(id){ const o=$(id); return o._kaBtn || o; }
 /* Mot concept co the co nhieu model: "Thu Thảo, Minh Thy" hoac "Thu Thảo + Minh Thy" */
 function tenModel(c){ return String(c.model||'').split(/[,+]/).map(t=>t.trim()).filter(Boolean); }
 /* Danh sach model trong o loc lay tu du lieu (cot Mod trong sheet), kem so concept cua tung nguoi */
+/* Gia cua mot concept duoi dang so: concept tu sheet co san c.gia, concept nhap tay thi moc tu doan gia Facebook */
+function giaSo(c){ return bgSo(c.gia || docGia(c.gia_fb)) || 0; }
+/* O loc gia liet ke dung cac muc gia dang co (thap -> cao), kem so concept o moi muc */
+let dsGiaDaVe = '';
+function capNhatDsGia(){
+  const dem=new Map();
+  itemsLink().forEach(c=>{ const g=giaSo(c); if(g) dem.set(g,(dem.get(g)||0)+1); });
+  const ds=[...dem].sort((a,b)=>a[0]-b[0]);
+  const khoa=ds.map(x=>x.join(':')).join('|');
+  if(khoa===dsGiaDaVe) return;
+  dsGiaDaVe=khoa;
+  const o=$('lcGiaLoc'), dangChon=o.value;
+  o.innerHTML='<option value="">Tất cả giá</option>' + ds.map(([g,k])=>`<option value="${g}" data-phu="${k}">${g.toLocaleString('vi-VN')}đ</option>`).join('');
+  o.value = dem.has(+dangChon) ? dangChon : '';
+}
 let dsModelDaVe = '';
 function capNhatDsModel(){
   const dem=new Map();
@@ -2116,9 +2140,14 @@ function renderLinks(){
   const mau=$('lcModelLoc').value;
   nutChon('lcModelLoc').classList.toggle('dang-loc', !!mau);
   $('lcXoaModel').hidden = !mau;
+  capNhatDsGia();
+  const gia=+$('lcGiaLoc').value || 0;
+  nutChon('lcGiaLoc').classList.toggle('dang-loc', !!gia);
+  $('lcXoaGia').hidden = !gia;
   let ds = itemsLink();
   if(dang) ds = ds.filter(c=>c.dang===dang);
   if(mau)  ds = ds.filter(c=>tenModel(c).includes(mau));
+  if(gia)  ds = ds.filter(c=>giaSo(c)===gia);
   if(q)    ds = xepTheoDiem(ds, q, c=>c.model);
   const grid=$('lcGrid');
 
@@ -2127,7 +2156,7 @@ function renderLinks(){
     grid.innerHTML = `<div class="empty">`
       + (chuaCoGi
           ? '<h3>Chưa có concept nào</h3>' + (isAdmin ? 'Nhấn dấu + để thêm concept đầu tiên.' : 'Khu vực này đang trống.')
-          : '<h3>Không tìm thấy</h3>' + ((dang||mau) ? `Chưa có concept nào${mau?' của mẫu '+esc(mau):''}${dang?' thuộc '+esc(nhanDang(dang)):''}.` : ''))
+          : '<h3>Không tìm thấy</h3>' + ((dang||mau||gia) ? `Chưa có concept nào${gia?' giá '+gia.toLocaleString('vi-VN')+'đ':''}${mau?' của mẫu '+esc(mau):''}${dang?' thuộc '+esc(nhanDang(dang)):''}.` : ''))
       + `</div>`;
     return;
   }
@@ -2188,6 +2217,8 @@ $('lcFilter').addEventListener('change', renderLinks);
 $('lcXoaLoc').onclick = ()=>{ $('lcFilter').value=''; renderLinks(); };
 $('lcModelLoc').addEventListener('change', renderLinks);
 $('lcXoaModel').onclick = ()=>{ $('lcModelLoc').value=''; renderLinks(); };
+$('lcGiaLoc').addEventListener('change', renderLinks);
+$('lcXoaGia').onclick = ()=>{ $('lcGiaLoc').value=''; renderLinks(); };
 
 /* ---------- Cham vao concept -> chon link ---------- */
 /* truong: ten hien thi, ten truong trong du lieu, bieu tuong */
