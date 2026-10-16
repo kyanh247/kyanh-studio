@@ -1262,10 +1262,7 @@ function conceptTuSheet(rows){
   const C={ dm:cot('danh mục'), ten:cot('tên'), gom:cot('đã gồm'), mod:cot('mod'),
             km:h.findIndex(x=>x.includes('giá tư vấn')&&!x.includes('đã gồm')), goc:cot('niêm yết'),
             anh:cot('thumbnail'), fb:cot('facebook'), web:cot('website'), tt:cot('tiktok'),
-            ghim:cot('ghim'),
-            cuoi:h.findIndex(x=>x.includes('ghi chú') || x.includes('dòng cuối')) };
-  // cot Ghim: o nao co chu (x, 1, ...) la ghim len dau
-  // cot "Ghi chú cuối" (tuy chon): mot dong them vao cuoi tin bao gia Facebook, vd "Sau buổi chụp bạn nhận hoa mang về."
+            ghim:cot('ghim') };   // cot Ghim: o nao co chu (x, 1, ...) la ghim len dau
   const o=(r,i)=>i<0?'':String(r[i]||'').trim();
   const DANG=[['conceptual','conceptual'],['portrait','portrait'],['maternity','maternity'],['bầu','maternity'],
               ['birthday','birthday'],['couple','couple'],['holiday','holiday']];
@@ -1274,12 +1271,14 @@ function conceptTuSheet(rows){
     const dm=o(r,C.dm).toLowerCase();
     const km=o(r,C.km).replace(/\s+/g,''), goc=o(r,C.goc).replace(/[^\d.]/g,'');
     const gom=o(r,C.gom);
-    const baoGom = gom ? BAO_GOM_MAC_DINH.replace(/\n(?=✔️)/, `\n- ${gom}\n`) : BAO_GOM_MAC_DINH;
+    /* Cot C "Giá tư vấn đã gồm" -> dong cuoi cua tin bao gia Facebook, in dam nghieng
+       (vd "Sau buổi chụp bạn nhận hoa mang về."). Chu da in dam san trong sheet thi giu nguyen. */
+    const dongCuoi = gom ? '\n' + boldify(gom, true) : '';
     const ten=boldify(title,false);
     return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
              dang:(DANG.find(d=>dm.includes(d[0]))||[])[1]||'',
              content:o(r,C.web), link_fb:o(r,C.fb), link_tt:o(r,C.tt), image:o(r,C.anh),
-             gia_fb: km ? giaFB(ten, km, goc, baoGom) + (o(r,C.cuoi) ? '\n'+o(r,C.cuoi) : '') : '',
+             gia_fb: km ? giaFB(ten, km, goc, BAO_GOM_MAC_DINH) + dongCuoi : '',
              gia_tt: km ? giaTT(ten, km) : '' };
   }).filter(Boolean);
 }
