@@ -1483,7 +1483,9 @@ function computeDiscount(common){
 /* "Giá TikTok" cũng tự tính — rút gọn phần nghìn rồi chèn hoa để né kiểm duyệt giá.
    VD: 2.690.000đ → 𝟐🌼𝟔𝟗𝟎 */
 const AUTO_TIKTOK_LABEL='Giá TikTok';
-const TIKTOK_SEP='🌼';
+/* Bông hoa thay dấu chấm trong giá gửi TikTok. Hai bên kẹp ký tự "nối chữ" vô hình (U+2060)
+   để khung chat không ngắt dòng giữa "2" và "🌼990" — khách tưởng giá chỉ 990k (Kỳ Anh báo 18/10/2026). */
+const TIKTOK_SEP='⁠🌼⁠';
 function computeTiktokPrice(common){
   let d=String(common['Giá khuyến mãi']||'').replace(/[^\d]/g,'');
   if(!d) return '';
@@ -2331,7 +2333,7 @@ function soThuong(t){
 function docGia(t){
   const v = soThuong(t||'');
   /* Co u de ky tu chen giua (emoji) duoc tinh la mot, khong bi tach doi */
-  const tiktok = v.match(/\d[^\d\s.,]{1,2}\d{3}(?!\d)/u);
+  const tiktok = v.match(/\d[^\d\s.,]{1,4}\d{3}(?!\d)/u);   // 1-4: bông hoa + 2 ký tự nối vô hình
   if(tiktok) return tiktok[0];
   const day = v.match(/\d{1,3}(?:[.,]\d{3})+\s*đ?/);
   if(day) return day[0].trim();
