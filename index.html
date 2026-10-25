@@ -1275,10 +1275,11 @@ function conceptTuSheet(rows){
        (vd "Sau buổi chụp bạn nhận hoa mang về."). Chu da in dam san trong sheet thi giu nguyen. */
     const dongCuoi = gom ? '\n' + boldify(gom, true) : '';
     const ten=boldify(title,false);
+    const dangCon=(DANG.find(d=>dm.includes(d[0]))||[])[1]||'';
     return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
-             dang:(DANG.find(d=>dm.includes(d[0]))||[])[1]||'',
+             dang:dangCon,
              content:o(r,C.web), link_fb:o(r,C.fb), link_tt:o(r,C.tt), image:o(r,C.anh),
-             gia_fb: km ? giaFB(ten, km, goc, BAO_GOM_MAC_DINH) + dongCuoi : '',
+             gia_fb: km ? giaFB(ten, km, goc, baoGomTheoDang(dangCon)) + dongCuoi : '',
              gia_tt: km ? giaTT(ten, km) : '' };
   }).filter(Boolean);
 }
@@ -1863,6 +1864,20 @@ function moChonLoai(){ chonLoaiOverlay.classList.add('show'); }
 function dongChonLoai(){ chonLoaiOverlay.classList.remove('show'); }
 
 /* ---------- Tạo báo giá concept ---------- */
+/* Gói Couple chụp 2 người nên số lượng khác (Kỳ Anh gửi 25/10/2026) */
+const BAO_GOM_COUPLE =
+`- 12 Ảnh đã Photoshop đẹp, hoàn thiện kỹ lưỡng
+- 02 Layout Make Up & Làm Tóc chuyên nghiệp
+- 02 Trang phục & phụ kiện (có sẵn tại Studio)
+- 02 Bộ Nail box & Lens mắt có sẵn
+✔️ Ekip hướng dẫn tạo dáng theo concept xuyên suốt buổi chụp
+✔️ Không gian Studio và check ảnh tại buổi chụp
+✔️ Trả toàn bộ file ảnh gốc trong ngày
+
+Tất cả chi phí đã bao gồm, không có phát sinh thêm.
+Thời gian chụp & Makeup dự kiến 3 tiếng.`;
+/* Phan "Bao gom" theo dang concept: Couple co ban rieng, con lai dung ban chung */
+const baoGomTheoDang = dang => (dang==='couple' || dang==='concept-couple') ? BAO_GOM_COUPLE : BAO_GOM_MAC_DINH;
 const BAO_GOM_MAC_DINH =
 `- 10 Ảnh đã Photoshop đẹp, hoàn thiện kỹ lưỡng
 - 01 Layout Make Up & Làm Tóc chuyên nghiệp
@@ -1925,6 +1940,7 @@ function moBaoGia(){
     .map(sub=>`<option value="${sub.id}">${esc(sub.label)}</option>`).join('');
   // mở sẵn đúng mục đang xem nếu đang ở trong Bảng Giá
   if(activeCat==='concept') bgDanhMuc.value=activeSubs.concept;
+  bgBaoGom.value=baoGomTheoDang(bgDanhMuc.value);
   bgCapNhatXemTruoc();
   baoGiaOverlay.classList.add('show');
   setTimeout(()=>bgTenBo.focus(),50);
@@ -1932,6 +1948,10 @@ function moBaoGia(){
 function dongBaoGia(){ baoGiaOverlay.classList.remove('show'); }
 
 [bgTenBo,bgSoConcept,bgGiaGoc,bgGiaKM,bgBaoGom].forEach(o=>o.addEventListener('input',bgCapNhatXemTruoc));
+/* Doi muc (vd sang Couple) thi doi phan "Bao gom" theo — tru khi Ky Anh da tu sua o do */
+bgDanhMuc.addEventListener('change', ()=>{
+  if([BAO_GOM_MAC_DINH, BAO_GOM_COUPLE].includes(bgBaoGom.value)){ bgBaoGom.value=baoGomTheoDang(bgDanhMuc.value); bgCapNhatXemTruoc(); }
+});
 $('bgHuy').onclick=dongBaoGia;
 $('chonBaoGia').onclick=()=>{ dongChonLoai(); moBaoGia(); };
 $('chonTextThuong').onclick=()=>{ dongChonLoai(); openModal(null); };
