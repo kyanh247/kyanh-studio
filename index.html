@@ -894,6 +894,13 @@ function loadDem(){
   try { demCopy = JSON.parse(LS.get(DEM_KEY) || '{}') || {}; } catch(e){ demCopy = {}; }
   try { demNgay = JSON.parse(LS.get(DEM_NGAY_KEY) || '{}') || {}; } catch(e){ demNgay = {}; }
 }
+/* Concept duoc copy cho kenh nao (fb / tt / chung) — dem theo thang: "d-2026-10-n-fb".
+   Mau tra loi khong can: kenh suy ra tu muc cua mau (Tu Van TikTok, Tu Van FB/Zalo...). Bat dau dem tu 25/10/2026. */
+function tangKenh(k){
+  const id = `d-${maNgay(new Date()).slice(2, 9)}-n-${k}`, ym = id.slice(2, 9);
+  if (tkDu[ym]) { const m = tkDu[ym]; m.muc[id] = { n: ((m.muc[id]||{}).n||0) + 1, at: Date.now() }; }
+  if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+}
 function tangDem(id){
   const d = demCopy[id] || { n: 0 };
   demCopy[id] = { n: d.n + 1, at: Date.now() };
@@ -2094,6 +2101,25 @@ function renderThongKe(){
        </div>`
     : trong('Chưa có lượt copy nào được ghi theo ngày trong '+tenThang+'.'));
 
+  /* 2b. Theo nen tang (Ky Anh xin 25/10/2026).
+     Mau tra loi: suy tu muc cua mau (Tu Van TikTok -> TikTok; Tu Van FB/Zalo, Bang Gia -> Facebook/Zalo; con lai -> Chung).
+     Concept: theo nut da bam, chi dem tu 25/10/2026 — phan concept truoc do khong biet kenh. */
+  const kenh={ fb:0, tt:0, chung:0 };
+  mau.forEach(i=>{ const k=nenTang(i.cat)||'chung'; kenh[k]+=dem[i.id].n; });
+  let conCoKenh=0;
+  ['fb','tt','chung'].forEach(k=>{ const v=(du.muc[`d-${ym}-n-${k}`]||{}).n||0; kenh[k]+=v; conCoKenh+=v; });
+  const chuaRo=Math.max(0, tongCon-conCoKenh);
+  const dongKenh=[['Facebook / Zalo',kenh.fb],['TikTok',kenh.tt],['Chung',kenh.chung]]
+    .concat(chuaRo ? [['Concept chưa rõ kênh',chuaRo]] : []).filter(x=>x[1]>0);
+  const tongKenh=dongKenh.reduce((s,x)=>s+x[1],0), maxKenh=Math.max(1,...dongKenh.map(x=>x[1]));
+  khoi('Theo nền tảng · '+tenThang, '', tongKenh
+    ? `<div class="tk-the"><div class="tk-nhom">${dongKenh.map(([ten,v])=>`
+        <span class="ten" title="${esc(ten)}">${esc(ten)}</span>
+        <span class="ray" data-meo="${esc(ten)}: ${v} lượt"><i style="width:${Math.max(2,Math.round(v/maxKenh*100))}%"></i></span>
+        <span class="so">${v} · ${Math.round(v/tongKenh*100)}%</span>`).join('')}</div>
+       <p class="tk-ghi-chu" style="margin:0.7rem 0 0">"Chung" là Chốt đơn, Ưu đãi và link Website — dùng cho cả hai bên.${chuaRo ? ' Concept copy trước 25/10/2026 không ghi bạn bấm nút Facebook hay TikTok nên xếp vào "chưa rõ kênh".' : ''}</p></div>`
+    : trong('Chưa có lượt copy nào trong '+tenThang+'.'));
+
   /* 3. Theo nhom */
   const gom=(ds, layNhom, layN)=>{
     const m=new Map(); ds.forEach(x=>{ const k=layNhom(x)||'Khác'; m.set(k,(m.get(k)||0)+layN(x)); });
@@ -2447,6 +2473,7 @@ function moChonLink(c){
         b.querySelector('.lk-phu').textContent = '✓ Đã copy';
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
         tangDem(idConcept(c.title));
+        tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
         setTimeout(()=>lkOverlay.classList.remove('show'), 650);
       } else showToast('Không copy được', true);
     };
