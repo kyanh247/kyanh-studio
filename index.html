@@ -539,7 +539,7 @@
       <div class="cp-nhan">Tổng chi</div>
       <div class="cp-so" id="cpTong">0đ</div>
       <div class="cp-moi-nguoi" id="cpMoiNguoi">Mỗi người 0đ</div>
-      <div class="cp-phu" id="cpPhu">Chia đều 7 người</div>
+      <div class="cp-phu" id="cpPhu">Chia đều 8 người</div>
     </div>
 
     <div style="display:flex;justify-content:center">
@@ -558,7 +558,7 @@
     <div class="cp-muc">Các khoản đã chi</div>
     <div id="cpDsChi"></div>
 
-    <p class="cp-ghi-chu">Chuyến đi Vũng Tàu 31/10/2026 · Chia đều 7 người<br>
+    <p class="cp-ghi-chu">Chuyến đi Vũng Tàu 31/10/2026 · Chia đều 8 người<br>
       Mục này tạm thời, xoá sau chuyến đi.</p>
   </div>
 
@@ -619,7 +619,7 @@
   </button>
   <!-- TAM THOI: chuyen di Vung Tau 31/10/2026. Xoa nut nay va #viewChiPhi sau chuyen di. -->
   <button class="dock-item" data-view="chiphi">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>
     <span>Vũng Tàu</span>
   </button>
 </nav>
@@ -2101,7 +2101,7 @@ const TIEU_DE_VIEW = {
   reply: 'Nội bộ · Trả lời nhanh',
   link:  'Nội bộ · Concept',
   thongke: 'Nội bộ · Thống kê',
-  chiphi: 'Vũng Tàu Trip · chia đều 7 người',
+  chiphi: 'Vũng Tàu Trip · chia đều 8 người',
 };
 function doiView(v){
   if(v==='thongke' && !isAdmin) v='reply';
@@ -2452,7 +2452,7 @@ $('lcXoaGia').onclick = ()=>{ $('lcGiaLoc').value=''; renderLinks(); };
 /* ================= TAM THOI: Chi phi chuyen di Vung Tau 31/10/2026 =================
    Xoa toan bo khoi nay + #viewChiPhi + #cpOverlay + nut dock data-view="chiphi"
    (giu CAT_VT trong CAT_AN chung nao du lieu con tren Firestore). ================= */
-const NHOM = ['Thành','Kỳ Anh','Thầm','Hải','Khanh','Tiện','Trúc'];
+const NHOM = ['Thành','Kỳ Anh','Thầm','Hải','Khanh','Tiện','Trúc','Tú'];
 
 const tienVN = n => Math.round(n).toLocaleString('vi-VN') + 'đ';
 const docSo  = v => parseInt(String(v||'').replace(/[^\d]/g,''),10) || 0;
