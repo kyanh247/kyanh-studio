@@ -94,6 +94,12 @@
   .bq-muc { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 1.4rem 0 0.6rem; }
   .bq-muc:first-child { margin-top: 0; }
   .bq-goi-y { font-size: 0.66rem; color: var(--muted); margin: -0.45rem 0 0.9rem; }
+  .bq-chip-ds { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .bq-chip { padding: 0.5rem 0.8rem; border: 1px solid var(--line); border-radius: 20px; background: #fff; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 600; color: var(--ink); cursor: pointer; transition: all 0.2s ease; }
+  .bq-chip small { margin-left: 0.15rem; font-weight: 700; color: var(--gold-dark); }
+  .bq-chip:hover { border-color: var(--gold); }
+  .bq-chip[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .bq-chip[aria-pressed="true"] small { color: #fff; }
 
   /* Khung chon link khi cham vao concept */
   .lk-head { display: flex; gap: 0.85rem; align-items: center; margin-bottom: 1.2rem; }
@@ -2421,20 +2427,32 @@ function bqTimConcept(ten){
   const k = String(ten||'').trim().toLowerCase();
   return k ? itemsLink().find(c=>c.title.trim().toLowerCase()===k) : null;
 }
+/* Phu thu + phu kien co dinh cua studio (Ky Anh dan 01/11/2026) — bam nut la cong, khoi go so.
+   nhom: 'phu' = phu thu, 'pk' = phu kien. Them phu kien moi: them mot dong nhom 'pk' vao day. */
+const BQ_PHU = [
+  { id:'toc',  nhom:'phu', nut:'Tóc phím',       ngan:'400k', ghi:'Phụ thu tóc phím',                 tien:400000 },
+  { id:'be',   nhom:'phu', nut:'Em bé (3 pose)', ngan:'500k', ghi:'Phụ thu chụp cùng em bé (3 pose)', tien:500000 },
+  { id:'banh', nhom:'pk',  nut:'Bánh kem',       ngan:'150k', ghi:'Phụ kiện bánh kem',                tien:150000 },
+];
+const BQ_GHI_EM_BE = '(Phụ thu em bé chưa gồm retouch: ảnh chụp cùng em bé không nằm trong số ảnh retouch của gói, muốn retouch thêm 150.000đ/ảnh.)';
 function bqVeDong(du={}){
   const o = document.createElement('div'); o.className = 'bq-con';
   o.innerHTML = `
     <div class="bq-con-dau"><b class="bq-so">Concept</b><button type="button" class="bq-xoa">Bỏ concept này</button></div>
     <div class="f-group"><label class="f-label">Tên concept</label>
       <input type="text" class="f-input bq-ten" autocomplete="off" placeholder="Gõ để chọn, VD: Ice Gaze #1"></div>
+    <div class="f-group"><label class="f-label">Giá</label>
+      <input type="text" class="f-input bq-gia" inputmode="numeric" placeholder="Tự điền khi chọn concept"></div>
+    ${[['phu','Phụ thu (bấm để thêm)'],['pk','Phụ kiện']].map(([nh,tieu])=>`
+    <div class="f-group"><label class="f-label">${tieu}</label>
+      <div class="bq-chip-ds">${BQ_PHU.filter(p=>p.nhom===nh).map(p=>`<button type="button" class="bq-chip" data-phu="${p.id}" aria-pressed="false">${p.nut} <small>+${p.ngan}</small></button>`).join('')}</div></div>`).join('')}
     <div class="bq-hai">
-      <div class="f-group"><label class="f-label">Giá</label>
-        <input type="text" class="f-input bq-gia" inputmode="numeric" placeholder="Tự điền khi chọn concept"></div>
-      <div class="f-group"><label class="f-label">Phụ thu (nếu có)</label>
-        <input type="text" class="f-input bq-phu" inputmode="numeric" placeholder="VD: 400000"></div>
-    </div>
-    <div class="f-group"><label class="f-label">Phụ thu cho</label>
-      <input type="text" class="f-input bq-phu-ghi" placeholder="VD: tóc phím"></div>`;
+      <div class="f-group"><label class="f-label">Phụ thu khác</label>
+        <input type="text" class="f-input bq-phu" inputmode="numeric" placeholder="Số tiền, nếu có"></div>
+      <div class="f-group"><label class="f-label">Cho khoản gì</label>
+        <input type="text" class="f-input bq-phu-ghi" placeholder="VD: thêm trang phục"></div>
+    </div>`;
+  o.querySelectorAll('.bq-chip').forEach(b=>b.onclick=()=>{ b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true' ? 'false' : 'true'); bqCapNhat(); });
   const ten = o.querySelector('.bq-ten'), gia = o.querySelector('.bq-gia');
   // Go ten -> hien bang goi y (cung kieu dropdown CRM Mini); chon dung concept -> tu dien gia theo sheet (van sua tay duoc)
   ten.addEventListener('input', ()=>{ const c = bqTimConcept(ten.value); if(c && giaSo(c)){ gia.value = bqTien(giaSo(c)); } bqGoiY(ten); bqCapNhat(); });
@@ -2525,22 +2543,26 @@ function bqTinNhan(){
     gia: bqSoTien(o.querySelector('.bq-gia').value),
     phu: bqSoTien(o.querySelector('.bq-phu').value),
     phuGhi: o.querySelector('.bq-phu-ghi').value.trim(),
+    phuChon: [...o.querySelectorAll('.bq-chip[aria-pressed="true"]')].map(b=>BQ_PHU.find(p=>p.id===b.dataset.phu)),
   }));
+  dong.forEach(d=>{ d.cacPhu = [...d.phuChon.map(p=>({ ghi:p.ghi, tien:p.tien })), ...(d.phu ? [{ ghi:'Phụ thu'+(d.phuGhi ? ' '+d.phuGhi : ''), tien:d.phu }] : [])]; });
   const nhieu = dong.length > 1;
   const L = ['Studio gửi bạn Báo giá ạ', ''];
   dong.forEach(d=>{
     L.push(`${nhieu ? 'Concept '+d.so : 'Concept'}: ${d.ten || '[Tên concept]'}${d.gia ? ' - '+bqTien(d.gia)+'đ' : ''}`);
   });
-  dong.filter(d=>d.phu).forEach(d=>L.push(`Phụ thu${d.phuGhi ? ' '+d.phuGhi : ''}: ${bqTien(d.phu)}đ`));
+  // Phu thu: nhieu concept thi ghi kem thuoc concept nao
+  dong.forEach(d=>d.cacPhu.forEach(p=>L.push(`${p.ghi}${nhieu ? ' (concept '+d.so+')' : ''}: ${bqTien(p.tien)}đ`)));
+  if(dong.some(d=>d.phuChon.some(p=>p.id==='be'))) L.push(BQ_GHI_EM_BE);
   L.push('');
 
   /* Tong: du gia thi ra mot so; con concept chua co gia (vd khach chon sau) thi liet ke tung khoan */
   const duGia = dong.every(d=>d.gia);
-  const tong = dong.reduce((s,d)=>s+d.gia+d.phu, 0);
+  const tong = dong.reduce((s,d)=>s+d.gia+d.cacPhu.reduce((t,p)=>t+p.tien,0), 0);
   const phan = [];
   dong.forEach(d=>{
     phan.push(d.gia ? bqTien(d.gia)+'đ' : `concept ${d.so}`);
-    if(d.phu) phan.push(bqTien(d.phu)+'đ');
+    d.cacPhu.forEach(p=>phan.push(bqTien(p.tien)+'đ'));
   });
   L.push('Tổng chi phí: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
 
