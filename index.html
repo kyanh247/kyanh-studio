@@ -84,8 +84,11 @@
   .bq-con { border: 1px solid var(--line); border-radius: 12px; padding: 0.85rem 0.85rem 0.1rem; margin-bottom: 0.8rem; background: #FFFDFA; }
   .bq-con-dau { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
   .bq-con-dau b { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-dark); }
-  .bq-xoa { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.7rem; font-family: 'Montserrat', sans-serif; padding: 0.2rem 0.3rem; }
-  .bq-xoa:hover { color: var(--danger); }
+  /* Nut xoa concept: vien do nhat + thung rac, nhin la biet */
+  .bq-xoa { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; background: #fff; border: 1px solid rgba(176,86,60,0.35); border-radius: 20px; cursor: pointer; color: var(--danger); font-size: 0.7rem; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: all 0.2s ease; }
+  .bq-xoa svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+  .bq-xoa:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .bq-xoa[hidden] { display: none; }
   .bq-them { display: block; width: 100%; padding: 0.75rem; margin: 0 0 1rem; font-family: 'Montserrat', sans-serif; font-size: 0.74rem; font-weight: 600; color: var(--gold-dark); background: #fff; border: 1px dashed rgba(184,149,110,0.6); border-radius: 10px; cursor: pointer; }
   .bq-them:hover { background: rgba(184,149,110,0.06); }
   .bq-xem { width: 100%; min-height: 22rem; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; line-height: 1.55; color: var(--ink); background: #FFFDFA; border: 1px solid var(--line); border-radius: 12px; padding: 0.9rem; resize: vertical; }
@@ -2466,7 +2469,7 @@ const BQ_GHI_EM_BE = '(Phụ thu em bé chưa gồm retouch: ảnh chụp cùng 
 function bqVeDong(du={}){
   const o = document.createElement('div'); o.className = 'bq-con';
   o.innerHTML = `
-    <div class="bq-con-dau"><b class="bq-so">Concept</b><button type="button" class="bq-xoa">Bỏ concept này</button></div>
+    <div class="bq-con-dau"><b class="bq-so">Concept</b><button type="button" class="bq-xoa" aria-label="Xoá concept này"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Xoá</button></div>
     <div class="f-group"><label class="f-label">Tên concept</label>
       <button type="button" class="f-input ka-sel-btn bq-chon-o">
         <img class="bq-anh-nho" alt="" hidden>
