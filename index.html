@@ -518,13 +518,6 @@
   <!-- Tab Bao gia: tin chot lich + bao gia khi khach chup tu 2 concept tro len -->
   <div id="viewBaoGia" hidden>
     <div class="bq-the">
-      <div class="bq-muc">Khách &amp; lịch chụp</div>
-      <div class="bq-hai">
-        <div class="f-group"><label class="f-label" for="bqKhach">Tên khách</label>
-          <input type="text" class="f-input" id="bqKhach" placeholder="VD: Ms. Cẩm Phụng"></div>
-        <div class="f-group"><label class="f-label" for="bqNgay">Ngày &amp; Giờ</label>
-          <input type="text" class="f-input" id="bqNgay" placeholder="VD: 10h00 - 15/11/2026"></div>
-      </div>
 
       <div class="bq-muc">Concept</div>
       <div id="bqDsCon"></div>
@@ -2418,9 +2411,8 @@ $('lcGiaLoc').addEventListener('change', renderLinks);
 $('lcXoaGia').onclick = ()=>{ $('lcGiaLoc').value=''; renderLinks(); };
 
 /* ================= Tab Bao gia nhieu concept (01/11/2026) =================
-   Ky Anh dien ten khach, ngay gio, tung concept (ten lay goi y tu danh sach concept, gia tu dien theo sheet),
-   giam gia, tien coc -> app ghep tin chot lich + bao gia de copy gui khach. Khong luu gi len may chu. */
-const BQ_MAC_DINH = 'Như concept mẫu';
+   Bao gia GON (Ky Anh dan: khong ngay gio, khong dia diem): tung concept (ten goi y tu danh sach concept,
+   gia tu dien theo sheet) + phu thu, giam gia, tien coc -> tin bao gia de copy gui khach. Khong luu gi len may chu. */
 const bqSoTien = v => bgSo(v) || 0;
 const bqTien = n => n.toLocaleString('vi-VN');
 function bqTimConcept(ten){
@@ -2440,15 +2432,7 @@ function bqVeDong(du={}){
         <input type="text" class="f-input bq-phu" inputmode="numeric" placeholder="VD: 400000"></div>
     </div>
     <div class="f-group"><label class="f-label">Phụ thu cho</label>
-      <input type="text" class="f-input bq-phu-ghi" placeholder="VD: tóc phím"></div>
-    <div class="bq-hai">
-      <div class="f-group"><label class="f-label">Makeup</label>
-        <input type="text" class="f-input bq-makeup"></div>
-      <div class="f-group"><label class="f-label">Hair</label>
-        <input type="text" class="f-input bq-hair"></div>
-    </div>`;
-  o.querySelector('.bq-makeup').value = du.makeup ?? BQ_MAC_DINH;
-  o.querySelector('.bq-hair').value   = du.hair   ?? BQ_MAC_DINH;
+      <input type="text" class="f-input bq-phu-ghi" placeholder="VD: tóc phím"></div>`;
   const ten = o.querySelector('.bq-ten'), gia = o.querySelector('.bq-gia');
   // Chon dung ten concept trong danh sach -> tu dien gia theo sheet (van sua tay duoc)
   ten.addEventListener('input', ()=>{ const c = bqTimConcept(ten.value); if(c && giaSo(c)){ gia.value = bqTien(giaSo(c)); } bqCapNhat(); });
@@ -2458,7 +2442,7 @@ function bqVeDong(du={}){
   $('bqDsCon').appendChild(o);
 }
 function bqLamMoi(){
-  ['bqKhach','bqNgay','bqGiamTay','bqCoc','bqCocGhi'].forEach(id=>$(id).value='');
+  ['bqGiamTay','bqCoc','bqCocGhi'].forEach(id=>$(id).value='');
   $('bqGiamKieu').value = '';
   $('bqDsCon').innerHTML = '';
   bqVeDong(); bqVeDong();          // tab nay danh cho tu 2 concept tro len
@@ -2477,46 +2461,44 @@ function bqTinNhan(){
     gia: bqSoTien(o.querySelector('.bq-gia').value),
     phu: bqSoTien(o.querySelector('.bq-phu').value),
     phuGhi: o.querySelector('.bq-phu-ghi').value.trim(),
-    makeup: o.querySelector('.bq-makeup').value.trim(),
-    hair: o.querySelector('.bq-hair').value.trim(),
   }));
   const nhieu = dong.length > 1;
-  const L = ['Studio gửi bạn thông tin buổi chụp sắp tới ạ', $('bqKhach').value.trim() || '[Tên khách]', '',
-             '🗓️ CHI TIẾT BUỔI CHỤP', 'Ngày & Giờ: ' + ($('bqNgay').value.trim() || '[Ngày & Giờ]'), ''];
+  const L = ['Studio gửi bạn Báo giá ạ', ''];
   dong.forEach(d=>{
-    L.push(`${nhieu ? 'Concept '+d.so : 'Concept'}: ${d.ten || '[Tên concept]'}${d.gia ? ' ('+bqTien(d.gia)+')' : ''}`);
-    if(d.makeup) L.push('Makeup: ' + d.makeup);
-    if(d.hair)   L.push('Hair: ' + d.hair);
-    L.push('');
+    L.push(`${nhieu ? 'Concept '+d.so : 'Concept'}: ${d.ten || '[Tên concept]'}${d.gia ? ' - '+bqTien(d.gia)+'đ' : ''}`);
   });
-  L.push('📍 ĐỊA ĐIỂM',
-         'Kỳ Anh Studio (Lầu 2) - 307/1A Nguyễn Văn Trỗi, Phường 1, Quận Tân Bình.',
-         'Hotline: 07.6535.6526 - Kỳ Anh', '', '💳 THANH TOÁN');
+  dong.filter(d=>d.phu).forEach(d=>L.push(`Phụ thu${d.phuGhi ? ' '+d.phuGhi : ''}: ${bqTien(d.phu)}đ`));
+  L.push('');
 
-  /* Tong: liet ke tung khoan; concept chua co gia (vd khach chon sau) thi ghi chu thay vi so */
-  const phan = [];
-  dong.forEach(d=>{
-    phan.push(d.gia ? bqTien(d.gia)+'đ' : `concept ${d.so}${d.ten ? ' ('+d.ten+')' : ''}`);
-    if(d.phu) phan.push(bqTien(d.phu)+'đ' + (d.phuGhi ? ' ('+d.phuGhi+')' : ''));
-  });
+  /* Tong: du gia thi ra mot so; con concept chua co gia (vd khach chon sau) thi liet ke tung khoan */
   const duGia = dong.every(d=>d.gia);
   const tong = dong.reduce((s,d)=>s+d.gia+d.phu, 0);
-  L.push('Tổng chi phí: ' + phan.join(' + ') + (duGia && phan.length>1 ? ' = '+bqTien(tong)+'đ' : ''));
+  const phan = [];
+  dong.forEach(d=>{
+    phan.push(d.gia ? bqTien(d.gia)+'đ' : `concept ${d.so}`);
+    if(d.phu) phan.push(bqTien(d.phu)+'đ');
+  });
+  L.push('Tổng chi phí: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
 
   /* Giam gia */
   let giam = 0, giamGhi = '';
   const kieu = $('bqGiamKieu').value;
-  if(kieu==='10'){
+  if(kieu==='10' && duGia){   // con concept chua co gia thi chua biet concept nao re nhat -> chua giam
     const coGia = dong.filter(d=>d.gia).sort((a,b)=>a.gia-b.gia);
     if(coGia.length){ giam = Math.round(coGia[0].gia*0.1/1000)*1000; giamGhi = ` (10% concept ${coGia[0].ten || coGia[0].so})`; }
   } else if(kieu==='tay') giam = bqSoTien($('bqGiamTay').value);
-  if(giam) L.push(`Giảm giá: ${bqTien(giam)}đ${giamGhi}`);
+  if(giam){
+    L.push(`Giảm giá: ${bqTien(giam)}đ${giamGhi}`);
+    if(duGia) L.push(`Thành tiền: ${bqTien(tong - giam)}đ`);
+  }
 
   /* Coc + con lai */
   const coc = bqSoTien($('bqCoc').value);
-  if(coc) L.push(`Đã đặt cọc: ${bqTien(coc)} (${$('bqCocGhi').value.trim() || 'Đã cọc '+dong.length+' concept'})`);
-  if(duGia && (giam || coc)) L.push(`Còn lại: ${bqTien(tong - giam - coc)}đ`);
-  L.push('', 'Phần còn lại sẽ thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp.');
+  if(coc){
+    L.push(`Đã đặt cọc: ${bqTien(coc)}đ (${$('bqCocGhi').value.trim() || 'Đã cọc '+dong.length+' concept'})`);
+    if(duGia) L.push(`Còn lại: ${bqTien(tong - giam - coc)}đ`);
+    L.push('', 'Phần còn lại sẽ thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp.');
+  }
   return L.join('\n');
 }
 function bqCapNhat(){
@@ -2529,7 +2511,7 @@ function bqCapNhat(){
   $('bqXem').value = bqTinNhan();
 }
 ['bqGiamTay','bqCoc'].forEach(id=>$(id).addEventListener('input', ()=>chamNghin($(id))));   // cham hang nghin truoc, roi moi ghep tin
-['bqKhach','bqNgay','bqGiamTay','bqCoc','bqCocGhi'].forEach(id=>$(id).addEventListener('input', bqCapNhat));
+['bqGiamTay','bqCoc','bqCocGhi'].forEach(id=>$(id).addEventListener('input', bqCapNhat));
 $('bqGiamKieu').addEventListener('change', bqCapNhat);
 $('bqThemCon').onclick = ()=>{ bqVeDong(); bqCapNhat(); };
 $('bqLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền để làm báo giá mới?')) bqLamMoi(); };
