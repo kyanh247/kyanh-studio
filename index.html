@@ -2458,14 +2458,15 @@ function bqTimConcept(ten){
   const k = String(ten||'').trim().toLowerCase();
   return k ? itemsLink().find(c=>c.title.trim().toLowerCase()===k) : null;
 }
-/* Phu thu + phu kien co dinh cua studio (Ky Anh dan 01/11/2026) — bam nut la cong, khoi go so.
-   nhom: 'phu' = phu thu, 'pk' = phu kien. Them phu kien moi: them mot dong nhom 'pk' vao day. */
+/* Phu thu co dinh cua studio (Ky Anh dan 01/11/2026) — bam nut la cong, khoi go so.
+   Them khoan moi: them mot dong vao day (nut = chu tren nut, ghi = chu trong tin bao gia). */
 const BQ_PHU = [
-  { id:'toc',  nhom:'phu', nut:'Tóc phím',       ngan:'400k', ghi:'Phụ thu tóc phím',                 tien:400000 },
-  { id:'be',   nhom:'phu', nut:'Em bé (3 pose)', ngan:'500k', ghi:'Phụ thu chụp cùng em bé (3 pose)', tien:500000 },
-  { id:'banh', nhom:'pk',  nut:'Bánh kem',       ngan:'150k', ghi:'Phụ kiện bánh kem',                tien:150000 },
+  { id:'toc',  nut:'Tóc phím',       ngan:'400k', ghi:'Tóc phím',                 tien:400000 },
+  { id:'be',   nut:'Em bé (3 pose)', ngan:'500k', ghi:'Chụp cùng em bé (3 pose)', tien:500000 },
+  { id:'do',   nut:'Trang phục',     ngan:'800k', ghi:'Trang phục',               tien:800000 },
+  { id:'banh', nut:'Bánh kem',       ngan:'150k', ghi:'Bánh kem',                 tien:150000 },
 ];
-const BQ_GHI_EM_BE = '(Phụ thu em bé chưa gồm retouch: ảnh chụp cùng em bé không nằm trong số ảnh retouch của gói, muốn retouch thêm 150.000đ/ảnh.)';
+const BQ_GHI_EM_BE = 'Lưu ý: ảnh chụp cùng em bé chưa gồm retouch và không tính vào số ảnh retouch của gói; muốn retouch thêm 150.000đ/ảnh.';
 function bqVeDong(du={}){
   const o = document.createElement('div'); o.className = 'bq-con';
   o.innerHTML = `
@@ -2478,9 +2479,8 @@ function bqVeDong(du={}){
       <input type="hidden" class="bq-ten"></div>
     <div class="f-group"><label class="f-label">Giá</label>
       <input type="text" class="f-input bq-gia" inputmode="numeric" placeholder="Tự điền khi chọn concept"></div>
-    ${[['phu','Phụ thu (bấm để thêm)'],['pk','Phụ kiện']].map(([nh,tieu])=>`
-    <div class="f-group"><label class="f-label">${tieu}</label>
-      <div class="bq-chip-ds">${BQ_PHU.filter(p=>p.nhom===nh).map(p=>`<button type="button" class="bq-chip" data-phu="${p.id}" aria-pressed="false">${p.nut} <small>+${p.ngan}</small></button>`).join('')}</div></div>`).join('')}
+    <div class="f-group"><label class="f-label">Phụ thu (bấm để thêm)</label>
+      <div class="bq-chip-ds">${BQ_PHU.map(p=>`<button type="button" class="bq-chip" data-phu="${p.id}" aria-pressed="false">${p.nut} <small>+${p.ngan}</small></button>`).join('')}</div></div>
     <div class="bq-hai">
       <div class="f-group"><label class="f-label">Phụ thu khác</label>
         <input type="text" class="f-input bq-phu" inputmode="numeric" placeholder="Số tiền, nếu có"></div>
@@ -2568,16 +2568,15 @@ function bqTinNhan(){
     phuGhi: o.querySelector('.bq-phu-ghi').value.trim(),
     phuChon: [...o.querySelectorAll('.bq-chip[aria-pressed="true"]')].map(b=>BQ_PHU.find(p=>p.id===b.dataset.phu)),
   }));
-  dong.forEach(d=>{ d.cacPhu = [...d.phuChon.map(p=>({ ghi:p.ghi, tien:p.tien })), ...(d.phu ? [{ ghi:'Phụ thu'+(d.phuGhi ? ' '+d.phuGhi : ''), tien:d.phu }] : [])]; });
+  dong.forEach(d=>{ d.cacPhu = [...d.phuChon.map(p=>({ ghi:p.ghi, tien:p.tien })), ...(d.phu ? [{ ghi:d.phuGhi || 'Phụ thu khác', tien:d.phu }] : [])]; });
   const nhieu = dong.length > 1;
+  /* Moi concept mot khoi: dong ten + gia, phu thu cua concept do nam ngay duoi (Ky Anh che ban cu "cuc") */
   const L = ['Studio gửi bạn Báo giá ạ', ''];
   dong.forEach(d=>{
-    L.push(`${nhieu ? 'Concept '+d.so : 'Concept'}: ${d.ten || '[Tên concept]'}${d.gia ? ' - '+bqTien(d.gia)+'đ' : ''}`);
+    L.push(`📸 ${nhieu ? 'Concept '+d.so : 'Concept'}: ${d.ten || '[Tên concept]'}${d.gia ? ': '+bqTien(d.gia)+'đ' : ''}`);
+    d.cacPhu.forEach(p=>L.push(`    + ${p.ghi}: ${bqTien(p.tien)}đ`));
+    L.push('');
   });
-  // Phu thu: nhieu concept thi ghi kem thuoc concept nao
-  dong.forEach(d=>d.cacPhu.forEach(p=>L.push(`${p.ghi}${nhieu ? ' (concept '+d.so+')' : ''}: ${bqTien(p.tien)}đ`)));
-  if(dong.some(d=>d.phuChon.some(p=>p.id==='be'))) L.push(BQ_GHI_EM_BE);
-  L.push('');
 
   /* Tong: du gia thi ra mot so; con concept chua co gia (vd khach chon sau) thi liet ke tung khoan */
   const duGia = dong.every(d=>d.gia);
@@ -2587,7 +2586,7 @@ function bqTinNhan(){
     phan.push(d.gia ? bqTien(d.gia)+'đ' : `concept ${d.so}`);
     d.cacPhu.forEach(p=>phan.push(bqTien(p.tien)+'đ'));
   });
-  L.push('Tổng chi phí: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
+  L.push('💳 Tổng chi phí: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
 
   /* Giam gia */
   let giam = 0, giamGhi = '';
@@ -2608,6 +2607,7 @@ function bqTinNhan(){
     if(duGia) L.push(`Còn lại: ${bqTien(tong - giam - coc)}đ`);
     L.push('', 'Phần còn lại sẽ thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp.');
   }
+  if(dong.some(d=>d.phuChon.some(p=>p.id==='be'))) L.push('', BQ_GHI_EM_BE);
   return L.join('\n');
 }
 function bqCapNhat(){
