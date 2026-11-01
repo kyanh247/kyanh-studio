@@ -94,6 +94,18 @@
   .bq-muc { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 1.4rem 0 0.6rem; }
   .bq-muc:first-child { margin-top: 0; }
   .bq-goi-y { font-size: 0.66rem; color: var(--muted); margin: -0.45rem 0 0.9rem; }
+  /* O ten concept: nut mo bang chon co hinh + anh nho cua concept da chon */
+  .bq-ten-o { display: flex; gap: 0.5rem; align-items: stretch; }
+  .bq-ten-o .f-input { flex: 1; min-width: 0; }
+  .bq-anh-nho { flex: none; width: 44px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: #EFEAE3; }
+  .bq-anh-nho[hidden] { display: none; }
+  .bq-mo-chon { flex: none; padding: 0 0.9rem; font-family: 'Montserrat', sans-serif; font-size: 0.7rem; font-weight: 700; color: #fff; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; }
+  .bq-mo-chon:hover { background: var(--gold-dark); }
+  /* Bang chon concept: rong hon khung thuong de luoi anh thoang */
+  #bqChonOverlay .modal { max-width: 760px; }
+  #bqChonOverlay .sub-tabs { margin: 0.8rem 0 0.9rem; }
+  #bqChonLuoi .lc-grid { grid-template-columns: repeat(3, 1fr); }
+  @media (min-width: 640px) { #bqChonLuoi .lc-grid { grid-template-columns: repeat(5, 1fr); } }
   .bq-chip-ds { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .bq-chip { padding: 0.5rem 0.8rem; border: 1px solid var(--line); border-radius: 20px; background: #fff; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 600; color: var(--ink); cursor: pointer; transition: all 0.2s ease; }
   .bq-chip small { margin-left: 0.15rem; font-weight: 700; color: var(--gold-dark); }
@@ -621,6 +633,20 @@
 </nav>
 
 <div class="opt-overlay" id="optOverlay"><div class="opt-menu" id="optMenu"></div></div>
+
+<!-- Tab Bao gia: bang chon concept co hinh, chia theo muc -->
+<div class="modal-overlay" id="bqChonOverlay">
+  <div class="modal">
+    <button class="modal-x" data-dong="bqChonOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3>Chọn Concept</h3>
+    <div class="search-wrap" style="margin-top:0.9rem">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      <input type="search" class="search-input" id="bqChonTim" placeholder="Tìm tên concept hoặc model..." autocomplete="off">
+    </div>
+    <div class="sub-tabs show" id="bqChonMuc"></div>
+    <div id="bqChonLuoi"></div>
+  </div>
+</div>
 
 <!-- Cham vao concept -> chon link muon copy -->
 <div class="modal-overlay" id="lkOverlay">
@@ -2056,6 +2082,7 @@ document.querySelectorAll('.modal-x').forEach(b=>b.onclick=()=>{
   else if(id==='baoGiaOverlay') dongBaoGia();
   else if(id==='lcOverlay') dongFormLink();
   else if(id==='lkOverlay') dongChonLink();
+  else if(id==='bqChonOverlay') dongChonCon();
 });
 
 searchInput.addEventListener('input', render);
@@ -2440,7 +2467,11 @@ function bqVeDong(du={}){
   o.innerHTML = `
     <div class="bq-con-dau"><b class="bq-so">Concept</b><button type="button" class="bq-xoa">Bỏ concept này</button></div>
     <div class="f-group"><label class="f-label">Tên concept</label>
-      <input type="text" class="f-input bq-ten" autocomplete="off" placeholder="Gõ để chọn, VD: Ice Gaze #1"></div>
+      <div class="bq-ten-o">
+        <img class="bq-anh-nho" alt="" hidden>
+        <input type="text" class="f-input bq-ten" autocomplete="off" placeholder="Bấm Chọn, hoặc gõ tay">
+        <button type="button" class="bq-mo-chon">Chọn</button>
+      </div></div>
     <div class="f-group"><label class="f-label">Giá</label>
       <input type="text" class="f-input bq-gia" inputmode="numeric" placeholder="Tự điền khi chọn concept"></div>
     ${[['phu','Phụ thu (bấm để thêm)'],['pk','Phụ kiện']].map(([nh,tieu])=>`
@@ -2455,10 +2486,9 @@ function bqVeDong(du={}){
   o.querySelectorAll('.bq-chip').forEach(b=>b.onclick=()=>{ b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true' ? 'false' : 'true'); bqCapNhat(); });
   const ten = o.querySelector('.bq-ten'), gia = o.querySelector('.bq-gia');
   // Go ten -> hien bang goi y (cung kieu dropdown CRM Mini); chon dung concept -> tu dien gia theo sheet (van sua tay duoc)
-  ten.addEventListener('input', ()=>{ const c = bqTimConcept(ten.value); if(c && giaSo(c)){ gia.value = bqTien(giaSo(c)); } bqGoiY(ten); bqCapNhat(); });
-  ten.addEventListener('focus', ()=>bqGoiY(ten));
-  ten.addEventListener('blur', ()=>setTimeout(()=>{ if(bqGoiYO===ten) bqDongGoiY(); }, 150));
-  ten.addEventListener('keydown', e=>bqPhimGoiY(e, ten));
+  // Go tay dung y ten mot concept cung tu dien gia; go ten khac (vd "khách chọn sau") thi bo anh nho
+  ten.addEventListener('input', ()=>{ const c = bqTimConcept(ten.value); if(c && giaSo(c)){ gia.value = bqTien(giaSo(c)); } bqAnhNho(o, c); bqCapNhat(); });
+  o.querySelector('.bq-mo-chon').onclick = ()=>moChonCon(o);
   o.querySelectorAll('.bq-gia, .bq-phu').forEach(i=>i.addEventListener('input', ()=>chamNghin(i)));
   o.querySelector('.bq-xoa').onclick = ()=>{ o.remove(); bqCapNhat(); };
   o.addEventListener('input', bqCapNhat);
@@ -2475,67 +2505,53 @@ function bqMo(){
   if(!$('bqDsCon').children.length) bqLamMoi(); else bqCapNhat();
 }
 
-/* ---- Bang goi y ten concept: dung lai giao dien menu cua dropdown (ka-sel-menu / ka-sel-opt) ---- */
-const bqMenu = document.createElement('div');
-bqMenu.className = 'ka-sel-menu'; bqMenu.setAttribute('role','listbox');
-document.body.appendChild(bqMenu);
-let bqGoiYO = null, bqGoiYDs = [], bqGoiYChon = -1;
+/* ---- Bang chon concept co hinh: chon muc (dang concept) roi bam anh, giong tab Concept ---- */
+let bqChonCho = null, bqChonMuc = '';
 const boDau = t => String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[đĐ]/g,'d').toLowerCase();
-function bqGoiY(o){
-  const q = boDau(o.value.trim());
+function bqAnhNho(o, c){
+  const a = o.querySelector('.bq-anh-nho');
+  if(c && c.image){ a.src = c.image; a.hidden = false; } else { a.hidden = true; a.removeAttribute('src'); }
+}
+function bqDsChon(){
   const daCo = new Set();
-  bqGoiYDs = itemsLink().filter(c=>{
-    const k = c.title.trim().toLowerCase(); if(daCo.has(k)) return false; daCo.add(k);
-    return !q || boDau(c.title).includes(q) || boDau(c.model).includes(q);
-  }).sort((a,b)=>{   // ten bat dau bang chu dang go thi len truoc
-    const da = boDau(a.title).startsWith(q), db = boDau(b.title).startsWith(q);
-    return db - da;
-  }).slice(0, 40);
-  // Go dung y het ten mot concept roi thi thoi khong hien bang nua
-  if(!bqGoiYDs.length || (bqGoiYDs.length===1 && bqGoiYDs[0].title.trim().toLowerCase()===o.value.trim().toLowerCase())){ bqDongGoiY(); return; }
-  bqGoiYO = o; bqGoiYChon = -1;
-  bqVeGoiY();
-  bqMenu.classList.add('open');
-  bqViTri();
+  return itemsLink().filter(c=>{ const k=c.title.trim().toLowerCase(); if(daCo.has(k)) return false; daCo.add(k); return true; });
 }
-function bqViTri(){
-  const o = bqGoiYO; if(!o) return;
-  const r = o.getBoundingClientRect();
-  bqMenu.style.minWidth = r.width + 'px';
-  bqMenu.style.maxHeight = Math.min(300, innerHeight - 16) + 'px';
-  const h = bqMenu.offsetHeight;
-  let top = r.bottom + 4;
-  if(top + h > innerHeight - 8 && r.top - h - 4 > 8) top = r.top - h - 4;   // het cho thi lat len tren
-  bqMenu.style.top = Math.max(8, top) + 'px';
-  bqMenu.style.left = Math.min(Math.max(8, r.left), innerWidth - bqMenu.offsetWidth - 8) + 'px';
+function moChonCon(o){
+  bqChonCho = o;
+  const ds = bqDsChon();
+  // Mo dung muc cua concept dang chon (neu co), khong thi muc dau tien co concept
+  const dangCo = bqTimConcept(o.querySelector('.bq-ten').value);
+  bqChonMuc = dangCo?.dang || (LC_DANG.find(d=>ds.some(c=>c.dang===d.id))||{}).id || '';
+  $('bqChonTim').value = '';
+  veChonCon();
+  $('bqChonOverlay').classList.add('show');
 }
-function bqVeGoiY(){
-  bqMenu.innerHTML = bqGoiYDs.map((c,i)=>{
-    const g = giaSo(c);
-    return `<div class="ka-sel-opt${i===bqGoiYChon?' active':''}" role="option" data-i="${i}"><span>${esc(c.title)}</span>${g ? `<small>${bqTien(g)}</small>` : ''}</div>`;
-  }).join('');
-  const a = bqMenu.querySelector('.active'); if(a) a.scrollIntoView({ block:'nearest' });
+function dongChonCon(){ $('bqChonOverlay').classList.remove('show'); bqChonCho = null; }
+function veChonCon(){
+  const ds = bqDsChon(), q = boDau($('bqChonTim').value.trim());
+  // Muc (giong o loc dang concept); dang tim thi tim khap cac muc
+  $('bqChonMuc').innerHTML = LC_DANG.filter(d=>ds.some(c=>c.dang===d.id)).map(d=>
+    `<button type="button" class="sub-tab${!q && bqChonMuc===d.id ? ' active' : ''}" data-muc="${d.id}">${esc(d.nhan.split(' - ')[0])} <small>${ds.filter(c=>c.dang===d.id).length}</small></button>`).join('');
+  $('bqChonMuc').querySelectorAll('.sub-tab').forEach(b=>b.onclick=()=>{ bqChonMuc=b.dataset.muc; $('bqChonTim').value=''; veChonCon(); });
+  const hien = q ? ds.filter(c=>boDau(c.title).includes(q) || boDau(c.model).includes(q))
+                 : ds.filter(c=>c.dang===bqChonMuc);
+  $('bqChonLuoi').innerHTML = hien.length
+    ? `<div class="lc-grid">${hien.map((c,i)=>`
+        <article class="lc-card" data-i="${i}">
+          <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy" onerror="this.src='${ANH_TRONG}'">
+          <div class="lc-name">${esc(c.title)}</div>
+          <div class="lc-gia">${giaSo(c) ? bqTien(giaSo(c))+'đ' : ''}</div>
+        </article>`).join('')}</div>`
+    : '<div class="empty"><h3>Không tìm thấy</h3>Thử gõ tên khác.</div>';
+  $('bqChonLuoi').querySelectorAll('.lc-card').forEach(el=>el.onclick=()=>{
+    const c = hien[+el.dataset.i], o = bqChonCho; if(!c || !o) return;
+    o.querySelector('.bq-ten').value = c.title.trim();
+    if(giaSo(c)) o.querySelector('.bq-gia').value = bqTien(giaSo(c));
+    bqAnhNho(o, c);
+    dongChonCon(); bqCapNhat();
+  });
 }
-function bqDongGoiY(){ bqMenu.classList.remove('open'); bqGoiYO = null; bqGoiYChon = -1; }
-function bqChonGoiY(i){
-  const c = bqGoiYDs[i], o = bqGoiYO; if(!c || !o) return;
-  o.value = c.title.trim();
-  const gia = o.closest('.bq-con').querySelector('.bq-gia');
-  if(giaSo(c)) gia.value = bqTien(giaSo(c));
-  bqDongGoiY(); bqCapNhat();
-}
-function bqPhimGoiY(e, o){
-  if(bqGoiYO!==o || !bqMenu.classList.contains('open')) return;
-  if(e.key==='ArrowDown'){ e.preventDefault(); bqGoiYChon = Math.min(bqGoiYDs.length-1, bqGoiYChon+1); bqVeGoiY(); }
-  else if(e.key==='ArrowUp'){ e.preventDefault(); bqGoiYChon = Math.max(0, bqGoiYChon-1); bqVeGoiY(); }
-  else if(e.key==='Enter' && bqGoiYChon>=0){ e.preventDefault(); bqChonGoiY(bqGoiYChon); }
-  else if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); bqDongGoiY(); }
-}
-bqMenu.addEventListener('mousedown', e=>e.preventDefault());   // giu con tro trong o dang go
-bqMenu.addEventListener('click', e=>{ const t = e.target.closest('.ka-sel-opt'); if(t) bqChonGoiY(+t.dataset.i); });
-// Trang cuon (ke ca luc ban phim dien thoai bat len) thi bang goi y di theo o dang go, khong dong
-window.addEventListener('scroll', e=>{ if(bqGoiYO && !bqMenu.contains(e.target)) bqViTri(); }, true);
-window.addEventListener('resize', ()=>{ if(bqGoiYO) bqViTri(); });
+$('bqChonTim').addEventListener('input', veChonCon);
 function bqTinNhan(){
   const dong = [...$('bqDsCon').querySelectorAll('.bq-con')].map((o,i)=>({
     so: i+1,
@@ -2816,7 +2832,7 @@ $('lcLuu').onclick = async()=>{
 };
 
 
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongFormLink(); dongChonLink(); dongFormChi(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongFormLink(); dongChonLink(); dongChonCon(); } });
 
 /* Nut x xoa nhanh trong o tim: hien khi co chu, bam la xoa va giu con tro trong o */
 document.querySelectorAll('.search-wrap').forEach(w=>{
