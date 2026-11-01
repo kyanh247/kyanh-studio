@@ -95,12 +95,12 @@
   .bq-muc:first-child { margin-top: 0; }
   .bq-goi-y { font-size: 0.66rem; color: var(--muted); margin: -0.45rem 0 0.9rem; }
   /* O ten concept: nut mo bang chon co hinh + anh nho cua concept da chon */
-  .bq-ten-o { display: flex; gap: 0.5rem; align-items: stretch; }
-  .bq-ten-o .f-input { flex: 1; min-width: 0; }
+  .bq-chon-o { display: flex; align-items: center; gap: 0.6rem; min-height: 48px; padding: 0.45rem 0.7rem; text-align: left; cursor: pointer; }
+  .bq-chon-o:hover { border-color: var(--gold); }
+  .bq-chon-chu { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-dark); font-weight: 500; }
+  .bq-chon-chu.trong { color: var(--muted); font-weight: 400; }
   .bq-anh-nho { flex: none; width: 44px; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: #EFEAE3; }
   .bq-anh-nho[hidden] { display: none; }
-  .bq-mo-chon { flex: none; padding: 0 0.9rem; font-family: 'Montserrat', sans-serif; font-size: 0.7rem; font-weight: 700; color: #fff; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; }
-  .bq-mo-chon:hover { background: var(--gold-dark); }
   /* Bang chon concept: rong hon khung thuong de luoi anh thoang */
   #bqChonOverlay .modal { max-width: 760px; }
   #bqChonOverlay .sub-tabs { margin: 0.8rem 0 0.9rem; }
@@ -644,6 +644,7 @@
       <input type="search" class="search-input" id="bqChonTim" placeholder="Tìm tên concept hoặc model..." autocomplete="off">
     </div>
     <div class="sub-tabs show" id="bqChonMuc"></div>
+    <button type="button" class="bq-them" id="bqChonSau" style="margin-bottom:0.9rem">Khách chưa chọn — ghi "khách chọn sau"</button>
     <div id="bqChonLuoi"></div>
   </div>
 </div>
@@ -2467,11 +2468,11 @@ function bqVeDong(du={}){
   o.innerHTML = `
     <div class="bq-con-dau"><b class="bq-so">Concept</b><button type="button" class="bq-xoa">Bỏ concept này</button></div>
     <div class="f-group"><label class="f-label">Tên concept</label>
-      <div class="bq-ten-o">
+      <button type="button" class="f-input ka-sel-btn bq-chon-o">
         <img class="bq-anh-nho" alt="" hidden>
-        <input type="text" class="f-input bq-ten" autocomplete="off" placeholder="Bấm Chọn, hoặc gõ tay">
-        <button type="button" class="bq-mo-chon">Chọn</button>
-      </div></div>
+        <span class="bq-chon-chu trong">Bấm để chọn concept</span>
+      </button>
+      <input type="hidden" class="bq-ten"></div>
     <div class="f-group"><label class="f-label">Giá</label>
       <input type="text" class="f-input bq-gia" inputmode="numeric" placeholder="Tự điền khi chọn concept"></div>
     ${[['phu','Phụ thu (bấm để thêm)'],['pk','Phụ kiện']].map(([nh,tieu])=>`
@@ -2484,11 +2485,8 @@ function bqVeDong(du={}){
         <input type="text" class="f-input bq-phu-ghi" placeholder="VD: thêm trang phục"></div>
     </div>`;
   o.querySelectorAll('.bq-chip').forEach(b=>b.onclick=()=>{ b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true' ? 'false' : 'true'); bqCapNhat(); });
-  const ten = o.querySelector('.bq-ten'), gia = o.querySelector('.bq-gia');
-  // Go ten -> hien bang goi y (cung kieu dropdown CRM Mini); chon dung concept -> tu dien gia theo sheet (van sua tay duoc)
-  // Go tay dung y ten mot concept cung tu dien gia; go ten khac (vd "khách chọn sau") thi bo anh nho
-  ten.addEventListener('input', ()=>{ const c = bqTimConcept(ten.value); if(c && giaSo(c)){ gia.value = bqTien(giaSo(c)); } bqAnhNho(o, c); bqCapNhat(); });
-  o.querySelector('.bq-mo-chon').onclick = ()=>moChonCon(o);
+  // Ca o ten la mot nut: bam vao la mo bang chon concept co hinh (Ky Anh: o go tay ben ngoai thua)
+  o.querySelector('.bq-chon-o').onclick = ()=>moChonCon(o);
   o.querySelectorAll('.bq-gia, .bq-phu').forEach(i=>i.addEventListener('input', ()=>chamNghin(i)));
   o.querySelector('.bq-xoa').onclick = ()=>{ o.remove(); bqCapNhat(); };
   o.addEventListener('input', bqCapNhat);
@@ -2508,9 +2506,16 @@ function bqMo(){
 /* ---- Bang chon concept co hinh: chon muc (dang concept) roi bam anh, giong tab Concept ---- */
 let bqChonCho = null, bqChonMuc = '';
 const boDau = t => String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[đĐ]/g,'d').toLowerCase();
-function bqAnhNho(o, c){
+/* Ghi lua chon vao dong concept: ten (an), gia, anh nho va chu tren nut */
+function bqDatCon(o, ten, c){
+  o.querySelector('.bq-ten').value = ten;
+  o.querySelector('.bq-gia').value = c && giaSo(c) ? bqTien(giaSo(c)) : '';
   const a = o.querySelector('.bq-anh-nho');
   if(c && c.image){ a.src = c.image; a.hidden = false; } else { a.hidden = true; a.removeAttribute('src'); }
+  const chu = o.querySelector('.bq-chon-chu');
+  chu.textContent = ten || 'Bấm để chọn concept';
+  chu.classList.toggle('trong', !ten);
+  bqCapNhat();
 }
 function bqDsChon(){
   const daCo = new Set();
@@ -2545,13 +2550,12 @@ function veChonCon(){
     : '<div class="empty"><h3>Không tìm thấy</h3>Thử gõ tên khác.</div>';
   $('bqChonLuoi').querySelectorAll('.lc-card').forEach(el=>el.onclick=()=>{
     const c = hien[+el.dataset.i], o = bqChonCho; if(!c || !o) return;
-    o.querySelector('.bq-ten').value = c.title.trim();
-    if(giaSo(c)) o.querySelector('.bq-gia').value = bqTien(giaSo(c));
-    bqAnhNho(o, c);
-    dongChonCon(); bqCapNhat();
+    dongChonCon(); bqDatCon(o, c.title.trim(), c);
   });
 }
 $('bqChonTim').addEventListener('input', veChonCon);
+/* Khach chua chon concept: ghi "khách chọn sau", de trong gia -> Tong chi phi liet ke "concept N" */
+$('bqChonSau').onclick = ()=>{ const o = bqChonCho; if(!o) return; dongChonCon(); bqDatCon(o, 'khách chọn sau', null); };
 function bqTinNhan(){
   const dong = [...$('bqDsCon').querySelectorAll('.bq-con')].map((o,i)=>({
     so: i+1,
