@@ -2462,11 +2462,11 @@ function bqTimConcept(ten){
    Them khoan moi: them mot dong vao day (nut = chu tren nut, ghi = chu trong tin bao gia). */
 const BQ_PHU = [
   { id:'toc',  nut:'Tóc phím',       ngan:'400k', ghi:'Tóc phím',                 tien:400000 },
-  { id:'be',   nut:'Em bé (3 pose)', ngan:'500k', ghi:'Chụp cùng em bé (3 pose)', tien:500000 },
   { id:'do',   nut:'Trang phục',     ngan:'800k', ghi:'Trang phục',               tien:800000 },
   { id:'banh', nut:'Bánh kem',       ngan:'150k', ghi:'Bánh kem',                 tien:150000 },
+  { id:'be',   nut:'Em bé (3 pose)', ngan:'500k', ghi:'Chụp cùng bé (3 pose)', tien:500000 },
 ];
-const BQ_GHI_EM_BE = 'Lưu ý: ảnh chụp cùng em bé chưa gồm retouch và không tính vào số ảnh retouch của gói; muốn retouch thêm 150.000đ/ảnh.';
+const BQ_GHI_EM_BE = '📌 Lưu ý: File chụp cùng em bé chưa bao gồm chỉnh sửa trong gói chính. Trường hợp bạn muốn retouch thêm các ảnh chụp cùng bé, Phí retouch 150.000đ/ảnh ạ.';
 function bqVeDong(du={}){
   const o = document.createElement('div'); o.className = 'bq-con';
   o.innerHTML = `
@@ -2570,11 +2570,16 @@ function bqTinNhan(){
   }));
   dong.forEach(d=>{ d.cacPhu = [...d.phuChon.map(p=>({ ghi:p.ghi, tien:p.tien })), ...(d.phu ? [{ ghi:d.phuGhi || 'Phụ thu khác', tien:d.phu }] : [])]; });
   const nhieu = dong.length > 1;
-  /* Moi concept mot khoi: dong ten + gia, phu thu cua concept do nam ngay duoi (Ky Anh che ban cu "cuc") */
-  const L = ['Studio gửi bạn Báo giá ạ', ''];
+  /* Moi concept mot khoi (cau chu Ky Anh dua 02/11/2026): dong dau la tong cua concept do;
+     co phu thu thi ke "Goi chup chinh" + tung khoan ngay duoi */
+  const L = ['Dạ Studio gửi bạn bảng tổng hợp báo giá buổi chụp của mình ạ:'];
   dong.forEach(d=>{
-    L.push(`📸 ${nhieu ? 'Concept '+d.so : 'Concept'}: ${d.ten || '[Tên concept]'}${d.gia ? ': '+bqTien(d.gia)+'đ' : ''}`);
-    d.cacPhu.forEach(p=>L.push(`    + ${p.ghi}: ${bqTien(p.tien)}đ`));
+    const cong = d.gia + d.cacPhu.reduce((t,p)=>t+p.tien,0);
+    L.push(`${nhieu ? d.so+'. ' : ''}Concept ${d.ten || '[Tên concept]'}${d.gia ? ': '+bqTien(cong)+'đ' : ''}`);
+    if(d.cacPhu.length){
+      if(d.gia) L.push(`* Gói chụp chính: ${bqTien(d.gia)}đ`);
+      d.cacPhu.forEach(p=>L.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
+    }
     L.push('');
   });
 
@@ -2586,7 +2591,7 @@ function bqTinNhan(){
     phan.push(d.gia ? bqTien(d.gia)+'đ' : `concept ${d.so}`);
     d.cacPhu.forEach(p=>phan.push(bqTien(p.tien)+'đ'));
   });
-  L.push('💳 Tổng chi phí: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
+  L.push('💳 Tổng thanh toán: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
 
   /* Giam gia */
   let giam = 0, giamGhi = '';
@@ -2607,7 +2612,8 @@ function bqTinNhan(){
     if(duGia) L.push(`Còn lại: ${bqTien(tong - giam - coc)}đ`);
     L.push('', 'Phần còn lại sẽ thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp.');
   }
-  if(dong.some(d=>d.phuChon.some(p=>p.id==='be'))) L.push('', BQ_GHI_EM_BE);
+  if(dong.some(d=>d.phuChon.some(p=>p.id==='be'))) L.push(BQ_GHI_EM_BE);
+  L.push('', 'Dạ mình xem qua cần tư vấn thêm nhắn lại studio nha');
   return L.join('\n');
 }
 function bqCapNhat(){
