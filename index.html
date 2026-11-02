@@ -69,8 +69,9 @@
   a[href^="tel:"], a[href^="sms:"], a[x-apple-data-detectors] { pointer-events: none; color: inherit !important; text-decoration: none !important; }
   .dock-item:hover { color: var(--gold-dark); }
   .dock-item.active { color: var(--gold-dark); font-weight: 700; }
-  /* Chu tab duoi luon chua san be rong khi IN DAM -> luc active khong bi rong them roi rot dong (Ky Anh 02/11) */
-  .dock-item span::after { content: attr(data-dam); display: block; height: 0; overflow: hidden; visibility: hidden; font-weight: 700; }
+  /* Chua san chieu cao 2 dong cho moi muc -> chu dai nhu "Chot & Bao Gia" khi IN DAM xuong 2 dong
+     cung khong lam o cao them, khoi nhay (Ky Anh 02/11) */
+  .dock-item span { display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1; min-height: 2.2em; }
   .dock-item.active::before { background: var(--gold); }
   .dock-item.active svg { stroke-width: 2.3; }
 
