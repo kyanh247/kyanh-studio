@@ -78,6 +78,12 @@
   .lc-filter:focus { outline: none; border-color: var(--gold); }
   .lc-filter.dang-loc { border-color: var(--gold); color: var(--gold-dark); font-weight: 600; background-image: none; }  /* dang loc: nut xoa thay cho mui ten */
 
+  /* Chip dang concept: bam truc tiep, khoi mo dropdown (Ky Anh 02/11) */
+  .lc-dang-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+  .lc-dang-chip { padding: 0.4rem 0.8rem; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.2s ease; }
+  .lc-dang-chip:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .lc-dang-chip.active { background: var(--gold); border-color: var(--gold); color: #fff; font-weight: 600; }
+
   /* ===== Tab Bao gia nhieu concept (01/11/2026) ===== */
   .bq-the { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 14px; padding: 1.1rem 1rem 0.4rem; }
   .bq-hai { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0 0.7rem; }
@@ -579,19 +585,18 @@
     <div class="toolbar lc-toolbar">
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-        <input type="search" class="search-input" id="lcSearch" placeholder="Tìm theo tên concept hoặc model...">
+        <input type="search" class="search-input" id="lcSearch" placeholder="Tìm kiếm">
       <button type="button" class="xoa-tim" title="Xoá" aria-label="Xoá tìm kiếm" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
+      <!-- Dang concept: chip bam nhanh thay cho dropdown (Ky Anh 02/11). lcFilter an di nhung van la noi giu gia tri loc -->
+      <select id="lcFilter" title="Lọc theo dạng concept" hidden></select>
+      <button type="button" id="lcXoaLoc" hidden style="display:none" aria-hidden="true"></button>
       <div class="lc-loc-wrap">
-        <select class="lc-filter" id="lcFilter" title="Lọc theo dạng concept"></select>
-        <button type="button" class="xoa-tim" id="lcXoaLoc" title="Bỏ lọc" aria-label="Bỏ lọc dạng concept" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div class="lc-loc-wrap">
-        <select class="lc-filter" id="lcModelLoc" title="Lọc theo tên mẫu (model)"><option value="">Tất cả mẫu</option></select>
+        <select class="lc-filter" id="lcModelLoc" title="Lọc theo tên mẫu (model)"><option value="">Model</option></select>
         <button type="button" class="xoa-tim" id="lcXoaModel" title="Bỏ lọc" aria-label="Bỏ lọc tên mẫu" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="lc-loc-wrap">
-        <select class="lc-filter" id="lcGiaLoc" title="Lọc theo giá"><option value="">Tất cả giá</option></select>
+        <select class="lc-filter" id="lcGiaLoc" title="Lọc theo giá"><option value="">Giá</option></select>
         <button type="button" class="xoa-tim" id="lcXoaGia" title="Bỏ lọc" aria-label="Bỏ lọc giá" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="chon-cot" id="lcCoAnh" role="group" aria-label="Cỡ ảnh">
@@ -602,6 +607,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
     </div>
+    <div class="lc-dang-chips" id="lcDangChips" role="group" aria-label="Lọc theo dạng concept"></div>
     <main id="lcGrid"></main>
   </div>
 
@@ -2328,6 +2334,16 @@ $('lcFilter').innerHTML = '<option value="">Tất cả dạng</option>' +
   LC_DANG.map(d=>`<option value="${d.id}">${esc(d.nhan)}</option>`).join('');
 $('lcDang').innerHTML = LC_DANG.map(d=>`<option value="${d.id}">${esc(d.nhan)}</option>`).join('');
 
+/* Hang chip dang concept: "Tất cả" + ten ngan tung dang (phan truoc dau " - "). Bam la loc ngay. */
+function veDangChips(){
+  const cur = $('lcFilter').value;
+  const muc = [{ id:'', nhan:'Tất cả' }, ...LC_DANG.map(d=>({ id:d.id, nhan:d.nhan.split(' - ')[0].trim() }))];
+  $('lcDangChips').innerHTML = muc.map(m=>
+    `<button type="button" class="lc-dang-chip${m.id===cur?' active':''}" data-dang="${m.id}">${esc(m.nhan)}</button>`).join('');
+  $('lcDangChips').querySelectorAll('.lc-dang-chip').forEach(b=>b.onclick=()=>{ $('lcFilter').value=b.dataset.dang; renderLinks(); });
+}
+veDangChips();
+
 /* Sau khi mot <select> duoc doi sang dropdown tuy bien thi cai nhin thay la cai nut — class giao dien phai gan len nut */
 function nutChon(id){ const o=$(id); return o._kaBtn || o; }
 /* Mot concept co the co nhieu model: "Thu Thảo, Minh Thy" hoac "Thu Thảo + Minh Thy" */
@@ -2345,7 +2361,7 @@ function capNhatDsGia(){
   if(khoa===dsGiaDaVe) return;
   dsGiaDaVe=khoa;
   const o=$('lcGiaLoc'), dangChon=o.value;
-  o.innerHTML='<option value="">Tất cả giá</option>' + ds.map(([g,k])=>`<option value="${g}" data-phu="${k}">${g.toLocaleString('vi-VN')}đ</option>`).join('');
+  o.innerHTML='<option value="">Giá</option>' + ds.map(([g,k])=>`<option value="${g}" data-phu="${k}">${g.toLocaleString('vi-VN')}đ</option>`).join('');
   o.value = dem.has(+dangChon) ? dangChon : '';
 }
 let dsModelDaVe = '';
@@ -2357,12 +2373,13 @@ function capNhatDsModel(){
   if(khoa===dsModelDaVe) return;
   dsModelDaVe=khoa;
   const o=$('lcModelLoc'), dangChon=o.value;
-  o.innerHTML='<option value="">Tất cả mẫu</option>' + ds.map(([t,k])=>`<option value="${esc(t)}" data-phu="${k}">${esc(t)}</option>`).join('');
+  o.innerHTML='<option value="">Model</option>' + ds.map(([t,k])=>`<option value="${esc(t)}" data-phu="${k}">${esc(t)}</option>`).join('');
   o.value = dem.has(dangChon) ? dangChon : '';
 }
 function renderLinks(){
   const q=($('lcSearch').value||'').trim().toLowerCase();
   const dang=$('lcFilter').value;
+  veDangChips();
   nutChon('lcFilter').classList.toggle('dang-loc', !!dang);
   $('lcXoaLoc').hidden = !dang;
   capNhatDsModel();
