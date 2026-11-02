@@ -2390,9 +2390,10 @@ function renderLinks(){
     return;
   }
 
-  /* Khoi dau tien: nhung concept Ky Anh tu ghim. Chung khong lap lai o khoi dang. */
+  /* Khoi dau tien: nhung concept Ky Anh tu ghim. Chung VAN hien lai o dang cua no ben duoi
+     (Ky Anh: ghim xong dung mat khoi danh muc — vd Birthday #4). */
   const daGhim = ds.filter(c=>c.ghim);
-  const conLai = ds.filter(c=>!c.ghim);
+  const conLai = ds;
   const nhom = daGhim.length ? [{ nhan:'Ghim lên đầu', ds:daGhim }] : [];
 
   /* Gom theo dang, giu dung thu tu trong LC_DANG; dang la khong khop thi don xuong cuoi */
