@@ -95,6 +95,17 @@
   .cl-group-dau b { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-dark); }
   .cl-xoa { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.7rem; background: #fff; border: 1px solid rgba(176,86,60,0.35); border-radius: 20px; cursor: pointer; color: var(--danger); font-size: 0.68rem; font-weight: 600; font-family: 'Montserrat', sans-serif; }
   .cl-them { width: 100%; padding: 0.7rem; margin-bottom: 0.4rem; background: #fff; border: 1px dashed var(--gold); border-radius: 10px; color: var(--gold-dark); font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+  /* Anh luu y gui kem trong muc Chot lich */
+  .cl-anh-ds { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
+  @media (max-width: 560px) { .cl-anh-ds { grid-template-columns: 1fr; } }
+  .cl-anh { position: relative; margin: 0; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; transition: all 0.2s ease; }
+  .cl-anh:hover { border-color: var(--gold); box-shadow: 0 4px 14px rgba(184,149,110,0.22); }
+  .cl-anh img { display: block; width: 100%; height: auto; }
+  .cl-anh figcaption { padding: 0.5rem 0.6rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: center; }
+  .cl-anh::after { content: "Bấm để copy"; position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.62rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 20px; opacity: 0; transition: opacity 0.2s ease; }
+  .cl-anh:hover::after { opacity: 1; }
+  .cl-anh.copied { border-color: var(--gold); }
+  .cl-anh.copied::after { content: "✓ Đã copy"; opacity: 1; background: var(--gold); }
 
   /* ===== Tab Bao gia nhieu concept (01/11/2026) ===== */
   .bq-the { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 14px; padding: 1.1rem 1rem 0.4rem; }
@@ -578,6 +589,22 @@
       <div class="bq-nut">
         <button type="button" class="btn-ghost" id="clLamMoi">Làm mới</button>
         <button type="button" class="btn-primary" id="clCopy">Copy tin nhắn</button>
+      </div>
+
+      <!-- Anh luu y gui kem sau khi chot lich: bam tung anh de copy, hoac copy ca 2 -->
+      <div class="bq-muc">Ảnh gửi kèm — bấm vào ảnh để copy</div>
+      <div class="cl-anh-ds">
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-1.jpg">
+          <img src="assets/chot-lich/luu-y-1.jpg" alt="Một số lưu ý và chuẩn bị trước khi chụp" loading="lazy">
+          <figcaption>Lưu ý &amp; chuẩn bị trước khi chụp</figcaption>
+        </figure>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-2.jpg">
+          <img src="assets/chot-lich/luu-y-2.jpg" alt="Dịch vụ phụ trợ và lưu ý sau khi chụp" loading="lazy">
+          <figcaption>Dịch vụ phụ trợ &amp; lưu ý sau chụp</figcaption>
+        </figure>
+      </div>
+      <div class="bq-nut">
+        <button type="button" class="btn-primary" id="clCopy2Anh">📋 Copy cả 2 ảnh</button>
       </div>
     </div>
 
@@ -2776,6 +2803,29 @@ function clTin(){
 }
 $('clLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền?')) clMo(); };
 $('clCopy').onclick = async()=>{ clCapNhat(); if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };
+
+/* Copy anh luu y: ve anh (giu kich thuoc goc) ra PNG roi ghi vao clipboard.
+   Clipboard chi nhan 1 anh -> "copy ca 2" la ghep doc thanh 1 anh. */
+function clTaiAnh(src){ return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error(src)); i.src=src; }); }
+async function clPngBlob(srcs){
+  const imgs = await Promise.all(srcs.map(clTaiAnh));
+  const w = Math.max(...imgs.map(i=>i.naturalWidth));
+  const h = imgs.reduce((s,i)=>s+i.naturalHeight,0);
+  const c = document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx = c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  let y=0; imgs.forEach(i=>{ ctx.drawImage(i,0,y,i.naturalWidth,i.naturalHeight); y+=i.naturalHeight; });
+  return await new Promise(r=>c.toBlob(r,'image/png'));
+}
+async function clCopyAnh(srcs, el){
+  try{
+    // Truyen Promise<Blob> cho ClipboardItem de giu "cu bam" (user gesture) khi ve anh mat thoi gian
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': clPngBlob(srcs) })]);
+    showToast(srcs.length>1 ? 'Đã copy cả 2 ảnh' : 'Đã copy ảnh');
+    if(el){ el.classList.add('copied'); setTimeout(()=>el.classList.remove('copied'),1500); }
+  }catch(e){ console.warn('copy anh loi', e); showToast('Không copy được ảnh — thử lại nhé', true); }
+}
+document.querySelectorAll('.cl-anh').forEach(fig=>fig.onclick=()=>clCopyAnh([fig.dataset.src], fig));
+$('clCopy2Anh').onclick = ()=>clCopyAnh(['assets/chot-lich/luu-y-1.jpg','assets/chot-lich/luu-y-2.jpg']);
 
 /* 2 nut: Chot lich / Bao gia. Giu nguyen o dang dien khi chuyen qua lai. */
 function cbgChon(which){
