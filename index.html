@@ -606,7 +606,7 @@
         </figure>
       </div>
       <div class="bq-nut">
-        <button type="button" class="btn-primary" id="clCopy2Anh">📋 Copy cả 2 ảnh</button>
+        <button type="button" class="btn-primary" id="clTai2Anh">⬇️ Tải cả 2 ảnh (2 file riêng)</button>
       </div>
     </div>
 
@@ -2842,7 +2842,13 @@ async function clCopyAnh(srcs, el){
   }catch(e){ console.warn('copy anh loi', e); showToast('Không copy được ảnh — thử lại nhé', true); }
 }
 document.querySelectorAll('.cl-anh').forEach(fig=>fig.onclick=()=>clCopyAnh([fig.dataset.src], fig));
-$('clCopy2Anh').onclick = ()=>clCopyAnh(['assets/chot-lich/luu-y-1.jpg','assets/chot-lich/luu-y-2.jpg']);
+/* Clipboard chi giu 1 anh -> muon 2 anh RIENG thi tai ca 2 ve may thanh 2 file (Ky Anh 03/11) */
+function clTaiMotAnh(src, ten){ const a=document.createElement('a'); a.href=src; a.download=ten; document.body.appendChild(a); a.click(); a.remove(); }
+$('clTai2Anh').onclick = ()=>{
+  clTaiMotAnh('assets/chot-lich/luu-y-1.jpg','ky-anh-studio-luu-y-1.jpg');
+  setTimeout(()=>clTaiMotAnh('assets/chot-lich/luu-y-2.jpg','ky-anh-studio-luu-y-2.jpg'), 500);   // cach nhau chut cho trinh duyet khong gop
+  showToast('Đang tải 2 ảnh về máy');
+};
 
 /* 2 nut: Chot lich / Bao gia. Giu nguyen o dang dien khi chuyen qua lai. */
 function cbgChon(which){
