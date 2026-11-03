@@ -2734,6 +2734,14 @@ function clGroupHTML(label, fields){
       <input type="text" class="f-input cl-in" data-scope="block" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`).join('')}
   </div>`;
 }
+/* O "Ngay & Gio": dung bo chon ngay-gio (datetime-local) cho khoi go tay, roi ghep thanh chu
+   kieu "15h30 - 5/11/2026" (gio truoc, ngay sau, khong so 0 thua) — Ky Anh 03/11 */
+function laNgayGio(lb){ return /ngày|giờ/i.test(lb||''); }
+function dinhDangNgayGio(v){
+  const d = new Date(v); if(isNaN(d.getTime())) return v;
+  const p = n=>String(n).padStart(2,'0');
+  return `${d.getHours()}h${p(d.getMinutes())} - ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+}
 function clMo(){
   const item = clMauChot();
   if(!item){ $('clFields').innerHTML = '<p class="section-note">Chưa có mẫu “Xác nhận buổi chụp” để điền (thêm ở tab Trả lời nhanh, nhóm Chốt Đơn).</p>'; $('clXem').value=''; clState=null; return; }
@@ -2746,6 +2754,8 @@ function clMo(){
         if(seen.has(lb)) return; seen.add(lb);
         if(AUTO_LABELS.includes(lb)){
           html += `<div class="f-group"><label class="f-label">${esc(lb)} <span class="nhan-tu-tinh">tự tính</span></label><div class="f-input o-tu-tinh trong" data-auto="${esc(lb)}">—</div></div>`;
+        } else if(laNgayGio(lb)){
+          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="datetime-local" class="f-input cl-in cl-dt" data-scope="common" data-label="${esc(lb)}" data-kieu="datetime"></div>`;
         } else {
           html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="text" class="f-input cl-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
         }
@@ -2774,6 +2784,7 @@ function clBind(){
     const tien = laOTien(inp.dataset.label);
     if(tien) inp.setAttribute('inputmode','numeric');
     inp.oninput = ()=>{ if(tien) chamNghin(inp); clCapNhat(); };
+    if(inp.dataset.kieu==='datetime') inp.onchange = clCapNhat;   // bo chon ngay-gio: cap nhat ngay khi chon
   });
   $('clFields').querySelectorAll('.cl-xoa').forEach(b=>b.onclick=()=>{
     const gs = $('clGroups').querySelectorAll('.cl-group');
@@ -2785,7 +2796,11 @@ function clCapNhat(){ $('clXem').value = clTin(); }
 function clTin(){
   if(!clState) return '';
   const common = {};
-  $('clFields').querySelectorAll('.cl-in[data-scope="common"]').forEach(inp=>common[inp.dataset.label]=inp.value.trim());
+  $('clFields').querySelectorAll('.cl-in[data-scope="common"]').forEach(inp=>{
+    let v = inp.value.trim();
+    if(inp.dataset.kieu==='datetime' && v) v = dinhDangNgayGio(v);
+    common[inp.dataset.label] = v;
+  });
   common[AUTO_REMAIN_LABEL] = computeRemain(common);
   const sub = (vals,lb)=>{
     const sao=(lb.match(/^\*+/)||[''])[0].length; lb=lb.replace(/^\*+/,'').trim();
