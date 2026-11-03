@@ -109,6 +109,39 @@
   .cl-anh.copied { border-color: var(--gold); }
   .cl-anh.copied::after { content: "✓ Đã copy"; opacity: 1; background: var(--gold); }
 
+  /* O chon ngay-gio: nut nhin nhu o nhap, mo ra lich tu ve */
+  .cl-dt { display: flex; align-items: center; gap: 0.5rem; text-align: left; cursor: pointer; }
+  .cl-dt-icon { width: 17px; height: 17px; flex-shrink: 0; color: var(--gold-dark); }
+  .cl-dt-chu { flex: 1; }
+  .cl-dt-chu.trong { color: var(--muted); }
+  /* Lich chon ngay-gio (tong kem/vang) */
+  .dtp-overlay { position: fixed; inset: 0; background: rgba(40,33,28,0.42); display: none; align-items: center; justify-content: center; z-index: 200; padding: 1rem; }
+  .dtp-overlay.show { display: flex; }
+  .dtp { width: 320px; max-width: 100%; background: #fff; border-radius: 16px; padding: 1.1rem; box-shadow: 0 20px 50px rgba(0,0,0,0.25); font-family: 'Montserrat', sans-serif; }
+  .dtp-dau { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+  .dtp-dau b { font-size: 0.92rem; font-weight: 700; color: var(--ink-dark); }
+  .dtp-nav { display: flex; gap: 0.35rem; }
+  .dtp-nav button { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); background: #fff; border-radius: 9px; cursor: pointer; color: var(--gold-dark); }
+  .dtp-nav button:hover { border-color: var(--gold); background: rgba(184,149,110,0.08); }
+  .dtp-nav svg { width: 15px; height: 15px; }
+  .dtp-tuan { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 0.2rem; }
+  .dtp-tuan span { text-align: center; font-size: 0.66rem; font-weight: 700; color: var(--muted); padding: 0.25rem 0; }
+  .dtp-ngay { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+  .dtp-ngay button { aspect-ratio: 1; border: none; background: none; border-radius: 9px; cursor: pointer; font-size: 0.82rem; font-family: inherit; color: var(--ink); }
+  .dtp-ngay button:hover { background: rgba(184,149,110,0.14); }
+  .dtp-ngay button.nay { box-shadow: inset 0 0 0 1.5px var(--gold); font-weight: 700; }
+  .dtp-ngay button.chon { background: var(--gold); color: #fff; font-weight: 700; }
+  .dtp-gio { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.95rem; padding-top: 0.95rem; border-top: 1px solid var(--line); }
+  .dtp-gio-nhan { font-size: 0.78rem; font-weight: 600; color: var(--ink-dark); }
+  .dtp-gio-cham { font-weight: 700; color: var(--muted); }
+  .dtp-gio select { flex: 1; padding: 0.55rem 0.5rem; border: 1px solid var(--line); border-radius: 9px; font-family: inherit; font-size: 0.9rem; color: var(--ink); background: #fff; cursor: pointer; }
+  .dtp-gio select:focus { outline: none; border-color: var(--gold); }
+  .dtp-nut { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .dtp-nut button { flex: 1; padding: 0.72rem; border-radius: 11px; font-family: inherit; font-weight: 600; font-size: 0.82rem; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--ink-dark); }
+  .dtp-nut button:hover { border-color: var(--gold); }
+  .dtp-nut .dtp-xong { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .dtp-nut .dtp-xong:hover { background: var(--gold-dark); border-color: var(--gold-dark); }
+
   /* ===== Tab Bao gia nhieu concept (01/11/2026) ===== */
   .bq-the { background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 14px; padding: 1.1rem 1rem 0.4rem; }
   .bq-hai { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0 0.7rem; }
@@ -923,6 +956,31 @@
     <div class="modal-actions">
       <button class="btn-ghost" id="fillCancel">Huỷ</button>
       <button class="btn-primary" id="fillCopy">Copy tin nhắn</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lich chon ngay-gio tu ve (tong kem/vang) cho o Ngay & Gio ben Chot lich -->
+<div class="dtp-overlay" id="dtpOverlay">
+  <div class="dtp">
+    <div class="dtp-dau">
+      <b id="dtpThang">Tháng</b>
+      <div class="dtp-nav">
+        <button type="button" id="dtpTruoc" aria-label="Tháng trước"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button type="button" id="dtpSau" aria-label="Tháng sau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+    <div class="dtp-tuan"><span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span></div>
+    <div class="dtp-ngay" id="dtpNgay"></div>
+    <div class="dtp-gio">
+      <span class="dtp-gio-nhan">Giờ</span>
+      <select id="dtpGio"></select>
+      <span class="dtp-gio-cham">:</span>
+      <select id="dtpPhut"></select>
+    </div>
+    <div class="dtp-nut">
+      <button type="button" id="dtpHomNay">Hôm nay</button>
+      <button type="button" class="dtp-xong" id="dtpXong">Xong</button>
     </div>
   </div>
 </div>
@@ -2755,7 +2813,11 @@ function clMo(){
         if(AUTO_LABELS.includes(lb)){
           html += `<div class="f-group"><label class="f-label">${esc(lb)} <span class="nhan-tu-tinh">tự tính</span></label><div class="f-input o-tu-tinh trong" data-auto="${esc(lb)}">—</div></div>`;
         } else if(laNgayGio(lb)){
-          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="datetime-local" class="f-input cl-in cl-dt" data-scope="common" data-label="${esc(lb)}" data-kieu="datetime"></div>`;
+          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label>
+            <button type="button" class="f-input cl-in cl-dt" data-scope="common" data-label="${esc(lb)}" data-kieu="datetime" data-val="">
+              <svg class="cl-dt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>
+              <span class="cl-dt-chu trong">Chọn ngày &amp; giờ</span>
+            </button></div>`;
         } else {
           html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="text" class="f-input cl-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
         }
@@ -2784,7 +2846,7 @@ function clBind(){
     const tien = laOTien(inp.dataset.label);
     if(tien) inp.setAttribute('inputmode','numeric');
     inp.oninput = ()=>{ if(tien) chamNghin(inp); clCapNhat(); };
-    if(inp.dataset.kieu==='datetime') inp.onchange = clCapNhat;   // bo chon ngay-gio: cap nhat ngay khi chon
+    if(inp.dataset.kieu==='datetime') inp.onclick = ()=>dtpMo(inp);   // o ngay-gio: mo lich tu ve (tong kem/vang)
   });
   $('clFields').querySelectorAll('.cl-xoa').forEach(b=>b.onclick=()=>{
     const gs = $('clGroups').querySelectorAll('.cl-group');
@@ -2797,8 +2859,9 @@ function clTin(){
   if(!clState) return '';
   const common = {};
   $('clFields').querySelectorAll('.cl-in[data-scope="common"]').forEach(inp=>{
-    let v = inp.value.trim();
-    if(inp.dataset.kieu==='datetime' && v) v = dinhDangNgayGio(v);
+    let v;
+    if(inp.dataset.kieu==='datetime') v = inp.dataset.val ? dinhDangNgayGio(inp.dataset.val) : '';
+    else v = inp.value.trim();
     common[inp.dataset.label] = v;
   });
   common[AUTO_REMAIN_LABEL] = computeRemain(common);
@@ -2849,6 +2912,58 @@ $('clTai2Anh').onclick = ()=>{
   setTimeout(()=>clTaiMotAnh('assets/chot-lich/luu-y-2.jpg','ky-anh-studio-luu-y-2.jpg'), 500);   // cach nhau chut cho trinh duyet khong gop
   showToast('Đang tải 2 ảnh về máy');
 };
+
+/* ===== Lich chon ngay-gio tu ve (thay bo chon xau cua trinh duyet) — Ky Anh 03/11 ===== */
+let dtpNut = null;                  // nut .cl-dt dang mo lich
+let dtpXemThang = new Date();       // thang dang xem
+let dtpDaChon = null;               // {y, m, d} ngay da chon
+// Do san gio (0-23) va phut (moi 5 phut)
+$('dtpGio').innerHTML  = Array.from({length:24}, (_,h)=>`<option value="${h}">${String(h).padStart(2,'0')}</option>`).join('');
+$('dtpPhut').innerHTML = Array.from({length:12}, (_,i)=>`<option value="${i*5}">${String(i*5).padStart(2,'0')}</option>`).join('');
+function dtpVeLich(){
+  const y = dtpXemThang.getFullYear(), m = dtpXemThang.getMonth();
+  $('dtpThang').textContent = `Tháng ${m+1} / ${y}`;
+  const dauTuan = new Date(y, m, 1).getDay();          // 0 = Chủ Nhật
+  const soNgay  = new Date(y, m+1, 0).getDate();
+  const nay = new Date();
+  let html = '';
+  for(let i=0;i<dauTuan;i++) html += '<span></span>';   // ô trống đầu tháng
+  for(let d=1; d<=soNgay; d++){
+    const cls = [];
+    if(dtpDaChon && dtpDaChon.y===y && dtpDaChon.m===m && dtpDaChon.d===d) cls.push('chon');
+    if(nay.getFullYear()===y && nay.getMonth()===m && nay.getDate()===d) cls.push('nay');
+    html += `<button type="button" class="${cls.join(' ')}" data-d="${d}">${d}</button>`;
+  }
+  $('dtpNgay').innerHTML = html;
+  $('dtpNgay').querySelectorAll('button').forEach(b=>b.onclick=()=>{ dtpDaChon={y, m, d:+b.dataset.d}; dtpVeLich(); });
+}
+function dtpMo(nut){
+  dtpNut = nut;
+  const iso = nut.dataset.val;
+  const d = iso ? new Date(iso) : new Date();
+  dtpDaChon = iso ? { y:d.getFullYear(), m:d.getMonth(), d:d.getDate() } : null;
+  dtpXemThang = new Date(d.getFullYear(), d.getMonth(), 1);
+  $('dtpGio').value  = iso ? d.getHours() : 9;
+  $('dtpPhut').value = iso ? Math.round(d.getMinutes()/5)*5 % 60 : 0;
+  dtpVeLich();
+  $('dtpOverlay').classList.add('show');
+}
+function dtpDong(){ $('dtpOverlay').classList.remove('show'); dtpNut=null; }
+$('dtpTruoc').onclick = ()=>{ dtpXemThang.setMonth(dtpXemThang.getMonth()-1); dtpVeLich(); };
+$('dtpSau').onclick   = ()=>{ dtpXemThang.setMonth(dtpXemThang.getMonth()+1); dtpVeLich(); };
+$('dtpHomNay').onclick = ()=>{ const n=new Date(); dtpDaChon={y:n.getFullYear(),m:n.getMonth(),d:n.getDate()}; dtpXemThang=new Date(n.getFullYear(),n.getMonth(),1); dtpVeLich(); };
+$('dtpXong').onclick = ()=>{
+  if(!dtpDaChon){ showToast('Chọn ngày đã nhé'); return; }
+  const p = n=>String(n).padStart(2,'0');
+  const h = +$('dtpGio').value, mi = +$('dtpPhut').value;
+  dtpNut.dataset.val = `${dtpDaChon.y}-${p(dtpDaChon.m+1)}-${p(dtpDaChon.d)}T${p(h)}:${p(mi)}`;
+  const chu = dtpNut.querySelector('.cl-dt-chu');
+  chu.textContent = dinhDangNgayGio(dtpNut.dataset.val);
+  chu.classList.remove('trong');
+  dtpDong();
+  clCapNhat();
+};
+$('dtpOverlay').addEventListener('click', e=>{ if(e.target===$('dtpOverlay')) dtpDong(); });
 
 /* 2 nut: Chot lich / Bao gia. Giu nguyen o dang dien khi chuyen qua lai. */
 function cbgChon(which){
