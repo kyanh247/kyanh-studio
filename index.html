@@ -1751,7 +1751,10 @@ function xepTheoDiem(ds, q, layPhu){
 
 function visibleItems(){
   const q=searchInput.value.trim().toLowerCase();
-  const nguon=itemsReply();
+  /* An the "Xac nhan buoi chup (dien nhanh)" khoi Rep nhanh — da co form Template > Chot lich (Ky Anh 09/11).
+     Chi an o day: mau van tren Firestore (form Chot lich doc no), tab Report van hien + van dem. */
+  const anId = clMauChot()?.id;
+  const nguon=itemsReply().filter(i=>i.id!==anId);
   if (q){
     return {list:xepTheoDiem(nguon, q, i=>i.content), searching:true};
   }
@@ -3292,7 +3295,8 @@ function clTin(){
 }
 $('clTocPhim').onchange = clCapNhat;
 $('clLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền?')) clMo(); };
-$('clCopy').onclick = async()=>{ if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); demTemplate('chot'); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };   // khong dung lai tin truoc khi copy -> giu nguyen chu Ky Anh sua tay
+/* tangDem: the "Xac nhan buoi chup" da an o Rep nhanh nhung Report van dem qua nut Copy nay (09/11) */
+$('clCopy').onclick = async()=>{ if(await copyText($('clXem').value)){ if(clState?.item){ addRecent(clState.item.id); tangDem(clState.item.id); } demTemplate('chot'); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };   // khong dung lai tin truoc khi copy -> giu nguyen chu Ky Anh sua tay
 
 /* Copy anh luu y: ve anh (giu kich thuoc goc) ra PNG roi ghi vao clipboard.
    Clipboard chi nhan 1 anh -> "copy ca 2" la ghep doc thanh 1 anh. */
