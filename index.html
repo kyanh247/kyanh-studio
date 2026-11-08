@@ -1389,6 +1389,7 @@ function capNhatTet(){
    collection nay -> neu doc/ghi bi tu choi thi tam luu localStorage + bao nho "chua len may chu". */
 const CL_CHOT_LS = 'kyanh-reply-chotlich';
 let clChotKey = null, clChotData = { so:0, coc:0 }, clChotServer = null, clChotTimer = 0;
+let clChotTay = false;   // true = Ky Anh tu chon ngay khac; false = luon theo "hom nay" (qua dem tu doi ngay — loi 09/11)
 function clNgayVN(){ const vn = new Date(Date.now() + 7*3600*1000);
   return vn.getUTCFullYear()+'-'+String(vn.getUTCMonth()+1).padStart(2,'0')+'-'+String(vn.getUTCDate()).padStart(2,'0'); }
 function clChotLS(){ try { return JSON.parse(LS.get(CL_CHOT_LS)||'{}')||{}; } catch(e){ return {}; } }
@@ -1403,7 +1404,7 @@ function clChotVe(){
 }
 async function clChotTai(){
   if(!$('clChotHop')) return;
-  if(!clChotKey) clChotKey = clNgayVN();
+  if(!clChotKey || !clChotTay) clChotKey = clNgayVN();
   $('clChotNgayInput').value = clChotKey;
   if(fb && isAdmin){
     try {
@@ -1433,7 +1434,11 @@ function clChotLuu(){
 function clChotWire(){
   $('clChotTru').onclick = ()=>{ clChotData.so = Math.max(0,(clChotData.so||0)-1); $('clChotSo').textContent = clChotData.so; clChotLuu(); };
   $('clChotCong').onclick = ()=>{ clChotData.so = (clChotData.so||0)+1; $('clChotSo').textContent = clChotData.so; clChotLuu(); };
-  $('clChotNgayInput').onchange = e=>{ clChotKey = e.target.value || clNgayVN(); clChotTai(); };
+  $('clChotNgayInput').onchange = e=>{ clChotKey = e.target.value || clNgayVN(); clChotTay = clChotKey !== clNgayVN(); clChotTai(); };
+  // App de mo qua dem / mo lai tu nen: neu dang theo "hom nay" ma da sang ngay moi thi tai lai dung ngay
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden && isAdmin && !clChotTay && clChotKey && clChotKey !== clNgayVN()) clChotTai();
+  });
   $('clChotCoc').oninput = e=>{ const n = bgSo(e.target.value)||0; clChotData.coc = n; e.target.value = n ? bqTien(n) : ''; clChotLuu(); };
 }
 
@@ -3386,7 +3391,7 @@ function cbgChon(which){
   $('cbgChot').hidden = !chot;
   $('cbgBaoGia').hidden = chot;
   document.querySelectorAll('.cbg-tab').forEach(b=>b.classList.toggle('active', b.dataset.cbg===which));
-  if(chot){ if(!clState) clMo(); } else bqMo();
+  if(chot){ if(!clState) clMo(); if(isAdmin && !clChotTay && clChotKey && clChotKey !== clNgayVN()) clChotTai(); } else bqMo();
 }
 document.querySelectorAll('.cbg-tab').forEach(b=>b.onclick=()=>cbgChon(b.dataset.cbg));
 
