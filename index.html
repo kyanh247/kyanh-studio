@@ -166,6 +166,7 @@
   .bq-nut .btn-primary { flex: 1; }
   .bq-muc { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 1.4rem 0 0.6rem; }
   .bq-muc:first-child { margin-top: 0; }
+  .bq-muc-phu { font-weight: 500; letter-spacing: 0.04em; text-transform: none; color: var(--gold-dark); margin-left: 0.3rem; }
   .bq-goi-y { font-size: 0.66rem; color: var(--muted); margin: -0.45rem 0 0.9rem; }
   /* O ten concept: nut mo bang chon co hinh + anh nho cua concept da chon */
   .bq-chon-o { display: flex; align-items: center; gap: 0.6rem; min-height: 48px; padding: 0.45rem 0.7rem; text-align: left; cursor: pointer; }
@@ -667,8 +668,8 @@
       </div>
       <div class="bq-the"><div id="clFields"></div></div>
       <label class="cl-toc-phim"><input type="checkbox" id="clTocPhim"> ⚠ Thêm dòng “Phí có thể phát sinh: 400.000đ/ tóc phím/ concept”</label>
-      <div class="bq-muc">Tin nhắn gửi khách</div>
-      <textarea class="bq-xem" id="clXem" readonly></textarea>
+      <div class="bq-muc">Tin nhắn gửi khách <span class="bq-muc-phu">(sửa tay được)</span></div>
+      <textarea class="bq-xem" id="clXem"></textarea>
       <div class="bq-nut">
         <button type="button" class="btn-ghost" id="clLamMoi">Làm mới</button>
         <button type="button" class="btn-primary" id="clCopy">Copy tin nhắn</button>
@@ -736,8 +737,8 @@
       </div>
     </div>
 
-    <div class="bq-muc">Tin nhắn gửi khách</div>
-    <textarea class="bq-xem" id="bqXem" readonly></textarea>
+    <div class="bq-muc">Tin nhắn gửi khách <span class="bq-muc-phu">(sửa tay được)</span></div>
+    <textarea class="bq-xem" id="bqXem"></textarea>
     <div class="bq-nut">
       <button type="button" class="btn-ghost" id="bqLamMoi">Làm mới</button>
       <button type="button" class="btn-primary" id="bqCopy">Copy tin nhắn</button>
@@ -2949,8 +2950,7 @@ $('bqGiamKieu').addEventListener('change', bqCapNhat);
 $('bqThemCon').onclick = ()=>{ bqVeDong(); bqCapNhat(); };
 $('bqLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền để làm báo giá mới?')) bqLamMoi(); };
 $('bqCopy').onclick = async()=>{
-  bqCapNhat();
-  if(await copyText($('bqXem').value)){ demTemplate('baogia'); showToast('Đã copy tin báo giá'); } else showToast('Không copy được — thử lại nhé', true);
+  if(await copyText($('bqXem').value)){ demTemplate('baogia'); showToast('Đã copy tin báo giá'); } else showToast('Không copy được — thử lại nhé', true);   // khong dung lai tin truoc khi copy -> giu nguyen chu Ky Anh sua tay
 };
 
 /* ================= Chot lich: form dien nhanh nhung thang trong tab =================
@@ -3181,7 +3181,7 @@ function clTin(){
 }
 $('clTocPhim').onchange = clCapNhat;
 $('clLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền?')) clMo(); };
-$('clCopy').onclick = async()=>{ clCapNhat(); if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); demTemplate('chot'); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };
+$('clCopy').onclick = async()=>{ if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); demTemplate('chot'); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };   // khong dung lai tin truoc khi copy -> giu nguyen chu Ky Anh sua tay
 
 /* Copy anh luu y: ve anh (giu kich thuoc goc) ra PNG roi ghi vao clipboard.
    Clipboard chi nhan 1 anh -> "copy ca 2" la ghep doc thanh 1 anh. */
