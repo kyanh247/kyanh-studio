@@ -26,7 +26,7 @@
      1. Tạo project tại https://console.firebase.google.com
      2. Build > Firestore Database > Create (Production mode)
      3. Project settings > "Your apps" > Web (</>) > copy firebaseConfig
-     4. Dán config vào KHỐI CẤU HÌNH bên dưới, đổi ADMIN_PIN
+     4. Dán config vào KHỐI CẤU HÌNH bên dưới
      5. Dán Security Rules (cuối file) vào tab Rules của Firestore
      ============================================================ -->
 
@@ -1073,12 +1073,10 @@
   <span id="toastMsg">Đã sao chép</span>
 </div>
 
-<!-- ============= KHỐI CẤU HÌNH — CHỈNH 2 CHỖ NÀY ============= -->
+<!-- ============= KHỐI CẤU HÌNH ============= -->
 <script>
-  // (1) Đổi mã PIN quản trị:
-  window.KA_ADMIN_PIN = "794831";
-
-  // (2) Dán firebaseConfig từ Firebase Console vào đây.
+  // Mã PIN quản trị đã gỡ (09/11/2026) — quyền quản trị giờ chỉ bằng đăng nhập email.
+  // Dán firebaseConfig từ Firebase Console vào đây.
   //     Để trống => app chạy chế độ máy đơn (chỉ lưu trên máy này).
   window.KA_FIREBASE_CONFIG = {
     apiKey: "AIzaSyBxy5G9nMwdqrJeKdnOYhjTBBHyerkKoKA",
@@ -1171,7 +1169,6 @@ let isAdmin = false;
 let adminEmail = '';
 let firstSnapshot = false;
 
-const ADMIN_PIN = String(window.KA_ADMIN_PIN || '2468');
 const CACHE_KEY = 'kyanh-reply-cache';
 const RECENT_KEY = 'kyanh-reply-recent';
 
@@ -1468,8 +1465,8 @@ async function init() {
   napSheetConcept();   // chay nen, khong cho
   activeCat = recent.length ? 'recent' : 'chot-don';   // may moi chua copy gi thi khoi man hinh trong
   // Có Firebase thì quyền quản trị do đăng nhập quyết định.
-  // Không có (chế độ máy đơn) thì vẫn dùng PIN như cũ.
-  isAdmin = auth ? false : (SS.get('kyanh-admin') === '1');
+  // Không có Firebase (chế độ máy đơn) thì không mở quyền quản trị — mã PIN cũ đã gỡ 09/11.
+  isAdmin = false;
   applyAdminUI();
   if (auth) {
     auth.onAuthStateChanged(auth.instance, user => {
@@ -1521,7 +1518,7 @@ async function seedToFirestore() {
   try {
     for (let i = 0; i < SEED_ITEMS.length; i++) {
       const it = SEED_ITEMS[i];
-      await fb.setDoc(fb.doc(colRef), { ...it, order: Date.now() + i, _key: ADMIN_PIN });
+      await fb.setDoc(fb.doc(colRef), { ...it, order: Date.now() + i });
     }
     showToast('Đã tạo bộ mẫu ban đầu trên máy chủ');
   } catch(e){ console.warn(e); }
@@ -1530,10 +1527,11 @@ async function seedToFirestore() {
 async function upsertItem(id, data) {
   if (fb) {
     try {
-      if (id) await fb.updateDoc(fb.doc(colRef, id), { ...data, _key: ADMIN_PIN });
-      else    await fb.setDoc(fb.doc(colRef), { order: Date.now(), ...data, _key: ADMIN_PIN });
+      // Khong ghi ma PIN cu (_key) nua; sua mau nao thi xoa luon _key cu cua mau do (09/11)
+      if (id) await fb.updateDoc(fb.doc(colRef, id), { ...data, _key: fb.deleteField() });
+      else    await fb.setDoc(fb.doc(colRef), { order: Date.now(), ...data });
       return true;
-    } catch(e){ console.warn(e); showToast('Lưu lên máy chủ thất bại — kiểm tra mạng/PIN', true); return false; }
+    } catch(e){ console.warn(e); showToast('Lưu lên máy chủ thất bại — kiểm tra mạng / đăng nhập', true); return false; }
   } else {
     if (id) { const i = items.findIndex(x=>x.id===id); if(i>-1) items[i] = { ...items[i], ...data }; }
     else {
@@ -1613,14 +1611,8 @@ function loginErrMsg(code){
 }
 
 async function doLogin(){
-  // Chế độ máy đơn: không có Firebase thì vẫn mở khoá bằng PIN
-  if (!auth) {
-    if (loginPass.value === ADMIN_PIN) {
-      isAdmin=true; SS.set('kyanh-admin','1'); applyAdminUI(); render(); closePin();
-      showToast('Đã mở khoá quản trị');
-    } else { pinErr.textContent='Mã PIN không đúng'; loginPass.value=''; loginPass.focus(); }
-    return;
-  }
+  // Khong tai duoc Firebase -> khong dang nhap duoc (ma PIN cu da go 09/11)
+  if (!auth) { pinErr.textContent='Chưa kết nối được máy chủ — kiểm tra mạng rồi tải lại trang'; return; }
   const email=loginEmail.value.trim(), pass=loginPass.value;
   if (!email || !pass) { pinErr.textContent='Nhập đủ email và mật khẩu'; return; }
   const btn=$('pinConfirm');
@@ -3867,8 +3859,8 @@ init();
      ⚠️ Thêm người quản trị = thêm email vào danh sách trong Console rồi
      Publish lại, đồng thời tạo user trong Authentication > Users.
 
-     Ghi chú: KA_ADMIN_PIN bên trên giờ chỉ còn dùng cho chế độ máy đơn
-     (khi không tải được Firebase). Nó không còn mở khoá gì trên máy chủ.
+     Ghi chú: mã PIN quản trị cũ đã gỡ (09/11/2026). Mẫu cũ trên Firestore còn
+     field `_key` (số PIN cũ, vô hại) — app tự xoá field đó khi sửa mẫu.
      ============================================================ -->
 </body>
 </html>
