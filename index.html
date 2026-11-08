@@ -328,6 +328,23 @@
   .cl-toc-phim { display: flex; align-items: center; gap: 0.5rem; margin: 0.2rem 0 1rem; padding: 0.55rem 0.75rem; background: rgba(184,149,110,0.06); border: 1px solid rgba(184,149,110,0.28); border-radius: 10px; font-size: 0.72rem; font-weight: 600; color: var(--ink); cursor: pointer; }
   .cl-toc-phim input { width: 17px; height: 17px; accent-color: var(--gold-dark); cursor: pointer; flex: 0 0 auto; }
 
+  /* Form Chot lich gon (08/11): luoi 2 cot cho Khach / Thanh toan; Makeup-Hair-Trang phuc gap lai */
+  .cl-luoi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.75rem; }
+  .cl-luoi > .cl-rong { grid-column: 1 / -1; }
+  .cl-luoi .cl-luoi { column-gap: 0.75rem; }
+  /* O Giam gia: chua chon "Tu nhap" thi o chon rong het hang (de doc du chu "Giam 10% concept gia thap nhat") */
+  .cl-luoi .cl-luoi:has(> #clGiamTayO[hidden]) > .f-group:first-child { grid-column: 1 / -1; }
+  @media (max-width: 480px) { .cl-luoi-khach { grid-template-columns: 1fr; } }
+  .cl-chi-tiet { margin: 0 0 0.9rem; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+  .cl-chi-tiet > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.8rem; font-size: 0.72rem; font-weight: 600; color: var(--ink); }
+  .cl-chi-tiet > summary::-webkit-details-marker { display: none; }
+  .cl-chi-tiet > summary > span:first-child { flex: 1 1 auto; min-width: 0; }
+  .cl-chi-tiet .cl-ct-tt { font-weight: 500; color: var(--gold-dark); white-space: nowrap; }
+  .cl-chi-tiet > summary::after { content: '▾'; color: var(--muted); font-size: 0.8rem; }
+  .cl-chi-tiet[open] > summary::after { content: '▴'; }
+  .cl-chi-tiet-ds { padding: 0 0.8rem 0.1rem; border-top: 1px dashed var(--line); padding-top: 0.7rem; }
+  .cl-phu-o { margin-bottom: 0.2rem; }
+
   .toolbar { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; }
   .search-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
   .search-wrap svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--muted); pointer-events: none; }
@@ -1907,9 +1924,15 @@ function computeTiktokPrice(common){
 /* Ô "Còn lại" cũng tự tính: Tổng chi phí trừ Đã cọc, giữ nguyên cách viết số của tổng.
    VD: tổng 5.000.000đ, cọc 2.000.000 → 3.000.000đ */
 const AUTO_REMAIN_LABEL='Còn lại';
+/* Tinh bieu thuc cong/tru tien: "2.990.000 + 500.000 - 200.000" = 3.290.000. Khong co dau thi la 1 so nhu cu. */
+function tinhBT(v){
+  const toks = String(v||'').replace(/\s/g,'').match(/[+-]?[^+-]+/g) || [];
+  let tong = 0, co = false;
+  toks.forEach(t=>{ const d = t.replace(/[^0-9]/g,''); if(!d) return; co = true; tong += (t[0]==='-' ? -1 : 1) * parseInt(d,10); });
+  return co ? tong : NaN;
+}
 function computeRemain(common){
-  // Cong tung so ngan cach boi "+" (vd "2.990.000 + 500.000" = 3.490.000); khong co "+" thi la 1 so nhu cu
-  const so=v=>{ const ps=String(v||'').split('+').map(s=>s.replace(/[^0-9]/g,'')).filter(Boolean); return ps.length?ps.reduce((a,b)=>a+parseInt(b,10),0):NaN; };
+  const so=tinhBT;
   const tong=so(common['Tổng chi phí']), coc=so(common['Đã cọc']);
   if(!(tong>0)) return '';
   const lai=tong-(isNaN(coc)?0:coc);
@@ -1924,9 +1947,10 @@ const AUTO_LABELS=[AUTO_DISCOUNT_LABEL, AUTO_TIKTOK_LABEL, AUTO_REMAIN_LABEL];
 function laOTien(lb){ return /giá|chi phí|cọc|tiền/i.test(lb||'') && !AUTO_LABELS.includes(lb); }
 function chamNghin(inp, giuCong){
   const cu=inp.value;
-  // Giu dau "+" (vd o Tong chi phi: "2.990.000 + 500.000") -> cham nghin tung nhom, con tro ve cuoi
-  if(giuCong && cu.includes('+')){
-    const moi = cu.split('+').map(s=>s.replace(/[^0-9]/g,'').replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.')).join(' + ');
+  // Giu dau "+" / "-" (vd o Tong chi phi: "2.990.000 + 500.000 - 200.000") -> cham nghin tung so, con tro ve cuoi
+  if(giuCong && /[+-]/.test(cu)){
+    const moi = cu.split(/([+-])/).map(p => (p==='+'||p==='-') ? ` ${p} ` : p.replace(/[^0-9]/g,'').replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.'))
+      .join('').replace(/\s+/g,' ').replace(/^ /,'');
     if(moi!==cu){ inp.value=moi; try{ inp.setSelectionRange(moi.length,moi.length); }catch(e){} }
     return;
   }
@@ -2971,13 +2995,19 @@ function clMauChot(){
 let clState = null, cbgHienTai = 'chot';
 /* Dien san vai muc hay lap lai cho do phai go tay (Ky Anh 08/11) — van sua lai duoc. */
 const CL_MAC_DINH = { 'Makeup':'Như concept mẫu', 'Hair':'Như concept mẫu', 'Trang phục':'Như concept mẫu' };
+/* Khoi concept gon (Ky Anh 08/11 "do roi"): Ten concept de ngoai; Makeup/Hair/Trang phuc (thuong de
+   mac dinh) gom vao 1 dong gap lai, bam moi mo ra sua. */
 function clGroupHTML(label, fields){
+  const o = lb => `<div class="f-group"><label class="f-label">${esc(lb)}</label>
+      <input type="text" class="f-input cl-in" data-scope="block" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
+  const chinh = fields.filter(lb=>!(lb in CL_MAC_DINH)), phu = fields.filter(lb=>lb in CL_MAC_DINH);
   return `<div class="cl-group">
     <div class="cl-group-dau"><b>${esc(label)} <span class="cl-so"></span></b>
       <button type="button" class="cl-xoa" title="Xoá">✕ Xoá</button></div>
-    ${fields.map(lb=>`<div class="f-group"><label class="f-label">${esc(lb)}</label>
-      <input type="text" class="f-input cl-in" data-scope="block" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`).join('')}
-    <div class="f-group"><label class="f-label">Phụ thu (bấm để thêm)</label>
+    ${chinh.map(o).join('')}
+    ${phu.length ? `<details class="cl-chi-tiet"><summary><span>${phu.map(esc).join(' · ')}</span><span class="cl-ct-tt">Như concept mẫu</span></summary>
+      <div class="cl-chi-tiet-ds">${phu.map(o).join('')}</div></details>` : ''}
+    <div class="f-group cl-phu-o"><label class="f-label">Phụ thu</label>
       <div class="bq-chip-ds">${BQ_PHU.map(p=>`<button type="button" class="bq-chip cl-chip" data-phu="${p.id}" aria-pressed="false">${p.nut} <small>+${p.ngan}</small></button>`).join('')}</div></div>
   </div>`;
 }
@@ -3010,30 +3040,50 @@ function clMo(){
   if(!item){ $('clFields').innerHTML = '<p class="section-note">Chưa có mẫu “Xác nhận buổi chụp” để điền (thêm ở tab Trả lời nhanh, nhóm Chốt Đơn).</p>'; $('clXem').value=''; clState=null; return; }
   const segs = clChinhMau(parseTemplate(item.content||''));
   clState = { segs, item, blockLabel:'', blockFields:[] };
-  const seen = new Set(); let html='';
-  segs.forEach(seg=>{
-    if(seg.type==='text'){
-      fieldsOf(seg.value).forEach(lb=>{
-        if(seen.has(lb)) return; seen.add(lb);
-        if(AUTO_LABELS.includes(lb)){
-          html += `<div class="f-group"><label class="f-label">${esc(lb)} <span class="nhan-tu-tinh">tự tính</span></label><div class="f-input o-tu-tinh trong" data-auto="${esc(lb)}">—</div></div>`;
-        } else if(laNgayGio(lb)){
-          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label>
+  /* Chia 3 phan cho do roi (Ky Anh 08/11): Khach (2 cot) -> Concept -> Thanh toan (co Giam gia) */
+  const seen = new Set(), khach = [], tien = []; let coKhoi = false;
+  const oHTML = lb => {
+    if(AUTO_LABELS.includes(lb))
+      return `<div class="f-group"><label class="f-label">${esc(lb)} <span class="nhan-tu-tinh">tự tính</span></label><div class="f-input o-tu-tinh trong" data-auto="${esc(lb)}">—</div></div>`;
+    if(laNgayGio(lb))
+      return `<div class="f-group"><label class="f-label">${esc(lb)}</label>
             <button type="button" class="f-input cl-in cl-dt" data-scope="common" data-label="${esc(lb)}" data-kieu="datetime" data-val="">
               <svg class="cl-dt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>
               <span class="cl-dt-chu trong">Chọn ngày &amp; giờ</span>
             </button></div>`;
-        } else {
-          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="text" class="f-input cl-in" data-scope="common" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
-        }
+    return `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="text" class="f-input cl-in" data-scope="common" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
+  };
+  segs.forEach(seg=>{
+    if(seg.type==='text'){
+      fieldsOf(seg.value).forEach(lb=>{
+        if(seen.has(lb)) return; seen.add(lb);
+        ((laOTien(lb) || AUTO_LABELS.includes(lb)) ? tien : khach).push({ lb, h: oHTML(lb) });
       });
     } else {
+      coKhoi = true;
       clState.blockLabel = seg.label;
       clState.blockFields = fieldsOf(seg.inner);
-      html += `<div id="clGroups"></div><button type="button" class="cl-them" id="clThem">＋ Thêm ${esc(seg.label.toLowerCase())}</button>`;
     }
   });
+  const lay = re => { const i = tien.findIndex(o=>re.test(o.lb)); return i<0 ? '' : tien.splice(i,1)[0].h; };
+  const oTong = lay(/tổng chi phí/i).replace('class="f-group"', 'class="f-group cl-rong"');
+  const oCoc = lay(/cọc/i), oConLai = lay(/còn lại/i);
+  const oGiam = `<div class="cl-rong cl-luoi">
+      <div class="f-group"><label class="f-label">Giảm giá</label>
+        <select class="f-select" id="clGiamKieu">
+          <option value="">Không giảm</option>
+          <option value="10">Giảm 10% concept giá thấp nhất</option>
+          <option value="tay">Tự nhập số tiền</option>
+        </select></div>
+      <div class="f-group" id="clGiamTayO" hidden><label class="f-label">Số tiền giảm</label>
+        <input type="text" class="f-input" id="clGiamTay" inputmode="numeric" placeholder="VD: 300.000"></div>
+    </div>`;
+  let html = '';
+  if(khach.length) html += `<div class="bq-muc">Khách</div><div class="cl-luoi cl-luoi-khach">${khach.map(o=>o.h).join('')}</div>`;
+  if(coKhoi) html += `<div id="clGroups"></div><button type="button" class="cl-them" id="clThem">＋ Thêm ${esc(clState.blockLabel.toLowerCase())}</button>`;
+  html += `<div class="bq-muc">Thanh toán</div><div class="cl-luoi">${oTong}${oGiam}${oCoc}${oConLai}${tien.map(o=>o.h).join('')}</div>`;
   $('clFields').innerHTML = html;
+  const gk = $('clGiamKieu'); if(gk && typeof kaSelEnhance==='function') kaSelEnhance(gk);
   if(clState.blockFields.length){ clThemNhom(); const t=$('clThem'); if(t) t.onclick = clThemNhom; }
   clBind(); clCapNhat();
 }
@@ -3075,8 +3125,8 @@ function clACRender(){
 }
 function clACClose(){ clACMenu.classList.remove('open'); clACMenu._ds=null; }
 const laOTong = inp => /tổng chi phí/i.test(inp?.dataset.label||'');
-/* Tong tien tu o "Tong chi phi": cong tung so ngan cach boi "+" (vd "2.990.000 + 500.000" = 3.490.000) */
-const tongBieuThuc = v => String(v||'').split('+').map(s=>s.replace(/[^\d]/g,'')).filter(Boolean).reduce((a,b)=>a+parseInt(b,10),0);
+/* Tong tien tu o "Tong chi phi": cong/tru tung so (vd "2.990.000 + 500.000 - 200.000" = 3.290.000) */
+const tongBieuThuc = v => { const n = tinhBT(v); return isNaN(n) ? 0 : n; };
 /* Tong phu thu dang chon tren moi concept (chip giong tab Bao gia) */
 function clTongPhuThu(){
   return [...$('clFields').querySelectorAll('.cl-chip[aria-pressed="true"]')]
@@ -3132,8 +3182,23 @@ function clBind(){
     if(gs.length<=1){ showToast('Cần giữ ít nhất 1'); return; }
     b.closest('.cl-group').remove(); clDanhSo(); clCapNhat();
   });
+  const gk = $('clGiamKieu'), gt = $('clGiamTay');
+  if(gk) gk.onchange = clCapNhat;
+  if(gt) gt.oninput = ()=>{ chamNghin(gt); clCapNhat(); };
 }
-function clCapNhat(){ clDatTong(); $('clXem').value = clTin(); }
+let clConLai = '';
+function clCapNhat(){
+  clDatTong(); $('clXem').value = clTin();
+  const gto = $('clGiamTayO'); if(gto) gto.hidden = $('clGiamKieu')?.value !== 'tay';
+  // O "Con lai" trong form: hien so app tu tinh (truoc day luon "—")
+  const cl = $('clFields').querySelector(`[data-auto="${AUTO_REMAIN_LABEL}"]`);
+  if(cl){ cl.textContent = clConLai || '—'; cl.classList.toggle('trong', !clConLai); }
+  // Dong gap Makeup/Hair/Trang phuc: bao "Da sua" neu khac mac dinh
+  $('clFields').querySelectorAll('.cl-chi-tiet').forEach(d=>{
+    const sua = [...d.querySelectorAll('.cl-in')].some(i=>i.value.trim() !== (CL_MAC_DINH[i.dataset.label]||''));
+    const t = d.querySelector('.cl-ct-tt'); if(t) t.textContent = sua ? 'Đã sửa' : 'Như concept mẫu';
+  });
+}
 function clTin(){
   if(!clState) return '';
   const common = {};
@@ -3144,6 +3209,25 @@ function clTin(){
     common[inp.dataset.label] = v;
   });
   common[AUTO_REMAIN_LABEL] = computeRemain(common);
+  // Concept + gia (theo thu tu nhom), tong, giam gia — tinh truoc de "Con lai" tru ca giam gia
+  const conDs = [...$('clFields').querySelectorAll('.cl-group')].map(g=>{
+    const i = [...g.querySelectorAll('.cl-in[data-scope="block"]')].find(clLaOConcept);
+    return { ten: (i?.value||'').trim(), gia: +(i?.dataset.gia||0) };
+  });
+  const giaDs = conDs.map(c=>c.gia).filter(n => n > 0);
+  const tongStr = common['Tổng chi phí'] || '';
+  const tongNum = tongBieuThuc(tongStr);
+  let giam = 0, giamGhi = '';
+  const kieu = $('clGiamKieu')?.value || '';
+  if(kieu==='10'){   // giong tab Bao gia: 10% concept re nhat (chua co gia thi chua giam)
+    const re = conDs.filter(c=>c.gia>0).sort((a,b)=>a.gia-b.gia)[0];
+    if(re){ giam = Math.round(re.gia*0.1/1000)*1000; giamGhi = ` (10% concept ${re.ten || 'giá thấp nhất'})`; }
+  } else if(kieu==='tay') giam = bqSoTien($('clGiamTay')?.value);
+  if(giam && tongNum > 0){
+    const coc = tinhBT(common['Đã cọc']), lai = tongNum - giam - (isNaN(coc) ? 0 : coc);
+    common[AUTO_REMAIN_LABEL] = lai >= 0 ? bqTien(lai) : '';
+  }
+  clConLai = common[AUTO_REMAIN_LABEL] || '';
   const sub = (vals,lb)=>{
     const sao=(lb.match(/^\*+/)||[''])[0].length; lb=lb.replace(/^\*+/,'').trim();
     const v=vals[lb]||''; if(!v) return '['+lb+']';
@@ -3164,12 +3248,6 @@ function clTin(){
   }).join('');
   let final = out;
   const phuDs = clPhuDaChon();
-  const tongStr = common['Tổng chi phí'] || '';
-  const tongNum = tongBieuThuc(tongStr);
-  // Gia tung concept, theo thu tu nhom (chi nhung concept da chon co gia)
-  const giaDs = [...$('clFields').querySelectorAll('.cl-group')]
-    .map(g => +([...g.querySelectorAll('.cl-in[data-scope="block"]')].find(clLaOConcept)?.dataset.gia || 0))
-    .filter(n => n > 0);
   if(phuDs.length){
     // Co phu thu -> chen chi tiet vao ngay duoi dong "Tong chi phi" (giong tab Bao gia)
     const phuTong = phuDs.reduce((s,p)=>s+p.tien,0);
@@ -3179,13 +3257,17 @@ function clTin(){
     phuDs.forEach(p=>dong.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
     final = final.replace(/(Tổng chi phí:[^\n]*)/, `$1\n${dong.join('\n')}`);
     if(phuDs.some(p=>p.id==='be')) final += `\n\n${BQ_GHI_EM_BE}`;
-  } else if(/\+/.test(tongStr) && tongNum > 0){
-    // Ky Anh go bieu thuc cong vao o Tong (vd "2.990.000 + 500.000") -> hien "expr = tong" (Ky Anh 08/11)
+  } else if(/[+-]/.test(tongStr) && tongNum > 0){
+    // Ky Anh go bieu thuc cong/tru vao o Tong (vd "2.990.000 + 500.000 - 200.000") -> hien "expr = tong" (Ky Anh 08/11)
     final = final.replace(/(Tổng chi phí:)[^\n]*/, `$1 ${tongStr.replace(/đ/gi,'').trim()} = ${bqTien(tongNum)}đ`);
   } else if(giaDs.length >= 2 && giaDs.reduce((a,b)=>a+b,0) === tongNum){
     // >=2 concept co gia va cong lai dung tong -> hien phep cong: a + b = tong (Ky Anh 08/11)
     const bieuThuc = giaDs.map(n=>bqTien(n)+'đ').join(' + ') + ' = ' + bqTien(tongNum) + 'đ';
     final = final.replace(/(Tổng chi phí:)[^\n]*/, `$1 ${bieuThuc}`);
+  }
+  // Giam gia -> chen "Giam gia" + "Thanh tien" ngay sau dong Tong (va cac dong phu thu "*" neu co)
+  if(giam && tongNum > 0){
+    final = final.replace(/(Tổng chi phí:[^\n]*(?:\n\*[^\n]*)*)/, `$1\nGiảm giá: ${bqTien(giam)}đ${giamGhi}\nThành tiền: ${bqTien(tongNum - giam)}đ`);
   }
   // Nut bat/tat: them dong canh bao phi toc phim co the phat sinh (khong cong vao tong)
   if($('clTocPhim')?.checked){
