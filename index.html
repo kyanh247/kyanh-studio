@@ -323,6 +323,10 @@
   .cl-chot-ghi { font-size: 0.68rem; color: var(--muted); margin-top: 0.5rem; min-height: 0.9rem; }
   .cl-chot-ghi:not(:empty) { color: var(--gold-dark); }
 
+  /* Nút bật/tắt dòng "phí tóc phím có thể phát sinh" trong tin chốt đơn */
+  .cl-toc-phim { display: flex; align-items: center; gap: 0.5rem; margin: 0.2rem 0 1rem; padding: 0.55rem 0.75rem; background: rgba(184,149,110,0.06); border: 1px solid rgba(184,149,110,0.28); border-radius: 10px; font-size: 0.72rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .cl-toc-phim input { width: 17px; height: 17px; accent-color: var(--gold-dark); cursor: pointer; flex: 0 0 auto; }
+
   .toolbar { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; }
   .search-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
   .search-wrap svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--muted); pointer-events: none; }
@@ -662,6 +666,7 @@
         <div class="cl-chot-ghi" id="clChotGhi"></div>
       </div>
       <div class="bq-the"><div id="clFields"></div></div>
+      <label class="cl-toc-phim"><input type="checkbox" id="clTocPhim"> ⚠ Thêm dòng “Phí có thể phát sinh: 400.000đ/ tóc phím/ concept”</label>
       <div class="bq-muc">Tin nhắn gửi khách</div>
       <textarea class="bq-xem" id="clXem" readonly></textarea>
       <div class="bq-nut">
@@ -3140,14 +3145,22 @@ function clTin(){
     const inner = groups.length===1 ? seg.inner.replace(/[ \t]*\{\{\s*#\s*\}\}/g,'') : seg.inner;   // 1 concept thi bo so thu tu
     return groups.map((g,gi)=>{
       const vals={}; g.querySelectorAll('.cl-in[data-scope="block"]').forEach(inp=>vals[inp.dataset.label]=inp.value.trim());
-      return inner.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return String(gi+1); return sub(vals,lb); });
+      let txt = inner.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return String(gi+1); return sub(vals,lb); });
+      // Gia tung concept (lay tu o ten concept da chon tu danh sach) -> chen vao cuoi dong "Concept ...: Ten"
+      const gia = +([...g.querySelectorAll('.cl-in[data-scope="block"]')].find(clLaOConcept)?.dataset.gia || 0);
+      if(gia>0) txt = txt.replace(/^(\s*Concept\b[^\n]*)/i, `$1 — ${bqTien(gia)}đ`);
+      return txt;
     }).join('\n\n');
   }).join('');
-  // Co phu thu -> chen chi tiet vao ngay duoi dong "Tong chi phi" (giong tab Bao gia)
   let final = out;
   const phuDs = clPhuDaChon();
+  const tongNum = bgSo(common['Tổng chi phí']) || 0;
+  // Gia tung concept, theo thu tu nhom (chi nhung concept da chon co gia)
+  const giaDs = [...$('clFields').querySelectorAll('.cl-group')]
+    .map(g => +([...g.querySelectorAll('.cl-in[data-scope="block"]')].find(clLaOConcept)?.dataset.gia || 0))
+    .filter(n => n > 0);
   if(phuDs.length){
-    const tongNum = bgSo(common['Tổng chi phí']) || 0;
+    // Co phu thu -> chen chi tiet vao ngay duoi dong "Tong chi phi" (giong tab Bao gia)
     const phuTong = phuDs.reduce((s,p)=>s+p.tien,0);
     const goiChinh = tongNum - phuTong;
     const dong = [];
@@ -3155,9 +3168,18 @@ function clTin(){
     phuDs.forEach(p=>dong.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
     final = final.replace(/(Tổng chi phí:[^\n]*)/, `$1\n${dong.join('\n')}`);
     if(phuDs.some(p=>p.id==='be')) final += `\n\n${BQ_GHI_EM_BE}`;
+  } else if(giaDs.length >= 2 && giaDs.reduce((a,b)=>a+b,0) === tongNum){
+    // >=2 concept co gia va cong lai dung tong -> hien phep cong: a + b = tong (Ky Anh 08/11)
+    const bieuThuc = giaDs.map(n=>bqTien(n)+'đ').join(' + ') + ' = ' + bqTien(tongNum) + 'đ';
+    final = final.replace(/(Tổng chi phí:)[^\n]*/, `$1 ${bieuThuc}`);
+  }
+  // Nut bat/tat: them dong canh bao phi toc phim co the phat sinh (khong cong vao tong)
+  if($('clTocPhim')?.checked){
+    final += '\n\n--------------------\nPhí có thể phát sinh: 400.000đ/ tóc phím/ concept';
   }
   return final.replace(/\n{3,}/g,'\n\n').trim();
 }
+$('clTocPhim').onchange = clCapNhat;
 $('clLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền?')) clMo(); };
 $('clCopy').onclick = async()=>{ clCapNhat(); if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); demTemplate('chot'); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };
 
