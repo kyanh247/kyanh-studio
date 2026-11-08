@@ -308,6 +308,20 @@
   .tet-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.28rem 0.78rem; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.02em; color: var(--gold-dark); background: rgba(184,149,110,0.08); border: 1px solid rgba(184,149,110,0.32); border-radius: 999px; }
   .tet-badge .tet-so { font-weight: 700; }
   .tet-badge.tet-vui { background: var(--gold); border-color: var(--gold); color: #fff; }
+  /* O "lich da chot" (chi quan tri) — gon, tong kem/vang dong */
+  .cl-chot-hop { background: rgba(184,149,110,0.06); border: 1px solid rgba(184,149,110,0.28); border-radius: 12px; padding: 0.7rem 0.8rem; margin-bottom: 1rem; }
+  .cl-chot-1 { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; color: var(--ink); }
+  .cl-chot-lb b { color: var(--gold-dark); font-weight: 700; }
+  .cl-chot-nut { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(184,149,110,0.4); background: #fff; color: var(--gold-dark); font-size: 1.15rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
+  .cl-chot-nut:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .cl-chot-so { min-width: 1.6rem; text-align: center; font-size: 1.05rem; font-weight: 700; color: var(--gold-dark); }
+  .cl-chot-dv { color: var(--muted); }
+  .cl-chot-2 { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; margin-top: 0.6rem; }
+  .cl-chot-f { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--muted); }
+  .cl-chot-ngay, .cl-chot-coc { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; color: var(--ink); padding: 0.32rem 0.5rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .cl-chot-coc { width: 8.5rem; }
+  .cl-chot-ghi { font-size: 0.68rem; color: var(--muted); margin-top: 0.5rem; min-height: 0.9rem; }
+  .cl-chot-ghi:not(:empty) { color: var(--gold-dark); }
 
   .toolbar { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; }
   .search-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
@@ -632,6 +646,21 @@
 
     <!-- Panel Chot lich: form dien nhanh tu template chot-don (dung lai helper cua form dien nhanh) -->
     <div id="cbgChot">
+      <!-- O "lich da chot" — CHI hien khi dang nhap quan tri. Ban xem thu. -->
+      <div class="cl-chot-hop" id="clChotHop" hidden>
+        <div class="cl-chot-1">
+          <span class="cl-chot-lb">📅 <b id="clChotLb">Hôm nay</b> đã chốt:</span>
+          <button type="button" class="cl-chot-nut" id="clChotTru" aria-label="Bớt 1 lịch">−</button>
+          <span class="cl-chot-so" id="clChotSo">0</span>
+          <button type="button" class="cl-chot-nut" id="clChotCong" aria-label="Thêm 1 lịch">+</button>
+          <span class="cl-chot-dv">lịch</span>
+        </div>
+        <div class="cl-chot-2">
+          <label class="cl-chot-f">Ngày <input type="date" id="clChotNgayInput" class="cl-chot-ngay"></label>
+          <label class="cl-chot-f">Tổng cọc <input type="text" inputmode="numeric" id="clChotCoc" class="cl-chot-coc" placeholder="0"></label>
+        </div>
+        <div class="cl-chot-ghi" id="clChotGhi"></div>
+      </div>
       <div class="bq-the"><div id="clFields"></div></div>
       <div class="bq-muc">Tin nhắn gửi khách</div>
       <textarea class="bq-xem" id="clXem" readonly></textarea>
@@ -1332,8 +1361,61 @@ function capNhatTet(){
     : `🌸 Còn <span class="tet-so">${con}</span> ngày nữa đến Tết`;
 }
 
+/* ---- O "lich da chot" (chi quan tri — BAN XEM THU) ----
+   Luu Firestore collection `chotlich/<YYYY-MM-DD>` = { so, coc, at }. Rules hien CHUA mo quyen ghi
+   collection nay -> neu doc/ghi bi tu choi thi tam luu localStorage + bao nho "chua len may chu". */
+const CL_CHOT_LS = 'kyanh-reply-chotlich';
+let clChotKey = null, clChotData = { so:0, coc:0 }, clChotServer = null, clChotTimer = 0;
+function clNgayVN(){ const vn = new Date(Date.now() + 7*3600*1000);
+  return vn.getUTCFullYear()+'-'+String(vn.getUTCMonth()+1).padStart(2,'0')+'-'+String(vn.getUTCDate()).padStart(2,'0'); }
+function clChotLS(){ try { return JSON.parse(LS.get(CL_CHOT_LS)||'{}')||{}; } catch(e){ return {}; } }
+function clChotNhan(key){ if(key===clNgayVN()) return 'Hôm nay'; const p=key.split('-'); return `Ngày ${p[2]}/${p[1]}`; }
+function clChotVe(){
+  if(!$('clChotHop')) return;
+  $('clChotLb').textContent = clChotNhan(clChotKey);
+  $('clChotSo').textContent = clChotData.so||0;
+  $('clChotCoc').value = clChotData.coc ? bqTien(clChotData.coc) : '';
+  $('clChotGhi').innerHTML = clChotServer===false
+    ? '⚠ Bản xem thử — đang lưu tạm trên máy này, chưa lên máy chủ.' : '';
+}
+async function clChotTai(){
+  if(!$('clChotHop')) return;
+  if(!clChotKey) clChotKey = clNgayVN();
+  $('clChotNgayInput').value = clChotKey;
+  if(fb && isAdmin){
+    try {
+      const snap = await fb.getDoc(fb.doc(fb.db,'chotlich', clChotKey));
+      clChotServer = true;
+      const v = snap.exists() ? snap.data() : {};
+      clChotData = { so:+v.so||0, coc:+v.coc||0 }; clChotVe(); return;
+    } catch(e){ clChotServer = false; }   // Rules chua mo -> fallback
+  } else clChotServer = false;
+  const v = clChotLS()[clChotKey] || {};
+  clChotData = { so:+v.so||0, coc:+v.coc||0 }; clChotVe();
+}
+function clChotLuu(){
+  clearTimeout(clChotTimer);
+  clChotTimer = setTimeout(async ()=>{
+    const rec = { so: clChotData.so||0, coc: clChotData.coc||0, at: Date.now() }, ghi = $('clChotGhi');
+    if(clChotServer && fb){
+      try { await fb.setDoc(fb.doc(fb.db,'chotlich', clChotKey), rec, { merge:true });
+        ghi.textContent = '✓ Đã lưu lên máy chủ';
+        setTimeout(()=>{ if(clChotServer) ghi.textContent=''; }, 1500); return;
+      } catch(e){ clChotServer = false; }
+    }
+    const m = clChotLS(); m[clChotKey] = rec; LS.set(CL_CHOT_LS, JSON.stringify(m));
+    ghi.innerHTML = '⚠ Bản xem thử — đã lưu tạm trên máy này, chưa lên máy chủ.';
+  }, 400);
+}
+function clChotWire(){
+  $('clChotTru').onclick = ()=>{ clChotData.so = Math.max(0,(clChotData.so||0)-1); $('clChotSo').textContent = clChotData.so; clChotLuu(); };
+  $('clChotCong').onclick = ()=>{ clChotData.so = (clChotData.so||0)+1; $('clChotSo').textContent = clChotData.so; clChotLuu(); };
+  $('clChotNgayInput').onchange = e=>{ clChotKey = e.target.value || clNgayVN(); clChotTai(); };
+  $('clChotCoc').oninput = e=>{ const n = bgSo(e.target.value)||0; clChotData.coc = n; e.target.value = n ? bqTien(n) : ''; clChotLuu(); };
+}
+
 async function init() {
-  loadRecent(); loadDem(); napSoCot(); capNhatTet(); setInterval(capNhatTet, 3600000);
+  loadRecent(); loadDem(); napSoCot(); capNhatTet(); setInterval(capNhatTet, 3600000); clChotWire();
   napSheetConcept();   // chay nen, khong cho
   activeCat = recent.length ? 'recent' : 'chot-don';   // may moi chua copy gi thi khoi man hinh trong
   // Có Firebase thì quyền quản trị do đăng nhập quyết định.
@@ -1439,6 +1521,9 @@ function applyAdminUI() {
   // Tab Thong ke chi danh cho nguoi da dang nhap quan tri; dang xem ma dang xuat thi ve lai Tra loi nhanh
   document.querySelector('.dock-item[data-view="thongke"]').hidden = !isAdmin;
   if (!isAdmin && activeView==='thongke') doiView('reply');
+  // O "lich da chot" chi hien khi quan tri
+  const clHop = $('clChotHop');
+  if (clHop) { clHop.hidden = !isAdmin; if (isAdmin) clChotTai(); }
 }
 lockBtn.onclick = async () => {
   if (!isAdmin) { openPin(); return; }
