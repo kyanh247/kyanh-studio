@@ -1949,8 +1949,23 @@ function chamNghin(inp, giuCong){
   const cu=inp.value;
   // Giu dau "+" / "-" (vd o Tong chi phi: "2.990.000 + 500.000 - 200.000") -> cham nghin tung so, con tro ve cuoi
   if(giuCong && /[+-]/.test(cu)){
-    const moi = cu.split(/([+-])/).map(p => (p==='+'||p==='-') ? ` ${p} ` : p.replace(/[^0-9]/g,'').replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.'))
-      .join('').replace(/\s+/g,' ').replace(/^ /,'');
+    // Tach so + dau; 2 dau lien nhau thi giu dau go sau (go "+" roi "-" = doi thanh "-");
+    // dau o cuoi KHONG kem khoang trang -> bam xoa la mat dau ngay (truoc day bi ket, 09/11)
+    const kq = [];
+    cu.split(/([+-])/).forEach(p=>{
+      if(p==='+' || p==='-'){
+        if(!kq.length) return;                                   // khong cho dau dung dau
+        if(kq[kq.length-1]==='+' || kq[kq.length-1]==='-') kq[kq.length-1] = p;
+        else kq.push(p);
+      } else {
+        const d = p.replace(/[^0-9]/g,''); if(!d) return;
+        const cham = s => s.replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.');
+        const cuoi = kq[kq.length-1];
+        if(kq.length && cuoi!=='+' && cuoi!=='-') kq[kq.length-1] = cham(cuoi.replace(/\./g,'') + d);   // 2 so lien nhau -> noi lai
+        else kq.push(cham(d));
+      }
+    });
+    const moi = kq.join(' ');
     if(moi!==cu){ inp.value=moi; try{ inp.setSelectionRange(moi.length,moi.length); }catch(e){} }
     return;
   }
