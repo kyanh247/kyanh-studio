@@ -102,7 +102,7 @@
   .cl-anh-ds { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }   /* 2 anh luon nam chung 1 hang, ke ca dien thoai (Ky Anh 02/11) */
   .cl-anh { position: relative; margin: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; transition: all 0.2s ease; }
   .cl-anh:hover { border-color: var(--gold); box-shadow: 0 4px 14px rgba(184,149,110,0.22); }
-  .cl-anh img { display: block; width: 100%; height: auto; }
+  .cl-anh img { display: block; width: 100%; height: auto; cursor: pointer; }
   .cl-anh figcaption { padding: 0.5rem 0.6rem 0.4rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: center; }
   .cl-anh-nut { display: flex; gap: 0.4rem; padding: 0 0.5rem 0.55rem; margin-top: auto; }
   .cl-btn { flex: 1; padding: 0.42rem 0.3rem; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; border: 1px solid var(--gold); }
@@ -140,6 +140,8 @@
   .dtp-gio-cham { font-weight: 700; color: var(--muted); }
   .dtp-gio select { flex: 1; padding: 0.55rem 0.5rem; border: 1px solid var(--line); border-radius: 9px; font-family: inherit; font-size: 0.9rem; color: var(--ink); background: #fff; cursor: pointer; }
   .dtp-gio select:focus { outline: none; border-color: var(--gold); }
+  .dtp-gio .ka-sel { flex: 1; min-width: 0; }            /* o Gio/Phut: dropdown tu ve (khong dung select goc xau tren Mac) */
+  .dtp-gio .ka-sel-btn { padding: 0.55rem 0.7rem; border-radius: 9px; font-size: 0.9rem; }
   .dtp-nut { display: flex; gap: 0.5rem; margin-top: 1rem; }
   .dtp-nut button { flex: 1; padding: 0.72rem; border-radius: 11px; font-family: inherit; font-weight: 600; font-size: 0.82rem; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--ink-dark); }
   .dtp-nut button:hover { border-color: var(--gold); }
@@ -997,9 +999,9 @@
     <div class="dtp-ngay" id="dtpNgay"></div>
     <div class="dtp-gio">
       <span class="dtp-gio-nhan">Giờ</span>
-      <select id="dtpGio"></select>
+      <select id="dtpGio" class="f-select"></select>
       <span class="dtp-gio-cham">:</span>
-      <select id="dtpPhut"></select>
+      <select id="dtpPhut" class="f-select"></select>
     </div>
     <div class="dtp-nut">
       <button type="button" id="dtpHomNay">Hôm nay</button>
@@ -2882,12 +2884,68 @@ function clDanhSo(){
   const gs = [...g.querySelectorAll('.cl-group')];
   gs.forEach((o,i)=>{ const s=o.querySelector('.cl-so'); if(s) s.textContent = gs.length>1 ? (i+1) : ''; o.querySelector('.cl-xoa').style.visibility = gs.length>1 ? 'visible':'hidden'; });
 }
+/* ---- Goi y ten concept: go la xo dropdown danh sach concept (tu tab Concept), chon thi dien ten
+   + tu dien Tong chi phi theo gia goi; van go tay tu do duoc. Khong hien anh. Ky Anh 08/11 ---- */
+const clACMenu = document.createElement('div');
+clACMenu.className = 'ka-sel-menu cl-ac-menu';
+clACMenu.setAttribute('role','listbox');
+document.body.appendChild(clACMenu);
+let clACInput = null;
+const clLaOConcept = inp => /tên concept/i.test(inp?.dataset.label||'');
+function clACPos(){
+  if(!clACInput) return;
+  const r = clACInput.getBoundingClientRect();
+  clACMenu.style.minWidth = r.width+'px';
+  clACMenu.style.maxHeight = Math.min(260, innerHeight-16)+'px';
+  clACMenu.style.left = Math.min(Math.max(8,r.left), innerWidth-clACMenu.offsetWidth-8)+'px';
+  const h = clACMenu.offsetHeight;
+  clACMenu.style.top = (r.bottom+4+h>innerHeight-8 ? Math.max(8,r.top-h-4) : r.bottom+4)+'px';
+}
+function clACRender(){
+  if(!clACInput) return;
+  const q = boDau(clACInput.value.trim());
+  const ds = bqDsChon().filter(c=> !q || boDau(c.title).includes(q) || boDau(c.model).includes(q)).slice(0,60);
+  if(!ds.length){ clACClose(); return; }
+  clACMenu.innerHTML = ds.map((c,i)=>`<div class="ka-sel-opt cl-ac-opt" data-i="${i}"><span>${esc(c.title)}</span>${giaSo(c)?`<small>${bqTien(giaSo(c))}đ</small>`:''}</div>`).join('');
+  clACMenu._ds = ds;
+  clACMenu.classList.add('open');
+  clACPos();
+}
+function clACClose(){ clACMenu.classList.remove('open'); clACMenu._ds=null; }
+function clDatTong(){
+  const tong = [...$('clFields').querySelectorAll('.cl-in[data-scope="block"]')].filter(clLaOConcept)
+    .reduce((s,i)=> s + (+i.dataset.gia||0), 0);
+  if(!tong) return;
+  const o = [...$('clFields').querySelectorAll('.cl-in[data-scope="common"]')].find(i=>/tổng chi phí/i.test(i.dataset.label));
+  if(o) o.value = bqTien(tong);
+}
+function clACChon(c){
+  if(!clACInput) return;
+  clACInput.value = c.title;
+  clACInput.dataset.gia = giaSo(c) || '';
+  clDatTong(); clACClose(); clCapNhat();
+}
+clACMenu.addEventListener('mousedown', e=>{
+  const o = e.target.closest('.cl-ac-opt'); if(!o) return;
+  e.preventDefault();                                   // giu focus, khong dong truoc khi chon
+  const c = clACMenu._ds?.[+o.dataset.i]; if(c) clACChon(c);
+});
+function clACAttach(inp){
+  if(inp.dataset.acGan) return; inp.dataset.acGan='1';
+  inp.setAttribute('autocomplete','off');
+  inp.addEventListener('focus', ()=>{ clACInput=inp; clACRender(); });
+  inp.addEventListener('input', ()=>{ clACInput=inp; inp.dataset.gia=''; clACRender(); });
+  inp.addEventListener('blur', ()=> setTimeout(()=>{ if(clACInput===inp) clACClose(); }, 150));
+}
+window.addEventListener('scroll', ()=>{ if(clACMenu.classList.contains('open')) clACPos(); }, true);
+window.addEventListener('resize', ()=>{ if(clACMenu.classList.contains('open')) clACPos(); });
 function clBind(){
   $('clFields').querySelectorAll('.cl-in').forEach(inp=>{
     const tien = laOTien(inp.dataset.label);
     if(tien) inp.setAttribute('inputmode','numeric');
     inp.oninput = ()=>{ if(tien) chamNghin(inp); clCapNhat(); };
     if(inp.dataset.kieu==='datetime') inp.onclick = ()=>dtpMo(inp);   // o ngay-gio: mo lich tu ve (tong kem/vang)
+    if(clLaOConcept(inp)) clACAttach(inp);                            // o ten concept: goi y tu danh sach Concept
   });
   $('clFields').querySelectorAll('.cl-xoa').forEach(b=>b.onclick=()=>{
     const gs = $('clGroups').querySelectorAll('.cl-group');
@@ -2949,6 +3007,7 @@ function clTaiMotAnh(src, ten){ const a=document.createElement('a'); a.href=src;
 /* Moi anh 2 nut: Copy (ghi anh vao clipboard) / Tai (tai file ve may) — Ky Anh 08/11 */
 document.querySelectorAll('.cl-anh').forEach(fig=>{
   const src = fig.dataset.src, ten = fig.dataset.ten || 'ky-anh-studio-anh.webp';
+  fig.querySelector('img').onclick = ()=>clCopyAnh([src], fig);   // bam vao hinh = copy luon cho tien (Ky Anh 08/11)
   fig.querySelector('.cl-btn-copy').onclick = (e)=>{ e.stopPropagation(); clCopyAnh([src], e.currentTarget); };
   fig.querySelector('.cl-btn-tai').onclick = (e)=>{ e.stopPropagation(); clTaiMotAnh(src, ten); showToast('Đang tải ảnh về máy'); };
 });
