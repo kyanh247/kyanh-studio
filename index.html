@@ -303,6 +303,11 @@
   .sync-dot.online { background: #4caf50; box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
   .sync-dot.offline { background: var(--gold); box-shadow: 0 0 0 3px rgba(184,149,110,0.15); }
   .sync-dot.local { background: #c0392b; }
+  /* Badge dem nguoc Tet — mot dong nho, nen kem, vien + chu vang dong, khong sac so */
+  .tet-bar { text-align: center; margin-top: -0.5rem; margin-bottom: 1rem; }
+  .tet-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.28rem 0.78rem; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.02em; color: var(--gold-dark); background: rgba(184,149,110,0.08); border: 1px solid rgba(184,149,110,0.32); border-radius: 999px; }
+  .tet-badge .tet-so { font-weight: 700; }
+  .tet-badge.tet-vui { background: var(--gold); border-color: var(--gold); color: #fff; }
 
   .toolbar { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; }
   .search-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
@@ -591,6 +596,9 @@
     <span class="sync-dot" id="syncDot"></span>
     <span id="syncText">Đang kết nối…</span>
   </div>
+
+  <!-- Dem nguoc den Tet am lich — nho gon, tong kem + vang dong -->
+  <div class="tet-bar" id="tetBar" hidden><span class="tet-badge" id="tetBadge"></span></div>
 
   <div id="viewReply">
   <div class="toolbar">
@@ -1295,8 +1303,37 @@ function datSoCot(n){
 function napSoCot(){ datSoCot(LS.get(COT_KEY)==='3' ? 3 : 2); }
 $('btnCot').querySelectorAll('button').forEach(b=>b.onclick=()=>datSoCot(+b.dataset.cot));
 
+/* ---- Dem nguoc den Tet am lich ----
+   Bang ngay mung 1 am lich (gio VN, UTC+7). Tu chuyen sang nam sau khi qua Tet.
+   Trong 3 ngay Tet (mung 1->3) hien loi chuc thay cho so dem. */
+const TET_NGAY = ['2027-02-06','2028-01-26','2029-02-13','2030-02-02','2031-01-23',
+  '2032-02-11','2033-01-31','2034-02-19','2035-02-08','2036-01-28','2037-02-15'];
+function capNhatTet(){
+  const bar = $('tetBar'), badge = $('tetBadge');
+  if(!bar || !badge) return;
+  const vn = new Date(Date.now() + 7*3600*1000);               // gio VN
+  const hnay = Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate());
+  let tetTiep = null;
+  for(const s of TET_NGAY){
+    const [y,m,d] = s.split('-').map(Number), t = Date.UTC(y, m-1, d);
+    if(hnay >= t && hnay <= t + 2*86400000){                   // dang trong Tet (mung 1->3)
+      bar.hidden = false; badge.classList.add('tet-vui');
+      badge.textContent = '🌸 Chúc Mừng Năm Mới!';
+      return;
+    }
+    if(hnay < t){ tetTiep = t; break; }
+  }
+  badge.classList.remove('tet-vui');
+  if(tetTiep == null){ bar.hidden = true; return; }            // het bang -> an di
+  const con = Math.round((tetTiep - hnay)/86400000);
+  bar.hidden = false;
+  badge.innerHTML = con <= 1
+    ? '🌸 Ngày mai là Tết!'
+    : `🌸 Còn <span class="tet-so">${con}</span> ngày nữa đến Tết`;
+}
+
 async function init() {
-  loadRecent(); loadDem(); napSoCot();
+  loadRecent(); loadDem(); napSoCot(); capNhatTet(); setInterval(capNhatTet, 3600000);
   napSheetConcept();   // chay nen, khong cho
   activeCat = recent.length ? 'recent' : 'chot-don';   // may moi chua copy gi thi khoi man hinh trong
   // Có Firebase thì quyền quản trị do đăng nhập quyết định.
