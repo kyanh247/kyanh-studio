@@ -319,8 +319,7 @@
   .cl-chot-dv { color: var(--muted); }
   .cl-chot-2 { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; margin-top: 0.6rem; }
   .cl-chot-f { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--muted); }
-  .cl-chot-ngay, .cl-chot-coc { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; color: var(--ink); padding: 0.32rem 0.5rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-  .cl-chot-coc { width: 8.5rem; }
+  .cl-chot-ngay { font-family: 'Montserrat', sans-serif; font-size: 0.82rem; color: var(--ink); padding: 0.32rem 0.5rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
   .cl-chot-ghi { font-size: 0.68rem; color: var(--muted); margin-top: 0.5rem; min-height: 0.9rem; }
   .cl-chot-ghi:not(:empty) { color: var(--gold-dark); }
 
@@ -679,7 +678,6 @@
         </div>
         <div class="cl-chot-2">
           <label class="cl-chot-f">Ngày <input type="date" id="clChotNgayInput" class="cl-chot-ngay"></label>
-          <label class="cl-chot-f">Tổng cọc <input type="text" inputmode="numeric" id="clChotCoc" class="cl-chot-coc" placeholder="0"></label>
         </div>
         <div class="cl-chot-ghi" id="clChotGhi"></div>
       </div>
@@ -1385,87 +1383,77 @@ function capNhatTet(){
 }
 
 /* ---- O "lich da chot" (chi quan tri) ----
-   Tach 2 noi (Ky Anh chon 09/11 — tien coc khong duoc cong khai):
-   - `chotlich/<YYYY-MM-DD>`       = { so, at }   — ai cung doc (bao cao Telegram doc khong dang nhap)
-   - `chotlich-rieng/<YYYY-MM-DD>` = { coc, at }  — chi quan tri doc/ghi
-   Doc/ghi bi tu choi (Rules chua mo) -> tam luu localStorage + bao nho.
-   Du lieu cu (coc nam trong chotlich): quan tri mo app thi tu chep sang chotlich-rieng, ghi xong
-   (may chu xac nhan) moi xoa field coc o ban cong khai. Chep that bai thi giu nguyen, khong xoa. */
-const CL_CHOT_LS = 'kyanh-reply-chotlich', CL_RIENG = 'chotlich-rieng';
-let clChotKey = null, clChotData = { so:0, coc:0 }, clChotServer = null, clChotTimer = 0;
-let clChotRieng = null, clChotDaChuyen = false;   // clChotRieng: doc/ghi duoc chotlich-rieng chua
+   Ky Anh chon 09/11 (phuong an a): chi dem so lich chot moi ngay, KHONG luu tien coc.
+   - `chotlich/<YYYY-MM-DD>` = { so, at } — ai cung doc (bao cao Telegram doc khong dang nhap),
+     chi quan tri ghi; Rules chi cho phep dung 2 field so, at.
+   - Du lieu cu con field `coc` (vd 2026-11-08): quan tri mo app thi tu xoa field do (Ky Anh dong y).
+   Doc/ghi bi tu choi -> tam luu localStorage + bao nho. */
+const CL_CHOT_LS = 'kyanh-reply-chotlich';
+let clChotKey = null, clChotData = { so:0 }, clChotServer = null, clChotTimer = 0, clChotDaDon = false;
 let clChotTay = false;   // true = Ky Anh tu chon ngay khac; false = luon theo "hom nay" (qua dem tu doi ngay — loi 09/11)
 function clNgayVN(){ const vn = new Date(Date.now() + 7*3600*1000);
   return vn.getUTCFullYear()+'-'+String(vn.getUTCMonth()+1).padStart(2,'0')+'-'+String(vn.getUTCDate()).padStart(2,'0'); }
-function clChotLS(){ try { return JSON.parse(LS.get(CL_CHOT_LS)||'{}')||{}; } catch(e){ return {}; } }
+/* localStorage: bo tien coc cu (ban xem thu 08/11 tung luu coc) — chi giu so, at */
+function clChotLS(){
+  let m = {};
+  try { m = JSON.parse(LS.get(CL_CHOT_LS)||'{}')||{}; } catch(e){ return {}; }
+  let doi = false;
+  Object.values(m).forEach(v=>{ if(v && 'coc' in v){ delete v.coc; doi = true; } });
+  if(doi) LS.set(CL_CHOT_LS, JSON.stringify(m));
+  return m;
+}
 function clChotNhan(key){ if(key===clNgayVN()) return 'Hôm nay'; const p=key.split('-'); return `Ngày ${p[2]}/${p[1]}`; }
 function clChotVe(){
   if(!$('clChotHop')) return;
   $('clChotLb').textContent = clChotNhan(clChotKey);
   $('clChotSo').textContent = clChotData.so||0;
-  $('clChotCoc').value = clChotData.coc ? bqTien(clChotData.coc) : '';
-  $('clChotGhi').innerHTML = clChotGhiChu();
+  $('clChotGhi').innerHTML = clChotServer===false
+    ? '⚠ Bản xem thử — đang lưu tạm trên máy này, chưa lên máy chủ.' : '';
 }
-function clChotGhiChu(){
-  if(clChotServer===false) return '⚠ Bản xem thử — đang lưu tạm trên máy này, chưa lên máy chủ.';
-  if(clChotRieng===false) return '⚠ Số lịch đã lên máy chủ. Tiền cọc tạm lưu trên máy này (chưa mở chỗ lưu riêng).';
-  return '';
-}
-/* Chep coc cu tu chotlich (cong khai) sang chotlich-rieng — chay 1 lan moi lan mo app, chi khi doc/ghi duoc ca 2.
-   Thu tu an toan: ghi rieng (cho may chu xac nhan) -> roi moi xoa field coc o ban cong khai. */
-async function clChotChuyenCu(){
-  if(clChotDaChuyen || !fb || !isAdmin || !clChotServer || !clChotRieng) return;
-  clChotDaChuyen = true;
+/* Xoa field `coc` cu o moi ngay con sot (chay 1 lan moi lan mo app). Doc sau khi xoa chi con so, at -> khop Rules hasOnly(['so','at']). */
+async function clChotDonCoc(){
+  if(clChotDaDon || !fb || !isAdmin || !clChotServer) return;
+  clChotDaDon = true;
   try {
     const ds = await fb.getDocs(fb.collection(fb.db, 'chotlich'));
-    for(const d of ds.docs){
-      const v = d.data(); if(!('coc' in v)) continue;
-      const rDoc = fb.doc(fb.db, CL_RIENG, d.id);
-      const r = await fb.getDoc(rDoc);
-      if(!(r.exists() && 'coc' in r.data()))   // chua co ban rieng thi chep sang; co roi thi giu ban rieng
-        await fb.setDoc(rDoc, { coc: +v.coc||0, at: Date.now() }, { merge:true });
-      await fb.updateDoc(fb.doc(fb.db, 'chotlich', d.id), { coc: fb.deleteField() });
-    }
-  } catch(e){ clChotDaChuyen = false; }   // that bai -> giu nguyen du lieu, lan mo sau thu lai
+    for(const d of ds.docs)
+      if('coc' in d.data()) await fb.updateDoc(fb.doc(fb.db, 'chotlich', d.id), { coc: fb.deleteField() });
+  } catch(e){ clChotDaDon = false; }   // that bai -> lan mo sau thu lai
 }
 async function clChotTai(){
   if(!$('clChotHop')) return;
   if(!clChotKey || !clChotTay) clChotKey = clNgayVN();
   $('clChotNgayInput').value = clChotKey;
-  const ls = clChotLS()[clChotKey] || {};
-  let pub = null, rie = null;
   if(fb && isAdmin){
-    try { const s = await fb.getDoc(fb.doc(fb.db,'chotlich', clChotKey)); pub = s.exists() ? s.data() : {}; clChotServer = true; }
-    catch(e){ clChotServer = false; }   // Rules chua mo -> tam luu may
-    try { const s = await fb.getDoc(fb.doc(fb.db, CL_RIENG, clChotKey)); rie = s.exists() ? s.data() : {}; clChotRieng = true; }
-    catch(e){ clChotRieng = false; }
-  } else { clChotServer = false; clChotRieng = false; }
-  const so  = pub ? +pub.so||0 : +ls.so||0;
-  const coc = (rie && 'coc' in rie) ? +rie.coc||0 : (pub && 'coc' in pub) ? +pub.coc||0 : +ls.coc||0;
-  clChotData = { so, coc }; clChotVe();
-  if(pub && 'coc' in pub) clChotChuyenCu();
+    try {
+      const s = await fb.getDoc(fb.doc(fb.db,'chotlich', clChotKey));
+      const v = s.exists() ? s.data() : {};
+      clChotServer = true; clChotData = { so:+v.so||0 }; clChotVe();
+      clChotDonCoc();
+      return;
+    } catch(e){ clChotServer = false; }   // Rules chua mo -> tam luu may
+  } else clChotServer = false;
+  const v = clChotLS()[clChotKey] || {};
+  clChotData = { so:+v.so||0 }; clChotVe();
 }
 function clChotLuu(){
   clearTimeout(clChotTimer);
   clChotTimer = setTimeout(async ()=>{
-    const at = Date.now(), so = clChotData.so||0, coc = clChotData.coc||0, ghi = $('clChotGhi');
-    let okSo = false, okCoc = false;
+    const rec = { so: clChotData.so||0, at: Date.now() }, ghi = $('clChotGhi');
     if(clChotServer && fb){
-      try { await fb.setDoc(fb.doc(fb.db,'chotlich', clChotKey), { so, at }, { merge:true }); okSo = true; }   // KHONG ghi coc vao ban cong khai
-      catch(e){ clChotServer = false; }
+      try {
+        // Ghi de ca doc (khong merge) -> chi con so, at; dong thoi xoa luon coc cu neu con
+        await fb.setDoc(fb.doc(fb.db,'chotlich', clChotKey), rec);
+        ghi.textContent = '✓ Đã lưu lên máy chủ';
+        setTimeout(()=>{ if(clChotServer) ghi.textContent=''; }, 1500); return;
+      } catch(e){ clChotServer = false; }
     }
-    if(clChotRieng && fb){
-      try { await fb.setDoc(fb.doc(fb.db, CL_RIENG, clChotKey), { coc, at }, { merge:true }); okCoc = true; }
-      catch(e){ clChotRieng = false; }
-    }
-    if(!okSo || !okCoc){ const m = clChotLS(); m[clChotKey] = { so, coc, at }; LS.set(CL_CHOT_LS, JSON.stringify(m)); }
-    if(okSo && okCoc){
-      ghi.textContent = '✓ Đã lưu lên máy chủ';
-      setTimeout(()=>{ if(clChotServer && clChotRieng) ghi.textContent=''; }, 1500);
-    } else ghi.innerHTML = clChotGhiChu();
+    const m = clChotLS(); m[clChotKey] = rec; LS.set(CL_CHOT_LS, JSON.stringify(m));
+    ghi.innerHTML = '⚠ Bản xem thử — đã lưu tạm trên máy này, chưa lên máy chủ.';
   }, 400);
 }
 function clChotWire(){
+  clChotLS();   // don tien coc cu trong localStorage ngay khi mo app
   $('clChotTru').onclick = ()=>{ clChotData.so = Math.max(0,(clChotData.so||0)-1); $('clChotSo').textContent = clChotData.so; clChotLuu(); };
   $('clChotCong').onclick = ()=>{ clChotData.so = (clChotData.so||0)+1; $('clChotSo').textContent = clChotData.so; clChotLuu(); };
   $('clChotNgayInput').onchange = e=>{ clChotKey = e.target.value || clNgayVN(); clChotTay = clChotKey !== clNgayVN(); clChotTai(); };
@@ -1473,7 +1461,6 @@ function clChotWire(){
   document.addEventListener('visibilitychange', ()=>{
     if(!document.hidden && isAdmin && !clChotTay && clChotKey && clChotKey !== clNgayVN()) clChotTai();
   });
-  $('clChotCoc').oninput = e=>{ const n = bgSo(e.target.value)||0; clChotData.coc = n; e.target.value = n ? bqTien(n) : ''; clChotLuu(); };
 }
 
 async function init() {
