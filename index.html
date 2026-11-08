@@ -1908,7 +1908,8 @@ function computeTiktokPrice(common){
    VD: tổng 5.000.000đ, cọc 2.000.000 → 3.000.000đ */
 const AUTO_REMAIN_LABEL='Còn lại';
 function computeRemain(common){
-  const so=v=>{ const d=String(v||'').replace(/[^0-9]/g,''); return d?parseInt(d,10):NaN; };
+  // Cong tung so ngan cach boi "+" (vd "2.990.000 + 500.000" = 3.490.000); khong co "+" thi la 1 so nhu cu
+  const so=v=>{ const ps=String(v||'').split('+').map(s=>s.replace(/[^0-9]/g,'')).filter(Boolean); return ps.length?ps.reduce((a,b)=>a+parseInt(b,10),0):NaN; };
   const tong=so(common['Tổng chi phí']), coc=so(common['Đã cọc']);
   if(!(tong>0)) return '';
   const lai=tong-(isNaN(coc)?0:coc);
@@ -1921,8 +1922,15 @@ const AUTO_LABELS=[AUTO_DISCOUNT_LABEL, AUTO_TIKTOK_LABEL, AUTO_REMAIN_LABEL];
 
 /* Ô nhập tiền: gõ 5000000 thì tự thành 5.000.000, con trỏ ở nguyên chỗ đang gõ */
 function laOTien(lb){ return /giá|chi phí|cọc|tiền/i.test(lb||'') && !AUTO_LABELS.includes(lb); }
-function chamNghin(inp){
-  const cu=inp.value, vt=inp.selectionStart==null?cu.length:inp.selectionStart;
+function chamNghin(inp, giuCong){
+  const cu=inp.value;
+  // Giu dau "+" (vd o Tong chi phi: "2.990.000 + 500.000") -> cham nghin tung nhom, con tro ve cuoi
+  if(giuCong && cu.includes('+')){
+    const moi = cu.split('+').map(s=>s.replace(/[^0-9]/g,'').replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.')).join(' + ');
+    if(moi!==cu){ inp.value=moi; try{ inp.setSelectionRange(moi.length,moi.length); }catch(e){} }
+    return;
+  }
+  const vt=inp.selectionStart==null?cu.length:inp.selectionStart;
   const soTruoc=cu.slice(0,vt).replace(/[^0-9]/g,'').length;
   const moi=cu.replace(/[^0-9]/g,'').replace(/\B(?=([0-9]{3})+(?![0-9]))/g,'.');
   if(moi===cu) return;
@@ -3067,6 +3075,8 @@ function clACRender(){
 }
 function clACClose(){ clACMenu.classList.remove('open'); clACMenu._ds=null; }
 const laOTong = inp => /tổng chi phí/i.test(inp?.dataset.label||'');
+/* Tong tien tu o "Tong chi phi": cong tung so ngan cach boi "+" (vd "2.990.000 + 500.000" = 3.490.000) */
+const tongBieuThuc = v => String(v||'').split('+').map(s=>s.replace(/[^\d]/g,'')).filter(Boolean).reduce((a,b)=>a+parseInt(b,10),0);
 /* Tong phu thu dang chon tren moi concept (chip giong tab Bao gia) */
 function clTongPhuThu(){
   return [...$('clFields').querySelectorAll('.cl-chip[aria-pressed="true"]')]
@@ -3109,7 +3119,7 @@ function clBind(){
   $('clFields').querySelectorAll('.cl-in').forEach(inp=>{
     const tien = laOTien(inp.dataset.label);
     if(tien) inp.setAttribute('inputmode','numeric');
-    inp.oninput = ()=>{ if(tien) chamNghin(inp); if(laOTong(inp)) inp.dataset.tay = inp.value.trim()?'1':''; clCapNhat(); };
+    inp.oninput = ()=>{ if(tien) chamNghin(inp, laOTong(inp)); if(laOTong(inp)) inp.dataset.tay = inp.value.trim()?'1':''; clCapNhat(); };
     if(inp.dataset.kieu==='datetime') inp.onclick = ()=>dtpMo(inp);   // o ngay-gio: mo lich tu ve (tong kem/vang)
     if(clLaOConcept(inp)) clACAttach(inp);                            // o ten concept: goi y tu danh sach Concept
   });
@@ -3154,7 +3164,8 @@ function clTin(){
   }).join('');
   let final = out;
   const phuDs = clPhuDaChon();
-  const tongNum = bgSo(common['Tổng chi phí']) || 0;
+  const tongStr = common['Tổng chi phí'] || '';
+  const tongNum = tongBieuThuc(tongStr);
   // Gia tung concept, theo thu tu nhom (chi nhung concept da chon co gia)
   const giaDs = [...$('clFields').querySelectorAll('.cl-group')]
     .map(g => +([...g.querySelectorAll('.cl-in[data-scope="block"]')].find(clLaOConcept)?.dataset.gia || 0))
@@ -3168,6 +3179,9 @@ function clTin(){
     phuDs.forEach(p=>dong.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
     final = final.replace(/(Tổng chi phí:[^\n]*)/, `$1\n${dong.join('\n')}`);
     if(phuDs.some(p=>p.id==='be')) final += `\n\n${BQ_GHI_EM_BE}`;
+  } else if(/\+/.test(tongStr) && tongNum > 0){
+    // Ky Anh go bieu thuc cong vao o Tong (vd "2.990.000 + 500.000") -> hien "expr = tong" (Ky Anh 08/11)
+    final = final.replace(/(Tổng chi phí:)[^\n]*/, `$1 ${tongStr.replace(/đ/gi,'').trim()} = ${bqTien(tongNum)}đ`);
   } else if(giaDs.length >= 2 && giaDs.reduce((a,b)=>a+b,0) === tongNum){
     // >=2 concept co gia va cong lai dung tong -> hien phep cong: a + b = tong (Ky Anh 08/11)
     const bieuThuc = giaDs.map(n=>bqTien(n)+'đ').join(' + ') + ' = ' + bqTien(tongNum) + 'đ';
