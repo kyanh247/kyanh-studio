@@ -1145,6 +1145,21 @@ function loadDem(){
   try { demCopy = JSON.parse(LS.get(DEM_KEY) || '{}') || {}; } catch(e){ demCopy = {}; }
   try { demNgay = JSON.parse(LS.get(DEM_NGAY_KEY) || '{}') || {}; } catch(e){ demNgay = {}; }
 }
+/* Chong dem trung + chan bam loan — chi anh huong BO DEM, copy luon chay binh thuong.
+   - Bam lon 2 lan cung mot muc trong 2s -> lan sau khong cong them (Ky Anh hay click doi).
+   - Bam loan: >8 luot duoc dem trong 10s -> tam ngung dem 30s (copy van chay). */
+const DEDUP_MS = 2000, BURST_N = 8, BURST_MS = 10000, BURST_NGHI = 30000;
+let demLanCuoi = {};   // id -> moc dem gan nhat
+let demMoc = [];       // cac moc da dem gan day (cho chan bam loan)
+let demTamNgung = 0;   // dem bi tam ngung toi moc nay
+function demDuocCong(id){
+  const now = Date.now();
+  if (now < demTamNgung) return false;                                  // dang trong 30s tam ngung
+  if (demLanCuoi[id] && now - demLanCuoi[id] < DEDUP_MS) return false;  // bam lon 2 lan
+  demMoc = demMoc.filter(t => now - t < BURST_MS);
+  if (demMoc.length >= BURST_N){ demTamNgung = now + BURST_NGHI; return false; }  // bam loan -> nghi 30s
+  demMoc.push(now); demLanCuoi[id] = now; return true;
+}
 /* Concept duoc copy cho kenh nao (fb / tt / chung) — dem theo thang: "d-2026-10-n-fb".
    Mau tra loi khong can: kenh suy ra tu muc cua mau (Tu Van TikTok, Tu Van FB/Zalo...). Bat dau dem tu 25/10/2026. */
 function tangKenh(k){
@@ -1153,6 +1168,7 @@ function tangKenh(k){
   if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
 }
 function tangDem(id){
+  if(!demDuocCong(id)) return false;   // bam lon 2 lan / bam loan -> khong cong vao bo dem
   const d = demCopy[id] || { n: 0 };
   demCopy[id] = { n: d.n + 1, at: Date.now() };
   LS.set(DEM_KEY, JSON.stringify(demCopy));
@@ -1168,6 +1184,15 @@ function tangDem(id){
   if (fb) for (const k of [id, ngay, thang])
     fb.setDoc(fb.doc(fb.db, 'thongke', k), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
   if (activeView==='thongke') renderThongKe();
+  return true;
+}
+/* Dem luot dung Template moi ngay (tab Template: Chot lich / Bao gia).
+   Ban ghi theo ngay: "d-YYYY-MM-DD-chot" va "d-YYYY-MM-DD-baogia" — lot Rules ^[cd]-[a-z0-9-]{1,80}$.
+   Cung ap chong trung 2s (khoa rieng tung loai). */
+function demTemplate(loai){
+  if(!demDuocCong('tpl-'+loai)) return;
+  const id = maNgay(new Date()) + '-' + loai;   // vd: d-2026-11-08-chot
+  if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
 }
 /* So dem chung ca studio — collection `thongke`, moi mau mot ban ghi { n, at }.
    demChung = null khi chua doc duoc (may don, mat mang lan dau, hoac Rules chua mo) -> tam hien so cua may nay.
@@ -2798,7 +2823,7 @@ $('bqThemCon').onclick = ()=>{ bqVeDong(); bqCapNhat(); };
 $('bqLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền để làm báo giá mới?')) bqLamMoi(); };
 $('bqCopy').onclick = async()=>{
   bqCapNhat();
-  if(await copyText($('bqXem').value)) showToast('Đã copy tin báo giá'); else showToast('Không copy được — thử lại nhé', true);
+  if(await copyText($('bqXem').value)){ demTemplate('baogia'); showToast('Đã copy tin báo giá'); } else showToast('Không copy được — thử lại nhé', true);
 };
 
 /* ================= Chot lich: form dien nhanh nhung thang trong tab =================
@@ -3012,7 +3037,7 @@ function clTin(){
   return final.replace(/\n{3,}/g,'\n\n').trim();
 }
 $('clLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền?')) clMo(); };
-$('clCopy').onclick = async()=>{ clCapNhat(); if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };
+$('clCopy').onclick = async()=>{ clCapNhat(); if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); demTemplate('chot'); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };
 
 /* Copy anh luu y: ve anh (giu kich thuoc goc) ra PNG roi ghi vao clipboard.
    Clipboard chi nhan 1 anh -> "copy ca 2" la ghep doc thanh 1 anh. */
@@ -3230,8 +3255,8 @@ function moChonLink(c){
         b.classList.add('vua-copy');
         b.querySelector('.lk-phu').textContent = '✓ Đã copy';
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
-        tangDem(idConcept(c.title));
-        tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
+        if(tangDem(idConcept(c.title)))   // chi dem kenh khi luot nay duoc cong (khong phai bam lon 2 lan)
+          tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
         setTimeout(()=>lkOverlay.classList.remove('show'), 650);
       } else showToast('Không copy được', true);
     };
