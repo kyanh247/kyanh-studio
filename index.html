@@ -2817,6 +2817,8 @@ function clGroupHTML(label, fields){
       <button type="button" class="cl-xoa" title="Xoá">✕ Xoá</button></div>
     ${fields.map(lb=>`<div class="f-group"><label class="f-label">${esc(lb)}</label>
       <input type="text" class="f-input cl-in" data-scope="block" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`).join('')}
+    <div class="f-group"><label class="f-label">Phụ thu (bấm để thêm)</label>
+      <div class="bq-chip-ds">${BQ_PHU.map(p=>`<button type="button" class="bq-chip cl-chip" data-phu="${p.id}" aria-pressed="false">${p.nut} <small>+${p.ngan}</small></button>`).join('')}</div></div>
   </div>`;
 }
 /* O "Ngay & Gio": dung bo chon ngay-gio (datetime-local) cho khoi go tay, roi ghep thanh chu
@@ -2912,18 +2914,30 @@ function clACRender(){
   clACPos();
 }
 function clACClose(){ clACMenu.classList.remove('open'); clACMenu._ds=null; }
+const laOTong = inp => /tổng chi phí/i.test(inp?.dataset.label||'');
+/* Tong phu thu dang chon tren moi concept (chip giong tab Bao gia) */
+function clTongPhuThu(){
+  return [...$('clFields').querySelectorAll('.cl-chip[aria-pressed="true"]')]
+    .reduce((s,b)=> s + (BQ_PHU.find(p=>p.id===b.dataset.phu)?.tien || 0), 0);
+}
+function clPhuDaChon(){
+  return [...$('clFields').querySelectorAll('.cl-chip[aria-pressed="true"]')]
+    .map(b=>BQ_PHU.find(p=>p.id===b.dataset.phu)).filter(Boolean);
+}
+/* Tu dien Tong chi phi = gia cac concept + phu thu. Nguoi dung tu nhap thi khong de len (data-tay). */
 function clDatTong(){
-  const tong = [...$('clFields').querySelectorAll('.cl-in[data-scope="block"]')].filter(clLaOConcept)
+  const o = [...$('clFields').querySelectorAll('.cl-in[data-scope="common"]')].find(laOTong);
+  if(!o || o.dataset.tay) return;
+  const base = [...$('clFields').querySelectorAll('.cl-in[data-scope="block"]')].filter(clLaOConcept)
     .reduce((s,i)=> s + (+i.dataset.gia||0), 0);
-  if(!tong) return;
-  const o = [...$('clFields').querySelectorAll('.cl-in[data-scope="common"]')].find(i=>/tổng chi phí/i.test(i.dataset.label));
-  if(o) o.value = bqTien(tong);
+  const tong = base + clTongPhuThu();
+  o.value = tong ? bqTien(tong) : '';
 }
 function clACChon(c){
   if(!clACInput) return;
   clACInput.value = c.title;
   clACInput.dataset.gia = giaSo(c) || '';
-  clDatTong(); clACClose(); clCapNhat();
+  clACClose(); clCapNhat();
 }
 clACMenu.addEventListener('mousedown', e=>{
   const o = e.target.closest('.cl-ac-opt'); if(!o) return;
@@ -2943,9 +2957,13 @@ function clBind(){
   $('clFields').querySelectorAll('.cl-in').forEach(inp=>{
     const tien = laOTien(inp.dataset.label);
     if(tien) inp.setAttribute('inputmode','numeric');
-    inp.oninput = ()=>{ if(tien) chamNghin(inp); clCapNhat(); };
+    inp.oninput = ()=>{ if(tien) chamNghin(inp); if(laOTong(inp)) inp.dataset.tay = inp.value.trim()?'1':''; clCapNhat(); };
     if(inp.dataset.kieu==='datetime') inp.onclick = ()=>dtpMo(inp);   // o ngay-gio: mo lich tu ve (tong kem/vang)
     if(clLaOConcept(inp)) clACAttach(inp);                            // o ten concept: goi y tu danh sach Concept
+  });
+  $('clFields').querySelectorAll('.cl-chip').forEach(b=>b.onclick=()=>{   // phu thu: bam la cong vao Tong + hien o Thanh toan
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')==='true' ? 'false' : 'true');
+    clCapNhat();
   });
   $('clFields').querySelectorAll('.cl-xoa').forEach(b=>b.onclick=()=>{
     const gs = $('clGroups').querySelectorAll('.cl-group');
@@ -2953,7 +2971,7 @@ function clBind(){
     b.closest('.cl-group').remove(); clDanhSo(); clCapNhat();
   });
 }
-function clCapNhat(){ $('clXem').value = clTin(); }
+function clCapNhat(){ clDatTong(); $('clXem').value = clTin(); }
 function clTin(){
   if(!clState) return '';
   const common = {};
@@ -2978,7 +2996,20 @@ function clTin(){
       return inner.replace(FIELD_RE,(_,lb)=>{ lb=lb.trim(); if(lb==='#') return String(gi+1); return sub(vals,lb); });
     }).join('\n\n');
   }).join('');
-  return out.replace(/\n{3,}/g,'\n\n').trim();
+  // Co phu thu -> chen chi tiet vao ngay duoi dong "Tong chi phi" (giong tab Bao gia)
+  let final = out;
+  const phuDs = clPhuDaChon();
+  if(phuDs.length){
+    const tongNum = bgSo(common['Tổng chi phí']) || 0;
+    const phuTong = phuDs.reduce((s,p)=>s+p.tien,0);
+    const goiChinh = tongNum - phuTong;
+    const dong = [];
+    if(goiChinh>0) dong.push(`* Gói chụp chính: ${bqTien(goiChinh)}đ`);
+    phuDs.forEach(p=>dong.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
+    final = final.replace(/(Tổng chi phí:[^\n]*)/, `$1\n${dong.join('\n')}`);
+    if(phuDs.some(p=>p.id==='be')) final += `\n\n${BQ_GHI_EM_BE}`;
+  }
+  return final.replace(/\n{3,}/g,'\n\n').trim();
 }
 $('clLamMoi').onclick = ()=>{ if(confirm('Xoá hết thông tin đang điền?')) clMo(); };
 $('clCopy').onclick = async()=>{ clCapNhat(); if(await copyText($('clXem').value)){ if(clState?.item) addRecent(clState.item.id); showToast('Đã copy tin chốt lịch'); } else showToast('Không copy được — thử lại nhé', true); };
