@@ -100,14 +100,18 @@
   .cl-them { width: 100%; padding: 0.7rem; margin-bottom: 0.4rem; background: #fff; border: 1px dashed var(--gold); border-radius: 10px; color: var(--gold-dark); font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
   /* Anh luu y gui kem trong muc Chot lich */
   .cl-anh-ds { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }   /* 2 anh luon nam chung 1 hang, ke ca dien thoai (Ky Anh 02/11) */
-  .cl-anh { position: relative; margin: 0; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; transition: all 0.2s ease; }
+  .cl-anh { position: relative; margin: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; transition: all 0.2s ease; }
   .cl-anh:hover { border-color: var(--gold); box-shadow: 0 4px 14px rgba(184,149,110,0.22); }
   .cl-anh img { display: block; width: 100%; height: auto; }
-  .cl-anh figcaption { padding: 0.5rem 0.6rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: center; }
-  .cl-anh::after { content: "Bấm để copy"; position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.62rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 20px; opacity: 0; transition: opacity 0.2s ease; }
-  .cl-anh:hover::after { opacity: 1; }
+  .cl-anh figcaption { padding: 0.5rem 0.6rem 0.4rem; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-align: center; }
+  .cl-anh-nut { display: flex; gap: 0.4rem; padding: 0 0.5rem 0.55rem; margin-top: auto; }
+  .cl-btn { flex: 1; padding: 0.42rem 0.3rem; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; border: 1px solid var(--gold); }
+  .cl-btn-copy { background: var(--gold); color: #fff; }
+  .cl-btn-copy:hover { background: var(--gold-dark); border-color: var(--gold-dark); }
+  .cl-btn-tai { background: #fff; color: var(--gold-dark); }
+  .cl-btn-tai:hover { background: #F7F1E8; }
+  .cl-btn.copied { background: var(--gold-dark); border-color: var(--gold-dark); color: #fff; }
   .cl-anh.copied { border-color: var(--gold); }
-  .cl-anh.copied::after { content: "✓ Đã copy"; opacity: 1; background: var(--gold); }
 
   /* O chon ngay-gio: nut nhin nhu o nhap, mo ra lich tu ve */
   .cl-dt { display: flex; align-items: center; gap: 0.5rem; text-align: left; cursor: pointer; }
@@ -626,20 +630,39 @@
         <button type="button" class="btn-primary" id="clCopy">Copy tin nhắn</button>
       </div>
 
-      <!-- Anh luu y gui kem sau khi chot lich: bam tung anh de copy, hoac copy ca 2 -->
-      <div class="bq-muc">Ảnh gửi kèm — bấm vào ảnh để copy</div>
+      <!-- Anh gui kem sau khi chot lich: moi anh 2 nut (Copy / Tai) — thu tu: luu y VN -> tieng Anh -> gia -->
+      <div class="bq-muc">Ảnh gửi kèm</div>
       <div class="cl-anh-ds">
-        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-1.jpg">
-          <img src="assets/chot-lich/luu-y-1.jpg" alt="Một số lưu ý và chuẩn bị trước khi chụp" loading="lazy">
-          <figcaption>Lưu ý &amp; chuẩn bị trước khi chụp</figcaption>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-1.webp" data-ten="ky-anh-studio-luu-y.webp">
+          <img src="assets/chot-lich/luu-y-1.webp" alt="Một số lưu ý" loading="lazy">
+          <figcaption>Một số lưu ý</figcaption>
+          <div class="cl-anh-nut"><button type="button" class="cl-btn cl-btn-copy">📋 Copy</button><button type="button" class="cl-btn cl-btn-tai">⬇️ Tải</button></div>
         </figure>
-        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-2.jpg">
-          <img src="assets/chot-lich/luu-y-2.jpg" alt="Dịch vụ phụ trợ và lưu ý sau khi chụp" loading="lazy">
-          <figcaption>Dịch vụ phụ trợ &amp; lưu ý sau chụp</figcaption>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-2.webp" data-ten="ky-anh-studio-dich-vu-phu-tro.webp">
+          <img src="assets/chot-lich/luu-y-2.webp" alt="Dịch vụ phụ trợ" loading="lazy">
+          <figcaption>Dịch vụ phụ trợ</figcaption>
+          <div class="cl-anh-nut"><button type="button" class="cl-btn cl-btn-copy">📋 Copy</button><button type="button" class="cl-btn cl-btn-tai">⬇️ Tải</button></div>
         </figure>
-      </div>
-      <div class="bq-nut">
-        <button type="button" class="btn-primary" id="clTai2Anh">⬇️ Tải cả 2 ảnh (2 file riêng)</button>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-3.webp" data-ten="ky-anh-studio-important-information.webp">
+          <img src="assets/chot-lich/luu-y-3.webp" alt="Important information" loading="lazy">
+          <figcaption>Important information (EN)</figcaption>
+          <div class="cl-anh-nut"><button type="button" class="cl-btn cl-btn-copy">📋 Copy</button><button type="button" class="cl-btn cl-btn-tai">⬇️ Tải</button></div>
+        </figure>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-4.webp" data-ten="ky-anh-studio-additional-services.webp">
+          <img src="assets/chot-lich/luu-y-4.webp" alt="Additional services" loading="lazy">
+          <figcaption>Additional services (EN)</figcaption>
+          <div class="cl-anh-nut"><button type="button" class="cl-btn cl-btn-copy">📋 Copy</button><button type="button" class="cl-btn cl-btn-tai">⬇️ Tải</button></div>
+        </figure>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-5.webp" data-ten="ky-anh-studio-bang-gia-dich-vu.webp">
+          <img src="assets/chot-lich/luu-y-5.webp" alt="Bảng giá dịch vụ" loading="lazy">
+          <figcaption>Bảng giá dịch vụ</figcaption>
+          <div class="cl-anh-nut"><button type="button" class="cl-btn cl-btn-copy">📋 Copy</button><button type="button" class="cl-btn cl-btn-tai">⬇️ Tải</button></div>
+        </figure>
+        <figure class="cl-anh" data-src="assets/chot-lich/luu-y-6.webp" data-ten="ky-anh-studio-service-price-list.webp">
+          <img src="assets/chot-lich/luu-y-6.webp" alt="Service price list" loading="lazy">
+          <figcaption>Service price list (EN)</figcaption>
+          <div class="cl-anh-nut"><button type="button" class="cl-btn cl-btn-copy">📋 Copy</button><button type="button" class="cl-btn cl-btn-tai">⬇️ Tải</button></div>
+        </figure>
       </div>
     </div>
 
@@ -731,7 +754,7 @@
   </button>
   <button class="dock-item" data-view="baogia">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>
-    <span data-dam="Chốt &amp; Giá">Chốt &amp; Giá</span>
+    <span data-dam="Template">Template</span>
   </button>
   <button class="dock-item" data-view="thongke" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
@@ -1064,7 +1087,7 @@ const CAT_LABELS = {
 const PARENT_OF = { tuvan: 'tuvan', concept: 'concept' };
 
 const SEED_ITEMS = [
-  { cat:'chot-don', title:'📋 Xác nhận buổi chụp (điền nhanh)', content:'Studio gửi bạn thông tin buổi chụp sắp tới ạ\n{{Tên khách}}\n\n🗓️ CHI TIẾT BUỔI CHỤP\n[[Concept]]\nConcept {{#}}: {{Tên Concept}}\nNgày & Giờ: {{Ngày & Giờ}}\nMakeup: {{Makeup}}\nHair: {{Hair}}\n[[/Concept]]\n\n📍 ĐỊA ĐIỂM\nKỳ Anh Studio (Lầu 2) - 307/1A Nguyễn Văn Trỗi, Phường 1, Quận Tân Bình.\nHotline: 07.6535.6526 - Kỳ Anh\n\n💳 THANH TOÁN\nTổng chi phí: {{Tổng chi phí}}\nĐã đặt cọc: {{Đã cọc}} (Đã thanh toán)\nCòn lại: {{Còn lại}} (Thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp)' },
+  { cat:'chot-don', title:'📋 Xác nhận buổi chụp (điền nhanh)', content:'Studio gửi bạn thông tin buổi chụp sắp tới ạ\n{{Tên khách}}\n\n🗓️ CHI TIẾT BUỔI CHỤP\n[[Concept]]\nConcept {{#}}: {{Tên Concept}}\nNgày & Giờ: {{Ngày & Giờ}}\nMakeup: {{Makeup}}\nHair: {{Hair}}\nTrang phục: {{Trang phục}}\n[[/Concept]]\n\n📍 ĐỊA ĐIỂM\nKỳ Anh Studio (Lầu 2) - 307/1A Nguyễn Văn Trỗi, Phường Tân Sơn Hòa (Phường 1, Q. Tân Bình cũ), TP.HCM.\nHotline: 07.6535.6526 - Kỳ Anh\n\n💳 THANH TOÁN\nTổng chi phí: {{Tổng chi phí}}\nĐã đặt cọc: {{Đã cọc}} (Đã thanh toán)\nCòn lại: {{Còn lại}} (Thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp)' },
   { cat:'chot-don', title:'Xác nhận lịch chụp', content:'Dạ Kỳ Anh Studio xác nhận lịch chụp của mình như sau ạ:\n\n📸 Dịch vụ: [tên gói]\n🗓 Thời gian: [ngày] — [giờ]\n📍 Địa chỉ: 307/1A Nguyễn Văn Trỗi, P. Tân Sơn Hòa, TP.HCM\n\nMình vui lòng đến trước 10 phút để chuẩn bị nhé. Cảm ơn mình đã tin tưởng studio ạ! 🤍' },
   { cat:'chot-don', title:'Hướng dẫn đặt cọc giữ lịch', content:'Dạ để giữ lịch chụp, mình cọc trước 30% giá trị gói qua:\n\n🏦 [Tên ngân hàng] — [Số tài khoản]\n👤 Chủ TK: [Tên]\n📝 Nội dung CK: Tên + SĐT\n\nSau khi chuyển mình chụp màn hình gửi lại giúp em, studio sẽ xác nhận và chốt lịch ngay ạ!' },
   { cat:'chot-don', title:'Nhắc lịch trước 1 ngày', content:'Dạ em nhắc nhẹ mai là buổi chụp của mình tại Kỳ Anh Studio rồi nè 🥰\n\n🗓 [Ngày] — [giờ]\n📍 307/1A Nguyễn Văn Trỗi, P. Tân Sơn Hòa\n\nMình nhớ ngủ sớm, dưỡng da nhẹ và mang theo trang phục đã trao đổi nhé. Hẹn gặp mình ạ!' },
@@ -2230,7 +2253,7 @@ const TIEU_DE_VIEW = {
   reply: 'Nội bộ · Trả lời nhanh',
   link:  'Nội bộ · Concept',
   thongke: 'Nội bộ · Thống kê',
-  baogia: 'Nội bộ · Chốt & Báo giá',
+  baogia: 'Nội bộ · Template',
 };
 function doiView(v){
   if(v==='thongke' && !isAdmin) v='reply';
@@ -2784,12 +2807,14 @@ function clMauChot(){
   return ds.find(i=>/\[\[/.test(i.content||'')) || ds[0] || null;   // uu tien ban co khoi lap [[Concept]]
 }
 let clState = null, cbgHienTai = 'chot';
+/* Dien san vai muc hay lap lai cho do phai go tay (Ky Anh 08/11) — van sua lai duoc. */
+const CL_MAC_DINH = { 'Makeup':'Như concept mẫu', 'Hair':'Như concept mẫu', 'Trang phục':'Như concept mẫu' };
 function clGroupHTML(label, fields){
   return `<div class="cl-group">
     <div class="cl-group-dau"><b>${esc(label)} <span class="cl-so"></span></b>
       <button type="button" class="cl-xoa" title="Xoá">✕ Xoá</button></div>
     ${fields.map(lb=>`<div class="f-group"><label class="f-label">${esc(lb)}</label>
-      <input type="text" class="f-input cl-in" data-scope="block" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`).join('')}
+      <input type="text" class="f-input cl-in" data-scope="block" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`).join('')}
   </div>`;
 }
 /* O "Ngay & Gio": dung bo chon ngay-gio (datetime-local) cho khoi go tay, roi ghep thanh chu
@@ -2800,10 +2825,26 @@ function dinhDangNgayGio(v){
   const p = n=>String(n).padStart(2,'0');
   return `${d.getHours()}h${p(d.getMinutes())} - ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
 }
+/* Mau chot-don nam tren Firestore (Claude khong ghi duoc) -> chinh ngay trong code khi dung:
+   (1) them dong "Trang phuc" vao khoi Concept neu mau chua co;
+   (2) cap nhat dia chi moi (Phuong Tan Son Hoa). Ky Anh 08/11. */
+function clChinhMau(segs){
+  segs.forEach(seg=>{
+    if(seg.type==='text'){
+      seg.value = seg.value.replace('Phường 1, Quận Tân Bình', 'Phường Tân Sơn Hòa (Phường 1, Q. Tân Bình cũ), TP.HCM');
+    } else if(!/\{\{\s*Trang phục\s*\}\}/i.test(seg.inner)){
+      if(/Hair:\s*\{\{[^}]*\}\}/i.test(seg.inner))
+        seg.inner = seg.inner.replace(/(Hair:\s*\{\{[^}]*\}\})/i, '$1\nTrang phục: {{Trang phục}}');
+      else
+        seg.inner = seg.inner.replace(/\s*$/, '\nTrang phục: {{Trang phục}}');
+    }
+  });
+  return segs;
+}
 function clMo(){
   const item = clMauChot();
   if(!item){ $('clFields').innerHTML = '<p class="section-note">Chưa có mẫu “Xác nhận buổi chụp” để điền (thêm ở tab Trả lời nhanh, nhóm Chốt Đơn).</p>'; $('clXem').value=''; clState=null; return; }
-  const segs = parseTemplate(item.content||'');
+  const segs = clChinhMau(parseTemplate(item.content||''));
   clState = { segs, item, blockLabel:'', blockFields:[] };
   const seen = new Set(); let html='';
   segs.forEach(seg=>{
@@ -2819,7 +2860,7 @@ function clMo(){
               <span class="cl-dt-chu trong">Chọn ngày &amp; giờ</span>
             </button></div>`;
         } else {
-          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="text" class="f-input cl-in" data-scope="common" data-label="${esc(lb)}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
+          html += `<div class="f-group"><label class="f-label">${esc(lb)}</label><input type="text" class="f-input cl-in" data-scope="common" data-label="${esc(lb)}" value="${esc(CL_MAC_DINH[lb]||'')}" placeholder="Nhập ${esc(lb).toLowerCase()}..."></div>`;
         }
       });
     } else {
@@ -2900,18 +2941,17 @@ async function clCopyAnh(srcs, el){
   try{
     // Truyen Promise<Blob> cho ClipboardItem de giu "cu bam" (user gesture) khi ve anh mat thoi gian
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': clPngBlob(srcs) })]);
-    showToast(srcs.length>1 ? 'Đã copy cả 2 ảnh' : 'Đã copy ảnh');
+    showToast('Đã copy ảnh');
     if(el){ el.classList.add('copied'); setTimeout(()=>el.classList.remove('copied'),1500); }
   }catch(e){ console.warn('copy anh loi', e); showToast('Không copy được ảnh — thử lại nhé', true); }
 }
-document.querySelectorAll('.cl-anh').forEach(fig=>fig.onclick=()=>clCopyAnh([fig.dataset.src], fig));
-/* Clipboard chi giu 1 anh -> muon 2 anh RIENG thi tai ca 2 ve may thanh 2 file (Ky Anh 03/11) */
 function clTaiMotAnh(src, ten){ const a=document.createElement('a'); a.href=src; a.download=ten; document.body.appendChild(a); a.click(); a.remove(); }
-$('clTai2Anh').onclick = ()=>{
-  clTaiMotAnh('assets/chot-lich/luu-y-1.jpg','ky-anh-studio-luu-y-1.jpg');
-  setTimeout(()=>clTaiMotAnh('assets/chot-lich/luu-y-2.jpg','ky-anh-studio-luu-y-2.jpg'), 500);   // cach nhau chut cho trinh duyet khong gop
-  showToast('Đang tải 2 ảnh về máy');
-};
+/* Moi anh 2 nut: Copy (ghi anh vao clipboard) / Tai (tai file ve may) — Ky Anh 08/11 */
+document.querySelectorAll('.cl-anh').forEach(fig=>{
+  const src = fig.dataset.src, ten = fig.dataset.ten || 'ky-anh-studio-anh.webp';
+  fig.querySelector('.cl-btn-copy').onclick = (e)=>{ e.stopPropagation(); clCopyAnh([src], e.currentTarget); };
+  fig.querySelector('.cl-btn-tai').onclick = (e)=>{ e.stopPropagation(); clTaiMotAnh(src, ten); showToast('Đang tải ảnh về máy'); };
+});
 
 /* ===== Lich chon ngay-gio tu ve (thay bo chon xau cua trinh duyet) — Ky Anh 03/11 ===== */
 let dtpNut = null;                  // nut .cl-dt dang mo lich
