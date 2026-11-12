@@ -46,12 +46,13 @@
   h1,h2,h3 { font-family: 'Playfair Display', serif; font-weight: 400; }
   /* env(safe-area-*) chua cho tai/thanh trang thai khi chay toan man hinh tren iPhone */
   .app { max-width: 880px; margin: 0 auto;
-         padding: calc(1.6rem + env(safe-area-inset-top)) calc(1.1rem + env(safe-area-inset-right))
+         padding: calc(1rem + env(safe-area-inset-top)) calc(1.1rem + env(safe-area-inset-right))
                   calc(6rem + env(safe-area-inset-bottom)) calc(1.1rem + env(safe-area-inset-left)); }
 
-  .app-header { position: relative; text-align: center; margin-bottom: 1.4rem; }
-  .app-eyebrow { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.55rem; }
-  .app-logo { width: 210px; max-width: 62vw; margin: 0 auto 0.5rem; }
+  /* Header gom gon 12/11: logo nho bot, bot khoang trong */
+  .app-header { position: relative; text-align: center; margin-bottom: 0.8rem; }
+  .app-eyebrow { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+  .app-logo { width: 175px; max-width: 58vw; margin: 0 auto 0; }
   .app-logo svg { width: 100%; height: auto; display: block; }
   .lock-btn { position: absolute; top: 0; right: 0; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.25s ease; color: var(--muted); }
   .lock-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
@@ -92,6 +93,30 @@
   .cbg-tab { flex: 1; padding: 0.6rem 0.5rem; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--muted); background: transparent; border: none; border-radius: 9px; cursor: pointer; transition: all 0.2s ease; }
   .cbg-tab:hover { color: var(--gold-dark); }
   .cbg-tab.active { background: #fff; color: var(--gold-dark); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  /* ===== Toi uu Chot lich & Bao gia (12/11): o nhap gon hon; may tinh rong chia 2 cot, tin nhan nam canh form ===== */
+  #viewBaoGia .cbg-tabs { margin-bottom: 0.8rem; }
+  #viewBaoGia .cbg-tab { padding: 0.5rem; }
+  #viewBaoGia .bq-the { padding: 0.9rem 0.85rem 0.3rem; }
+  #viewBaoGia .f-input, #viewBaoGia .f-select, #viewBaoGia .f-textarea { padding: 0.6rem 0.75rem; font-size: 0.82rem; }
+  #viewBaoGia .f-group { margin-bottom: 0.7rem; }
+  #viewBaoGia .f-label { font-size: 0.62rem; margin-bottom: 0.3rem; }
+  #viewBaoGia .bq-muc { margin: 1.1rem 0 0.5rem; }
+  #viewBaoGia .bq-muc:first-child { margin-top: 0; }
+  #viewBaoGia .cl-group { padding: 0.7rem 0.7rem 0.05rem; margin-bottom: 0.6rem; }
+  #viewBaoGia .cl-them, #viewBaoGia .bq-them { padding: 0.55rem; margin-bottom: 0.8rem; }
+  /* Nut "+ Them concept" xanh la nhat, chu xanh dam (Ky Anh chot 12/11) */
+  #viewBaoGia .cl-them, #viewBaoGia #bqThemCon { background: #CBE2C3; border: 1px solid #9FC496; color: #2E5B34; font-weight: 700; }
+  #viewBaoGia .cl-them:hover, #viewBaoGia #bqThemCon:hover { background: #BBD8B1; border-color: #8BB581; }
+  #viewBaoGia .bq-xem { min-height: 16rem; font-size: 0.78rem; padding: 0.75rem; }
+  #viewBaoGia .cl-toc-phim { margin-bottom: 0.2rem; }
+  @media (min-width: 760px) {
+    .cbg-2cot { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 0 1rem; align-items: start; }
+    .cbg-cot { min-width: 0; }
+    .cbg-cot-tin { position: sticky; top: 0.75rem; }   /* cuon form dai thi tin nhan van dung yen ben phai */
+    #viewBaoGia .cbg-cot-tin .bq-muc { margin-top: 0.15rem; }
+    #viewBaoGia .cbg-cot-tin .bq-xem { min-height: 26rem; }
+    .cl-anh-ds { grid-template-columns: repeat(3, 1fr); }   /* anh gui kem 3 cot cho do choan */
+  }
   /* Nhom mot concept trong form chot lich */
   .cl-group { border: 1px solid var(--line); border-radius: 12px; padding: 0.85rem 0.85rem 0.1rem; margin-bottom: 0.7rem; background: #FFFDFA; }
   .cl-group-dau { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
@@ -299,13 +324,13 @@
   #lcGrid.anh-nho .lc-dau-ghim svg { width: 8px; height: 8px; }
   #lcGrid.anh-nho .lc-card.copied::after { width: 15px; height: 15px; font-size: 0.5rem; top: 0.2rem; right: 0.2rem; }
 
-  .sync-bar { display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.66rem; color: var(--muted); margin-bottom: 1rem; letter-spacing: 0.02em; }
+  .sync-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.3rem 0.4rem; font-size: 0.66rem; color: var(--muted); margin-bottom: 0.9rem; letter-spacing: 0.02em; }
   .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .sync-dot.online { background: #4caf50; box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
   .sync-dot.offline { background: var(--gold); box-shadow: 0 0 0 3px rgba(184,149,110,0.15); }
   .sync-dot.local { background: #c0392b; }
   /* Badge dem nguoc Tet — mot dong nho, nen kem, vien + chu vang dong, khong sac so */
-  .tet-bar { text-align: center; margin-top: -0.5rem; margin-bottom: 1rem; }
+  .tet-bar { display: inline-flex; margin-left: 0.35rem; }
   .tet-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.28rem 0.78rem; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.02em; color: var(--gold-dark); background: rgba(184,149,110,0.08); border: 1px solid rgba(184,149,110,0.32); border-radius: 999px; }
   .tet-badge .tet-so { font-weight: 700; }
   .tet-badge.tet-vui { background: var(--gold); border-color: var(--gold); color: #fff; }
@@ -570,8 +595,8 @@
   .toast.warn svg { stroke: #e0a458; }
 
   @media (max-width: 640px) {
-    .app { padding: 1.3rem 0.55rem 3rem; }
-    .app-logo { width: 175px; }
+    .app { padding: 1rem 0.55rem 3rem; }
+    .app-logo { width: 150px; }
     /* 2 cột lưới đều trên mobile */
     .cards, .skeleton { gap: 0.35rem; }
     .btn-add span { display: none; }
@@ -627,13 +652,12 @@
     </button>
   </header>
 
+  <!-- Dong bo + dem nguoc Tet nam chung mot hang cho gon (12/11) -->
   <div class="sync-bar" id="syncBar">
     <span class="sync-dot" id="syncDot"></span>
     <span id="syncText">Đang kết nối…</span>
+    <span class="tet-bar" id="tetBar" hidden><span class="tet-badge" id="tetBadge"></span></span>
   </div>
-
-  <!-- Dem nguoc den Tet am lich — nho gon, tong kem + vang dong -->
-  <div class="tet-bar" id="tetBar" hidden><span class="tet-badge" id="tetBadge"></span></div>
 
   <div id="viewReply">
   <div class="toolbar">
@@ -681,13 +705,20 @@
         </div>
         <div class="cl-chot-ghi" id="clChotGhi"></div>
       </div>
-      <div class="bq-the"><div id="clFields"></div></div>
-      <label class="cl-toc-phim"><input type="checkbox" id="clTocPhim"> ⚠ Thêm dòng “Phí có thể phát sinh: 400.000đ/ tóc phím/ concept”</label>
-      <div class="bq-muc">Tin nhắn gửi khách <span class="bq-muc-phu">(sửa tay được)</span></div>
-      <textarea class="bq-xem" id="clXem"></textarea>
-      <div class="bq-nut">
-        <button type="button" class="btn-ghost" id="clLamMoi">Làm mới</button>
-        <button type="button" class="btn-primary" id="clCopy">Copy tin nhắn</button>
+      <!-- May tinh rong: form ben trai, tin nhan ben phai; dien thoai van xep doc (12/11) -->
+      <div class="cbg-2cot">
+        <div class="cbg-cot">
+          <div class="bq-the"><div id="clFields"></div></div>
+          <label class="cl-toc-phim"><input type="checkbox" id="clTocPhim"> ⚠ Thêm dòng “Phí có thể phát sinh: 400.000đ/ tóc phím/ concept”</label>
+        </div>
+        <div class="cbg-cot cbg-cot-tin">
+          <div class="bq-muc">Tin nhắn gửi khách <span class="bq-muc-phu">(sửa tay được)</span></div>
+          <textarea class="bq-xem" id="clXem"></textarea>
+          <div class="bq-nut">
+            <button type="button" class="btn-ghost" id="clLamMoi">Làm mới</button>
+            <button type="button" class="btn-primary" id="clCopy">Copy tin nhắn</button>
+          </div>
+        </div>
       </div>
 
       <!-- Anh gui kem sau khi chot lich: moi anh 2 nut (Copy / Tai) — thu tu: luu y VN -> tieng Anh -> gia -->
@@ -727,6 +758,8 @@
     </div>
 
     <div id="cbgBaoGia" hidden>
+    <div class="cbg-2cot">
+    <div class="cbg-cot">
     <div class="bq-the">
 
       <div class="bq-muc">Concept</div>
@@ -751,13 +784,17 @@
           <input type="text" class="f-input" id="bqCocGhi" placeholder="Tự ghi: Đã cọc 2 concept"></div>
       </div>
     </div>
+    </div><!-- /cot form -->
 
+    <div class="cbg-cot cbg-cot-tin">
     <div class="bq-muc">Tin nhắn gửi khách <span class="bq-muc-phu">(sửa tay được)</span></div>
     <textarea class="bq-xem" id="bqXem"></textarea>
     <div class="bq-nut">
       <button type="button" class="btn-ghost" id="bqLamMoi">Làm mới</button>
       <button type="button" class="btn-primary" id="bqCopy">Copy tin nhắn</button>
     </div>
+    </div><!-- /cot tin -->
+    </div><!-- /cbg-2cot -->
     </div><!-- /#cbgBaoGia -->
   </div>
 
@@ -2964,8 +3001,8 @@ function bqTinNhan(){
     const cong = d.gia + d.cacPhu.reduce((t,p)=>t+p.tien,0);
     L.push(`${nhieu ? d.so+'. ' : ''}Concept ${d.ten || '[Tên concept]'}${d.gia ? ': '+bqTien(cong)+'đ' : ''}`);
     if(d.cacPhu.length){
-      if(d.gia) L.push(`* Gói chụp chính: ${bqTien(d.gia)}đ`);
-      d.cacPhu.forEach(p=>L.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
+      if(d.gia) L.push(`• Gói chụp chính: ${bqTien(d.gia)}đ`);   // dau cham tron de doc hon dau * (Ky Anh 12/11)
+      d.cacPhu.forEach(p=>L.push(`• ${p.ghi}: ${bqTien(p.tien)}đ`));
     }
     L.push('');
   });
@@ -3289,8 +3326,8 @@ function clTin(){
     const phuTong = phuDs.reduce((s,p)=>s+p.tien,0);
     const goiChinh = tongNum - phuTong;
     const dong = [];
-    if(goiChinh>0) dong.push(`* Gói chụp chính: ${bqTien(goiChinh)}đ`);
-    phuDs.forEach(p=>dong.push(`* ${p.ghi}: ${bqTien(p.tien)}đ`));
+    if(goiChinh>0) dong.push(`• Gói chụp chính: ${bqTien(goiChinh)}đ`);   // dau cham tron de doc hon dau * (Ky Anh 12/11)
+    phuDs.forEach(p=>dong.push(`• ${p.ghi}: ${bqTien(p.tien)}đ`));
     final = final.replace(/(Tổng chi phí:[^\n]*)/, `$1\n${dong.join('\n')}`);
     if(phuDs.some(p=>p.id==='be')) final += `\n\n${BQ_GHI_EM_BE}`;
   } else if(/[+-]/.test(tongStr) && tongNum > 0){
