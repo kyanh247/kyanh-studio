@@ -84,7 +84,15 @@
 
   /* ===== So do khach + nhan size tren the concept (13/11) ===== */
   .lc-sodo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; margin: -0.3rem 0 0.9rem; padding: 0.55rem 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; font-size: 0.72rem; color: var(--muted); }
-  .lc-sodo-nhan { font-weight: 600; color: var(--ink-dark); margin-right: 0.15rem; }
+  .lc-sodo-nhan { display: inline-flex; align-items: center; gap: 0.4rem; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 600; color: var(--ink-dark); margin-right: 0.15rem; padding: 0; background: none; border: none; cursor: pointer; }
+  .lc-sodo-dang { font-weight: 600; color: var(--gold-dark); }
+  .lc-sodo-dang:empty { display: none; }
+  .lc-sodo-mui { width: 18px; height: 18px; border-radius: 50%; background: rgba(184,149,110,0.13) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2396724A' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") no-repeat center / 11px; transition: transform .2s ease; }
+  .lc-sodo:not(.dong) .lc-sodo-mui { transform: rotate(180deg); }
+  /* Thu gon: chi con dong tieu de (+ nut Xoa va dong tom tat neu dang co so do) */
+  .lc-sodo.dong { padding-top: 0.45rem; padding-bottom: 0.45rem; }
+  .lc-sodo.dong > :not(.lc-sodo-nhan):not(.lc-sodo-xoa):not(.lc-sodo-tom) { display: none; }
+  .lc-sodo.dong .lc-sodo-nhan { flex: 1 1 auto; }
   .lc-sodo label { display: inline-flex; align-items: center; gap: 0.3rem; }
   .lc-sodo label > span { font-weight: 600; }
   .lc-sodo input[type=text] { width: 3.6rem; padding: 0.35rem 0.4rem; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; text-align: center; color: var(--ink-dark); background: #FFFDFA; border: 1px solid var(--line); border-radius: 7px; }
@@ -887,8 +895,9 @@
       </button>
     </div>
     <!-- So do khach (13/11): go so do -> the concept hien vua / sat / khong vua theo cot Size trong sheet. Chi nam tren may, khong luu len mang -->
-    <div class="lc-sodo" id="lcSoDo">
-      <span class="lc-sodo-nhan">📏 Số đo khách</span>
+    <!-- Mac dinh thu gon (Ky Anh 13/11): bam dong tieu de moi mo ra; dang co so do thi tieu de ghi so + dong tom tat van hien -->
+    <div class="lc-sodo dong" id="lcSoDo">
+      <button type="button" class="lc-sodo-nhan" id="lcSoDoMo" aria-expanded="false">📏 Số đo khách<span class="lc-sodo-dang" id="lcSoDoDang"></span><span class="lc-sodo-mui" aria-hidden="true"></span></button>
       <input type="text" class="lc-sodo-dan" id="lcSoDoDan" placeholder="Dán tin khách, vd: em cao 1m58, 48kg, số đo 82-64-88" autocomplete="off">
       <span class="lc-sodo-ngat" aria-hidden="true"></span>
       <label><span>Cao</span><input type="text" inputmode="decimal" data-sd="cao" placeholder="cm"></label>
@@ -3005,6 +3014,11 @@ function renderLinks(){
   const kqSize = new Map(ds.map(c=>[c.id, soSize(c.sizeDo, kh)]));
   $('lcSoDoXoa').hidden = ![...document.querySelectorAll('#lcSoDo input[type=text]')].some(i=>i.value.trim());
   const coSoDo = Object.values(kh).some(Boolean);
+  /* Tieu de thanh so do: dang thu gon van biet dang loc theo so nao */
+  $('lcSoDoDang').textContent = coSoDo ? '· ' + [
+    (kh.v1||kh.v2||kh.v3) ? [kh.v1,kh.v2,kh.v3].map(x=>x||'?').join('-') : '',
+    kh.cao ? kh.cao+'cm' : '', kh.nang ? kh.nang+'kg' : ''
+  ].filter(Boolean).join(' · ') : '';
   /* Dong tom tat: dem theo tung mau tren danh sach dang xem (truoc khi loc "chi hien bo vua") */
   const tom = $('lcSoDoTom');
   if(coSoDo){
@@ -3114,6 +3128,12 @@ function tachSoDo(txt){
   }
   return kq;
 }
+/* Bam tieu de "So do khach" de mo / thu gon; mo ra thi dat con tro vao o dan tin khach */
+$('lcSoDoMo').onclick = ()=>{
+  const dong = $('lcSoDo').classList.toggle('dong');
+  $('lcSoDoMo').setAttribute('aria-expanded', String(!dong));
+  if(!dong) $('lcSoDoDan').focus();
+};
 $('lcSoDoDan').addEventListener('input', ()=>{
   const kq = tachSoDo($('lcSoDoDan').value);
   document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>{ if(kq[i.dataset.sd]!=null) i.value = kq[i.dataset.sd]; });
