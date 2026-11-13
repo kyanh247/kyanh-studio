@@ -140,6 +140,7 @@
   #lcGrid.anh-nho .lc-size small { display: none; }
   .lk-size { color: var(--ink) !important; font-weight: 600; margin-top: 0.35rem !important; }
   .lk-size-dong { color: var(--ink) !important; font-size: 0.68rem !important; margin-top: 0.1rem !important; padding-left: 1.2rem; }
+  .lk-size-ghi { color: var(--gold-dark) !important; font-style: italic; padding-left: 0; }
   .lk-size-kq { display: inline-block !important; margin-top: 0.3rem !important; padding: 0.15rem 0.5rem; border-radius: 6px; font-weight: 700; }
 
   /* Chip dang concept: bam truc tiep, khoi mo dropdown (Ky Anh 02/11) */
@@ -1820,7 +1821,9 @@ function docCSV(t){
          Chiều cao: 153cm - 160cm
    Cot "Chiều cao", "Cân Nặng" rieng (neu co) dung chung cho size nao khong ghi cao/nang rieng. Trong = khong gioi han. ===== */
 function docKhoang(s){
-  const t = String(s||'').toLowerCase();
+  const t = String(s||'').toLowerCase()
+    .replace(/(\d)\s*m\s*(\d{1,2})(?!\d)/g, (_,a,b)=>String(+a*100 + (b.length===1 ? +b*10 : +b)))     // 1m68 -> 168, 1m6 -> 160
+    .replace(/(\d)[.,](\d{1,2})\s*m(?![a-z])/g, (_,a,b)=>String(+a*100 + (b.length===1 ? +b*10 : +b)));  // 1.68m -> 168
   const so = (t.match(/\d+(?:[.,]\d+)?/g)||[]).map(x=>parseFloat(x.replace(',','.')));
   if(!so.length) return null;
   if(/tối đa|toi da|max|dưới|duoi|<=?|≤/.test(t)) return { tu:null, den:so[0] };
@@ -1830,10 +1833,11 @@ function docKhoang(s){
   if(/-\s*$/.test(t)) return { tu:so[0], den:null };          // "80-"
   return { tu:so[0], den:so[0] };
 }
-const SIZE_NHAN = /(?:^|[\n\/•])\s*[•*\-–]?\s*(XXXL|XXL|3XL|2XL|XL|XS|S|M|L|Free\s*size|Freesize|Free|F)\s*[:：]/gi;
+const SIZE_NHAN = /(?:^|[\n\/•])\s*[•*\-–]?\s*(XXXL|XXL|3XL|2XL|XL|XS|S|M|L)\s*(?:[:：]|(?=\s+\d))/g;   // "M:" hoac "M 85-87/..." (chu hoa)
 /* Mot vong: "80-85" = khoang; "tối đa 92" = chi gioi han tren; 1 so tran "92" = so do bo do (con cho rong toi SIZE_RONG_OK) */
 function docVong(p){
   const t = String(p||'').trim(); if(!t) return null;
+  if(/free\s*size|^free$/i.test(t)) return { free:true };       // freesize: vong nay ai mac cung vua
   const k = docKhoang(t); if(!k) return null;
   if(k.tu!=null && k.tu===k.den && !/[-–]/.test(t)) return { tu:null, den:k.den, don:true };
   return k;
@@ -1843,7 +1847,16 @@ function docKhoiSize(nhan, txt){
   let cao = null, nang = null;
   t = t.replace(/(?:chiều\s*cao|chieu\s*cao|cao)\s*[:：]?\s*([^\n]*)/i, (_,x)=>{ cao = docKhoang(x); return ''; });
   t = t.replace(/(?:cân\s*nặng|can\s*nang|nặng|nang)\s*[:：]?\s*([^\n]*)/i, (_,x)=>{ nang = docKhoang(x); return ''; });
-  const dong = t.split('\n').map(x=>x.trim()).find(Boolean) || '';
+  /* Chon dong 3 vong: dong co dang "a-b-c" / "a/b/c" (ke ca freesize, "tối đa"); bo qua dong ghi chu nhu "dài quần 107cm" */
+  const VAL = '(?:\\d{2,3}(?:\\s*cm)?|free\\s*size|free)';
+  const NOI = '\\s*[-–\\/]\\s*(?:tối đa|toi da|max)?\\s*';
+  const cacDong = t.split('\n').map(x=>x.trim().replace(/^[\/\s]+|[\/\s]+$/g,'')).filter(Boolean);
+  let dong = '';
+  for(const x of cacDong){
+    const m = x.match(new RegExp(VAL + '(?:' + NOI + VAL + '|\\s*[-–]\\s*\\d{2,3}){1,4}', 'i'));
+    if(m){ dong = m[0]; break; }
+  }
+  if(!dong && cacDong.some(x=>/^free\s*size$|^free$/i.test(x))) dong = 'free-free-free';     // ca bo freesize
   const phan = dong.includes('/') ? dong.split('/') : dong.split(/\s*[-–]\s*/);   // co "/" thi "/" ngan vong, "-" la khoang
   const v = [0,1,2].map(i=>docVong(phan[i]));
   return { nhan, v, cao, nang };
@@ -1885,9 +1898,10 @@ function soSize(sd, kh){
     ['v1','v2','v3'].forEach((t,i)=>{
       const g = s.v[i], v = kh[t]; if(!g || !v) return;
       soLan++; soLanV++;
+      if(g.free) return;                                         // freesize: vua, khong lech
       const ten = 'V'+(i+1);
       if(g.den!=null && v > g.den){ const d=v-g.den; tong+=d; muc=Math.max(muc, d>SIZE_CHAT_SAT?2:1); lech.push(`${ten} chật ${d}cm`); return; }
-      const san = g.don ? g.den - SIZE_RONG_OK : g.tu;          // duoi muc nay la do rong, phai kep
+      const san = g.don ? g.den - SIZE_RONG_OK : (g.tu!=null ? g.tu - 2 : null);   // duoi muc nay la do rong, phai kep (khoang "85-87" cho hut 2cm)
       if(san!=null && v < san){ const d = (g.don ? g.den : g.tu) - v; tong+=d; muc=Math.max(muc,1); kep=true; lech.push(`${ten} rộng ${d}cm`); return; }
       if(g.don) tong += g.den - v;
     });
@@ -1927,7 +1941,8 @@ function conceptTuSheet(rows){
             km:h.findIndex(x=>x.includes('giá tư vấn')&&!x.includes('đã gồm')), goc:cot('niêm yết'),
             anh:cot('thumbnail'), fb:cot('facebook'), web:cot('website'), tt:cot('tiktok'),
             ghim:cot('ghim'),     // cot Ghim: o nao co chu (x, 1, ...) la ghim len dau
-            size:h.findIndex(x=>x==='size'), cao:cot('chiều cao'), nang:cot('cân nặng') };   // 3 cot size do (13/11)
+            size:h.findIndex(x=>x==='size'), cao:cot('chiều cao'), nang:cot('cân nặng'),   // 3 cot size do (13/11)
+            ghiSize:h.findIndex(x=>x==='ghi chú') };   // cot "Ghi chú" cuoi sheet: dai vay, nen mac rong... hien trong bang chi tiet
   const o=(r,i)=>i<0?'':String(r[i]||'').trim();
   const DANG=[['conceptual','conceptual'],['portrait','portrait'],['maternity','maternity'],['bầu','maternity'],
               ['birthday','birthday'],['couple','couple'],['holiday','holiday']];
@@ -1944,6 +1959,7 @@ function conceptTuSheet(rows){
     return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
              dang:dangCon,
              sizeDo: docSizeDo(o(r,C.size), o(r,C.cao), o(r,C.nang)),
+             ghiSize: o(r,C.ghiSize),
              content:o(r,C.web), link_fb:o(r,C.fb), link_tt:o(r,C.tt), image:o(r,C.anh),
              gia_fb: km ? giaFB(ten, km, goc, baoGomTheoDang(dangCon)) + dongCuoi : '',
              gia_tt: km ? giaTT(ten, km) : '' };
@@ -3745,14 +3761,15 @@ const lkOverlay=$('lkOverlay');
 function veSizeLk(c){
   const sd = c.sizeDo;
   const kq = soSize(sd, soDoKhach());
-  if(!sd && !kq) return '';
+  if(!sd && !kq && !c.ghiSize) return '';
   /* Moi size mot dong: "S: 80–85 / 62–66 / ≤92 · 43–49kg · 153–160cm" */
   const k = (x,dv='')=> !x ? '' : x.tu==null ? `≤${x.den}${dv}` : x.den==null ? `≥${x.tu}${dv}` : x.tu===x.den ? `${x.tu}${dv}` : `${x.tu}–${x.den}${dv}`;
-  const vong = s => s.v.some(Boolean) ? s.v.map(g=>!g ? '?' : g.don ? String(g.den) : k(g)).join(' / ') : '';
+  const vong = s => s.v.every(g=>g?.free) ? 'Freesize' : s.v.some(Boolean) ? s.v.map(g=>!g ? '?' : g.free ? 'Free' : g.don ? String(g.den) : k(g)).join(' / ') : '';
   const dongs = sd ? sd.ds.map(s=>[(s.nhan?s.nhan+': ':'') + vong(s), k(s.nang,'kg'), k(s.cao,'cm')].filter(x=>x && x.trim()).join(' · ')) : [];
   if(sd && (sd.cao || sd.nang)) dongs.push(['Chung', k(sd.nang,'kg'), k(sd.cao,'cm')].filter(Boolean).join(' · '));
   return `<small class="lk-size">📏 ${dongs.length ? 'Số đo đồ' : 'Chưa có size'}</small>`
     + dongs.map(d=>`<small class="lk-size-dong">${esc(d)}</small>`).join('')
+    + String(c.ghiSize||'').split('\n').map(x=>x.trim()).filter(Boolean).map(x=>`<small class="lk-size-dong lk-size-ghi">📝 ${esc(x)}</small>`).join('')
     + (kq && kq.muc!=='chua' ? `<small class="lk-size-kq sd-${kq.muc}">${esc(nhanSize(kq))}${kq.lech.length?' — '+esc(kq.lech.join(', ')):''}</small>` : '');
 }
 function moChonLink(c){
