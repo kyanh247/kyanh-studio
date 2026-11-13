@@ -19,7 +19,15 @@
 <!-- iPhone tu bien day so (STK, MST, so dien thoai) thanh link goi dien: bam the de copy lai nhay sang goi/Zalo. Tat di. -->
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<!-- 13/11: font tai khong chan man hinh (truoc day mang cham la trang trang cho toi khi tai xong font) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+<!-- Tai truoc 3 goi Firebase song song ngay luc doc dau trang -->
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js">
 
 <!-- ============================================================
      HƯỚNG DẪN CÀI ĐẶT (làm 1 lần) — xem chi tiết cuối file
@@ -60,7 +68,9 @@
   .lock-btn svg { width: 17px; height: 17px; }
 
   /* ===== Thanh dock duoi man hinh ===== */
-  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; justify-content: center; gap: 0.5rem; padding: 0 0.7rem calc(0.45rem + env(safe-area-inset-bottom)); background: rgba(250,249,247,0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+  /* 13/11: bo backdrop-filter (lam mo nen) — iPhone phai tinh lai moi khung hinh khi luot nen menu giat, "bay len" roi moi ve cho.
+     Nen gan nhu dac + translate3d de Safari giu thanh menu tren lop rieng, dinh chat day man hinh. */
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; justify-content: center; gap: 0.5rem; padding: 0 0.7rem calc(0.45rem + env(safe-area-inset-bottom)); background: rgba(250,249,247,0.98); border-top: 1px solid var(--line); transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0); will-change: transform; }
   .dock-item { position: relative; flex: 1 1 0; max-width: 200px; display: flex; flex-direction: column; align-items: center; gap: 0.18rem; padding: 0.45rem 0.3rem 0.4rem; background: none; border: none; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.63rem; font-weight: 500; letter-spacing: 0.04em; color: var(--muted); transition: color 0.2s ease; }
   /* Vach vang mong sat mep tren thanh dock, thay cho mang nen day */
   .dock-item::before { content: ""; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 30px; height: 2px; border-radius: 0 0 2px 2px; background: transparent; transition: background 0.2s ease; }
@@ -321,12 +331,14 @@
   .lc-dau-ghim svg { width: 11px; height: 11px; stroke: currentColor; stroke-width: 2.4; fill: none; }
 
   .lc-khoi + .lc-khoi { margin-top: 1.6rem; }
+  /* 13/11: nhom concept nam ngoai man hinh thi trinh duyet tam khong ve (113 the anh) — luot nhe hon tren dien thoai */
+  .lc-khoi { content-visibility: auto; contain-intrinsic-size: auto 900px; }
   .lc-tieu-de { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; padding-bottom: 0.45rem; border-bottom: 1px solid var(--line); }
   .lc-tieu-de .lc-dem { margin-left: auto; letter-spacing: 0.02em; font-weight: 500; color: var(--gold-dark); }
 
   .lc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-  .lc-card { display: flex; flex-direction: column; position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: all 0.25s ease; }
-  .lc-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
+  .lc-card { display: flex; flex-direction: column; position: relative; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 9px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 14px rgba(0,0,0,0.04); transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+  @media (hover: hover) { .lc-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); } }   /* chi may co chuot; dien thoai cham xong khong bi "dinh" hieu ung */
   .lc-card:active { transform: translateY(0) scale(0.995); }
   .lc-thumb { flex: none; aspect-ratio: 2 / 3; width: 100%; object-fit: cover; display: block; background: linear-gradient(160deg, #EFEAE3, #DCD3C8); }
   /* Ten toi da 3 dong, dung margin (khong padding) de dong thu 4 khong lo ra de len gia.
@@ -485,8 +497,8 @@
   .sub-tab.active { background: rgba(184,149,110,0.12); border-color: var(--gold); color: var(--gold-dark); font-weight: 600; }
 
   .cards { display: grid; grid-template-columns: repeat(var(--so-cot, 2), 1fr); gap: 0.45rem; }
-  .clip-card { position: relative; height: 165px; overflow: hidden; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 0.85rem 0.8rem 0.75rem; box-shadow: 0 2px 14px rgba(0,0,0,0.04); cursor: pointer; transition: all 0.25s ease; display: flex; flex-direction: column; gap: 0.45rem; }
-  .clip-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); }
+  .clip-card { position: relative; height: 165px; overflow: hidden; background: #fff; border: 1px solid rgba(139,129,120,0.15); border-radius: 12px; padding: 0.85rem 0.8rem 0.75rem; box-shadow: 0 2px 14px rgba(0,0,0,0.04); cursor: pointer; transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; display: flex; flex-direction: column; gap: 0.45rem; }
+  @media (hover: hover) { .clip-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(184,149,110,0.15); } }
   .clip-card:active { transform: translateY(0) scale(0.995); }
   .clip-card.copied { border-color: var(--gold); background: #FFFDFA; }
   .clip-top { display: flex; align-items: flex-start; gap: 0.55rem; }
@@ -612,7 +624,7 @@
   .opt-divider { height: 1px; background: var(--line); }
   .opt-label { padding: 0.45rem 1rem 0.15rem; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(42,36,32,0.5); backdrop-filter: blur(2px); align-items: flex-end; justify-content: center; }
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(42,36,32,0.55); align-items: flex-end; justify-content: center; }   /* bo blur cho nhe may */
   .modal-overlay.show { display: flex; }
   .chon-loai { display: flex; align-items: flex-start; gap: 0.85rem; width: 100%; text-align: left; padding: 1rem; margin-bottom: 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: all 0.25s ease; }
   .chon-loai:hover { border-color: var(--gold); background: rgba(184,149,110,0.05); }
@@ -1233,22 +1245,36 @@ let auth = null;
 const cfg = window.KA_FIREBASE_CONFIG || {};
 const firebaseEnabled = !!(cfg.projectId && cfg.apiKey);
 
-if (firebaseEnabled) {
+/* Tai Firebase CHAY NEN (13/11, Ky Anh bao dien thoai mo app rat cham):
+   - Truoc: "await" 3 goi LAN LUOT o dau file -> app khong ve gi (ke ca mau da luu tren may) cho toi khi tai xong ca 3.
+   - Gio: 3 goi tai SONG SONG, khong chan; init() ve ngay tu ban luu tren may roi moi doi fbSan de noi may chu.
+   - initializeAuth KHONG kem bo mo popup -> khoi tai iframe dang nhap + api.js cua Google (~0,8s). App chi dang nhap
+     bang email/mat khau nen khong can popup. Persistence giu nhu getAuth -> may dang dang nhap van con dang nhap. */
+const fbSan = firebaseEnabled ? (async () => {
   try {
-    const appMod  = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const fsMod   = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    const authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const [appMod, fsMod, authMod] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"),
+    ]);
     const app = appMod.initializeApp(cfg);
     const db = fsMod.initializeFirestore(app, {
       localCache: fsMod.persistentLocalCache({ tabManager: fsMod.persistentSingleTabManager() })
     });
     fb = { db, ...fsMod };
     // Đăng nhập được ghi nhớ trên máy này, không phải nhập lại mỗi lần mở app
-    auth = { instance: authMod.getAuth(app), ...authMod };
+    auth = { instance: authMod.initializeAuth(app, {
+      persistence: [authMod.indexedDBLocalPersistence, authMod.browserLocalPersistence, authMod.browserSessionPersistence]
+    }), ...authMod };
   } catch (e) {
     console.warn("Không tải được Firebase, chuyển chế độ máy đơn:", e);
     fb = null; auth = null;
   }
+})() : Promise.resolve();
+/* Cong so dem chung (thongke): Firebase chua tai xong thi xep hang, tai xong cong bu — khoi mat luot copy luc vua mo app */
+function congChung(k){
+  const ghi = ()=>{ if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', k), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{}); };
+  fb ? ghi() : fbSan.then(ghi);
 }
 
 const CATEGORIES = [
@@ -1356,7 +1382,7 @@ function demDuocCong(id){
 function tangKenh(k){
   const id = `d-${maNgay(new Date()).slice(2, 9)}-n-${k}`, ym = id.slice(2, 9);
   if (tkDu[ym]) { const m = tkDu[ym]; m.muc[id] = { n: ((m.muc[id]||{}).n||0) + 1, at: Date.now() }; }
-  if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+  congChung(id);
 }
 function tangDem(id){
   if(!demDuocCong(id)) return false;   // bam lon 2 lan / bam loan -> khong cong vao bo dem
@@ -1372,8 +1398,7 @@ function tangDem(id){
   // ... va theo thang cho tung mau (ban ghi "d-2026-10-m-<ma>") de tab Thong ke loc duoc theo thang
   const ym = ngay.slice(2, 9), thang = khoaThang(id, ym);
   if (tkDu[ym]) { const m = tkDu[ym]; m.muc[thang] = { n: ((m.muc[thang]||{}).n||0) + 1, at: Date.now() }; m.ngay[ngay] = (m.ngay[ngay]||0) + 1; }
-  if (fb) for (const k of [id, ngay, thang])
-    fb.setDoc(fb.doc(fb.db, 'thongke', k), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+  for (const k of [id, ngay, thang]) congChung(k);
   if (activeView==='thongke') renderThongKe();
   return true;
 }
@@ -1383,7 +1408,7 @@ function tangDem(id){
 function demTemplate(loai){
   if(!demDuocCong('tpl-'+loai)) return;
   const id = maNgay(new Date()) + '-' + loai;   // vd: d-2026-11-08-chot
-  if (fb) fb.setDoc(fb.doc(fb.db, 'thongke', id), { n: fb.increment(1), at: Date.now() }, { merge: true }).catch(()=>{});
+  congChung(id);
 }
 /* So dem chung ca studio — collection `thongke`, moi mau mot ban ghi { n, at }.
    demChung = null khi chua doc duoc (may don, mat mang lan dau, hoac Rules chua mo) -> tam hien so cua may nay.
@@ -1604,6 +1629,11 @@ async function init() {
   // Không có Firebase (chế độ máy đơn) thì không mở quyền quản trị — mã PIN cũ đã gỡ 09/11.
   isAdmin = false;
   applyAdminUI();
+  /* Ve NGAY tu ban luu tren may (13/11) — khong doi Firebase tai xong nua */
+  const cached0 = loadCache();
+  if (cached0 && cached0.length) { items = cached0; render(); }
+  else showSkeleton();
+  await fbSan;   // Firebase tai xong (hoac loi) roi moi noi dang nhap + may chu
   if (auth) {
     auth.onAuthStateChanged(auth.instance, user => {
       isAdmin = !!user;
@@ -1611,10 +1641,6 @@ async function init() {
       applyAdminUI(); render();
     });
   }
-  const cached = loadCache();
-  if (cached && cached.length) { items = cached; render(); }
-  else showSkeleton();
-
   if (fb) {
     setSync('online', 'Đồng bộ realtime');
     startFirestore();
@@ -3078,7 +3104,7 @@ function renderLinks(){
     <article class="lc-card${kq?' sd-'+kq.muc:''}" data-id="${esc(c.id)}">
       ${c.ghim?`<span class="lc-dau-ghim" title="Đã ghim"><svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></span>`:''}
       ${c.tuSheet?'':`<span class="lc-dau-ghim lc-dau-tay" title="Nhập tay trong app"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>`}
-      <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy"
+      <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy" decoding="async"
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
       <div class="lc-gia">${esc(c.gia || docGia(c.gia_fb))}</div>
@@ -3278,7 +3304,7 @@ function veChonCon(){
   $('bqChonLuoi').innerHTML = hien.length
     ? `<div class="lc-grid">${hien.map((c,i)=>`
         <article class="lc-card" data-i="${i}">
-          <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy" onerror="this.src='${ANH_TRONG}'">
+          <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy" decoding="async" onerror="this.src='${ANH_TRONG}'">
           <div class="lc-name">${esc(c.title)}</div>
           <div class="lc-gia">${giaSo(c) ? bqTien(giaSo(c))+'đ' : ''}</div>
         </article>`).join('')}</div>`
