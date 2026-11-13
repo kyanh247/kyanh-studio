@@ -82,6 +82,49 @@
   .lc-filter:focus { outline: none; border-color: var(--gold); }
   .lc-filter.dang-loc { border-color: var(--gold); color: var(--gold-dark); font-weight: 600; background-image: none; }  /* dang loc: nut xoa thay cho mui ten */
 
+  /* ===== So do khach + nhan size tren the concept (13/11) ===== */
+  .lc-sodo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.6rem; margin: -0.3rem 0 0.9rem; padding: 0.55rem 0.75rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; font-size: 0.72rem; color: var(--muted); }
+  .lc-sodo-nhan { font-weight: 600; color: var(--ink-dark); margin-right: 0.15rem; }
+  .lc-sodo label { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .lc-sodo label > span { font-weight: 600; }
+  .lc-sodo input[type=text] { width: 3.6rem; padding: 0.35rem 0.4rem; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; text-align: center; color: var(--ink-dark); background: #FFFDFA; border: 1px solid var(--line); border-radius: 7px; }
+  .lc-sodo input[type=text]:focus { outline: none; border-color: var(--gold); }
+  .lc-sodo-loc { margin-left: auto; cursor: pointer; font-weight: 600; color: var(--ink); }
+  .lc-sodo-loc input { width: 15px; height: 15px; accent-color: var(--gold-dark); cursor: pointer; }
+  .lc-sodo-xoa { padding: 0.3rem 0.7rem; font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 600; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; }
+  .lc-sodo-xoa:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .lc-sodo-xoa[hidden] { display: none; }
+  @media (max-width: 560px) {
+    .lc-sodo { gap: 0.4rem; }
+    .lc-sodo-nhan { width: 100%; }
+    .lc-sodo label:not(.lc-sodo-loc) { flex: 1 1 28%; }
+    .lc-sodo input[type=text] { width: 100%; }
+    .lc-sodo-loc { margin-left: 0; }
+    /* Nut Xoa len goc phai hang tieu de, khong chiem them mot dong rieng */
+    .lc-sodo { position: relative; }
+    .lc-sodo-xoa { position: absolute; top: 0.4rem; right: 0.6rem; padding: 0.2rem 0.65rem; }
+  }
+  .lc-size { margin: -0.2rem 0.3rem 0.45rem; padding: 0.2rem 0.3rem; font-size: 0.6rem; font-weight: 700; text-align: center; border-radius: 6px; line-height: 1.3; }
+  .lc-size small { display: block; font-size: 0.54rem; font-weight: 500; margin-top: 0.1rem; }
+  /* 5 mau trang thai (Ky Anh chot 13/11): xanh la = vua · xanh duong = mac duoc can kep · vang = sat (chat 1-2cm) · do = khong vua · xam = chua co size / chua so duoc */
+  .sd-vua .lc-size, .lk-size-kq.sd-vua { color: #3F6B44; background: #E3F0DF; }
+  .sd-kep .lc-size, .lk-size-kq.sd-kep { color: #2F5F8A; background: #DFEAF5; }
+  .sd-sat .lc-size, .lk-size-kq.sd-sat { color: #8A6420; background: #F7EBD3; }
+  .sd-khong .lc-size, .lk-size-kq.sd-khong { color: #B03A2E; background: #F8E1DD; }
+  .sd-chua .lc-size, .sd-chuaso .lc-size, .lk-size-kq.sd-chuaso { color: var(--muted); background: rgba(139,129,120,0.08); font-weight: 500; }
+  .lc-card.sd-vua { border-color: #9FC496; }
+  .lc-card.sd-kep { border-color: #9DBBD8; }
+  .lc-card.sd-sat { border-color: #E2C48A; }
+  .lc-card.sd-khong { border-color: #E3A99F; }
+  .lc-card.sd-chua, .lc-card.sd-chuaso { opacity: 0.5; }
+  .lc-card.sd-khong { opacity: 0.7; }   /* mo nhe thoi de mau do van ro */
+  .lc-card.sd-khong:hover, .lc-card.sd-chua:hover, .lc-card.sd-chuaso:hover { opacity: 1; }
+  .lc-sodo input.sai { border-color: var(--danger); background: rgba(176,86,60,0.07); color: var(--danger); }
+  #lcGrid.anh-nho .lc-size { font-size: 0.46rem; margin: -0.1rem 0.1rem 0.25rem; padding: 0.12rem; }
+  #lcGrid.anh-nho .lc-size small { display: none; }
+  .lk-size { color: var(--ink) !important; font-weight: 600; margin-top: 0.35rem !important; }
+  .lk-size-kq { display: inline-block !important; margin-top: 0.3rem !important; padding: 0.15rem 0.5rem; border-radius: 6px; font-weight: 700; }
+
   /* Chip dang concept: bam truc tiep, khoi mo dropdown (Ky Anh 02/11) */
   .lc-dang-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
   .lc-dang-chip { padding: 0.4rem 0.8rem; font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.2s ease; }
@@ -824,6 +867,17 @@
       <button class="btn-add" id="lcAdd" title="Thêm concept mới">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
+    </div>
+    <!-- So do khach (13/11): go so do -> the concept hien vua / sat / khong vua theo cot Size trong sheet. Chi nam tren may, khong luu len mang -->
+    <div class="lc-sodo" id="lcSoDo">
+      <span class="lc-sodo-nhan">📏 Số đo khách</span>
+      <label><span>Cao</span><input type="text" inputmode="decimal" data-sd="cao" placeholder="cm"></label>
+      <label><span>Nặng</span><input type="text" inputmode="decimal" data-sd="nang" placeholder="kg"></label>
+      <label><span>V1</span><input type="text" inputmode="decimal" data-sd="v1" placeholder="cm"></label>
+      <label><span>V2</span><input type="text" inputmode="decimal" data-sd="v2" placeholder="cm"></label>
+      <label><span>V3</span><input type="text" inputmode="decimal" data-sd="v3" placeholder="cm"></label>
+      <label class="lc-sodo-loc"><input type="checkbox" id="lcSoDoChiVua"> Chỉ hiện bộ vừa</label>
+      <button type="button" class="lc-sodo-xoa" id="lcSoDoXoa" hidden>Xoá</button>
     </div>
     <div class="lc-dang-chips" id="lcDangChips" role="group" aria-label="Lọc theo dạng concept"></div>
     <main id="lcGrid"></main>
@@ -1738,6 +1792,90 @@ function docCSV(t){
   row.push(o); rows.push(row);
   return rows;
 }
+/* ===== Size do (13/11): cot "Size" ghi "M: 76-80-86 / L: 90-86-90" (V1-V2-V3 moi size, ngan bang / hoac xuong dong);
+   "Chiều cao", "Cân Nặng" ghi khoang "155-168", "-58", "80-". Trong = khong gioi han. ===== */
+function docKhoang(s){
+  const m = String(s||'').replace(/\s/g,'').match(/^(\d+(?:[.,]\d+)?)?-(\d+(?:[.,]\d+)?)?$|^(\d+(?:[.,]\d+)?)$/);
+  if(!m) return null;
+  const so = v=>v==null ? null : parseFloat(v.replace(',','.'));
+  if(m[3]!=null){ const v=so(m[3]); return { tu:v, den:v }; }
+  if(m[1]==null && m[2]==null) return null;
+  return { tu:so(m[1]), den:so(m[2]) };
+}
+function docSizeDo(size, cao, nang){
+  const ds = String(size||'').split(/\/|\n/).map(p=>p.trim()).filter(Boolean).map(p=>{
+    const m = p.match(/^([^:：]{1,12})[:：]\s*(.+)$/);
+    const nhan = m ? m[1].trim() : '';
+    const so = (m ? m[2] : p).split('-').map(x=>parseFloat(x.trim().replace(',','.')));
+    return { nhan, v:[so[0],so[1],so[2]].map(x=>Number.isFinite(x)?x:null) };
+  }).filter(s=>s.v.some(x=>x!=null));
+  const k = { ds, cao:docKhoang(cao), nang:docKhoang(nang), goc:String(size||'').trim() };
+  return (ds.length || k.cao || k.nang) ? k : null;
+}
+/* So trong sheet = SO DO CUA BO DO (Ky Anh 13/11), so khach dem "uom" len do:
+   - khach <= do: vua (do rong hon toi SIZE_RONG_OK cm van vua vi ghim duoc)
+   - khach lon hon do 1..SIZE_CHAT_SAT cm: sat (mac duoc nhung om); lon hon nua: khong vua
+   - do rong hon khach qua SIZE_RONG_OK: "mac duoc, can kep" — rong bao nhieu cung KHONG bao khong vua (Ky Anh 13/11) */
+const SIZE_CHAT_SAT = 2, SIZE_RONG_OK = 6, SIZE_SAT = 2;
+/* Tra ve { muc: 'vua'|'sat'|'khong'|'chua', size, lech:[...chu] } — muc thap la tot */
+function soSize(sd, kh){
+  const coSo = ['cao','nang','v1','v2','v3'].some(t=>kh[t]);
+  if(!coSo) return null;
+  if(!sd) return { muc:'chua' };
+  const MUC = { vua:0, sat:1, khong:2 };
+  /* Dem so lan thuc su so duoc: khach go Cao/Nang ma do khong ghi Cao/Nang, hoac khong go V1-V3 thi KHONG duoc bao "vua" (Ky Anh bat loi 13/11) */
+  let soLanChung = 0;
+  const xetKhoang = (k, v, ten, dv)=>{
+    if(!k || !v) return { muc:0, lech:[] };
+    soLanChung++;
+    /* Cao/Nang chi la goi y, KHONG BAO GIO bao do — 3 vong moi quyet dinh (Ky Anh 13/11: cao/nang khong hop thi tu choi khach tu dau)
+       - thap / nhe hon muc: do dai / rong -> xanh duong "can kep" (cao: kep lai hoac di giay cao)
+       - cao / nang hon muc: do ngan / om -> vang "sat" */
+    if(k.tu!=null && v < k.tu){ const d=k.tu-v;
+      return { muc:1, kep:true, lech:[ten==='Cao' ? `Cao thiếu ${d}cm (kẹp/giày cao)` : `Nặng thiếu ${d}kg`] }; }
+    if(k.den!=null && v > k.den){ const d=v-k.den; return { muc:1, lech:[`${ten} vượt ${d}${dv}`] }; }
+    return { muc:0, lech:[] };
+  };
+  const chung = [xetKhoang(sd.cao, kh.cao, 'Cao', 'cm'), xetKhoang(sd.nang, kh.nang, 'Nặng', 'kg')];
+  const ungVien = (sd.ds.length ? sd.ds : [null]).map(s=>{
+    let muc = Math.max(...chung.map(x=>x.muc)), lech = chung.flatMap(x=>x.lech), tong = 0, soLanV = 0, kep = chung.some(x=>x.kep);
+    if(s) ['v1','v2','v3'].forEach((t,i)=>{
+      const g = s.v[i], v = kh[t]; if(g==null || !v) return;
+      soLanV++;
+      const d = v - g; tong += Math.abs(d);
+      const ten = 'V'+(i+1);
+      if(d > 0){ const m = d > SIZE_CHAT_SAT ? 2 : 1; muc=Math.max(muc,m); lech.push(`${ten} chật ${d}cm`); }                            // khach lon hon do
+      // Do rong hon khach: KHONG BAO GIO la "khong vua" — studio kep lai duoc (Ky Anh 13/11)
+      else if(-d > SIZE_RONG_OK){ muc=Math.max(muc,1); kep=true; lech.push(`${ten} rộng ${-d}cm`); }
+    });
+    /* "Chi rong" = moi cho lech deu la rong (kep duoc), khong co cho nao chat */
+    const chiRong = muc===1 && kep && lech.every(t=>/rộng|thiếu/.test(t));
+    return { muc, lech, tong, soLanV, chiRong, size: s ? s.nhan : '' };
+  }).sort((a,b)=>a.muc-b.muc || a.tong-b.tong);
+  const tot = ungVien[0];
+  /* Chua so duoc so nao -> noi ro thieu gi, khong doan */
+  if(!tot.soLanV && !soLanChung){
+    const thieu = [];
+    if((kh.v1||kh.v2||kh.v3) && !sd.ds.length) thieu.push('đồ chưa ghi V1-V2-V3');
+    if(!(kh.v1||kh.v2||kh.v3) && sd.ds.length) thieu.push('nhập V1-V2-V3 để so');
+    if(kh.cao && !sd.cao)   thieu.push('đồ chưa ghi chiều cao');
+    if(kh.nang && !sd.nang) thieu.push('đồ chưa ghi cân nặng');
+    return { muc:'chuaso', size:'', lech: thieu };
+  }
+  /* Chi biet ten size khi co so V de so; chi co Cao/Nang thi khong neu ten size */
+  return { muc: tot.chiRong ? 'kep' : ['vua','sat','khong'][tot.muc], size: tot.soLanV ? tot.size : '', lech: tot.lech };
+}
+function nhanSize(kq){
+  if(!kq) return '';
+  const sz = kq.size ? ` size ${kq.size}` : '';
+  if(kq.muc==='vua')   return `✓ Vừa${sz}`;
+  if(kq.muc==='kep')   return `📎 Mặc được${sz} · cần kẹp`;
+  if(kq.muc==='sat')   return `⚠ Sát${sz}`;
+  if(kq.muc==='khong') return '✕ Không vừa';
+  if(kq.muc==='chuaso') return '? Chưa so được';
+  return 'Chưa có size';
+}
+
 /* Tim cot theo ten tieu de, khong theo vi tri — Ky Anh doi thu tu cot trong sheet cung khong hong */
 function conceptTuSheet(rows){
   const h=(rows[0]||[]).map(x=>x.trim().toLowerCase());
@@ -1745,7 +1883,8 @@ function conceptTuSheet(rows){
   const C={ dm:cot('danh mục'), ten:cot('tên'), gom:cot('đã gồm'), mod:cot('mod'),
             km:h.findIndex(x=>x.includes('giá tư vấn')&&!x.includes('đã gồm')), goc:cot('niêm yết'),
             anh:cot('thumbnail'), fb:cot('facebook'), web:cot('website'), tt:cot('tiktok'),
-            ghim:cot('ghim') };   // cot Ghim: o nao co chu (x, 1, ...) la ghim len dau
+            ghim:cot('ghim'),     // cot Ghim: o nao co chu (x, 1, ...) la ghim len dau
+            size:h.findIndex(x=>x==='size'), cao:cot('chiều cao'), nang:cot('cân nặng') };   // 3 cot size do (13/11)
   const o=(r,i)=>i<0?'':String(r[i]||'').trim();
   const DANG=[['conceptual','conceptual'],['portrait','portrait'],['maternity','maternity'],['bầu','maternity'],
               ['birthday','birthday'],['couple','couple'],['holiday','holiday']];
@@ -1761,6 +1900,7 @@ function conceptTuSheet(rows){
     const dangCon=(DANG.find(d=>dm.includes(d[0]))||[])[1]||'';
     return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
              dang:dangCon,
+             sizeDo: docSizeDo(o(r,C.size), o(r,C.cao), o(r,C.nang)),
              content:o(r,C.web), link_fb:o(r,C.fb), link_tt:o(r,C.tt), image:o(r,C.anh),
              gia_fb: km ? giaFB(ten, km, goc, baoGomTheoDang(dangCon)) + dongCuoi : '',
              gia_tt: km ? giaTT(ten, km) : '' };
@@ -2801,6 +2941,12 @@ function renderLinks(){
   if(mau)  ds = ds.filter(c=>tenModel(c).includes(mau));
   if(gia)  ds = ds.filter(c=>giaSo(c)===gia);
   if(q)    ds = xepTheoDiem(ds, q, c=>c.model);
+  /* So do khach: tinh ket qua cho tung concept; bat "Chi hien bo vua" thi bo the khong vua / chua co size */
+  const kh = soDoKhach();
+  const kqSize = new Map(ds.map(c=>[c.id, soSize(c.sizeDo, kh)]));
+  $('lcSoDoXoa').hidden = ![...document.querySelectorAll('#lcSoDo [data-sd]')].some(i=>i.value.trim());
+  if($('lcSoDoChiVua').checked && Object.values(kh).some(Boolean))
+    ds = ds.filter(c=>['vua','kep','sat'].includes(kqSize.get(c.id)?.muc));
   const grid=$('lcGrid');
 
   if(!ds.length){
@@ -2828,15 +2974,16 @@ function renderLinks(){
   const con = conLai.filter(c=>!idHopLe.includes(c.dang));
   if(con.length) nhom.push({ nhan:'Chưa xếp dạng', ds:con });
 
-  const veThe = c=>`
-    <article class="lc-card" data-id="${esc(c.id)}">
+  const veThe = c=>{ const kq = kqSize.get(c.id); return `
+    <article class="lc-card${kq?' sd-'+kq.muc:''}" data-id="${esc(c.id)}">
       ${c.ghim?`<span class="lc-dau-ghim" title="Đã ghim"><svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></span>`:''}
       ${c.tuSheet?'':`<span class="lc-dau-ghim lc-dau-tay" title="Nhập tay trong app"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>`}
       <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy"
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
       <div class="lc-gia">${esc(c.gia || docGia(c.gia_fb))}</div>
-    </article>`;
+      ${kq ? `<div class="lc-size" title="${esc(kq.lech?.join(' · ')||'')}">${esc(nhanSize(kq))}${kq.lech?.length && kq.muc!=='vua' ? `<small>${esc(kq.lech.join(' · '))}</small>` : ''}</div>` : ''}
+    </article>`; };
 
   /* Chi mot khoi thi khoi can tieu de — dang loc san roi, ghi lai thanh thua */
   grid.innerHTML = (nhom.length===1 && dang && !daGhim.length)
@@ -2855,6 +3002,29 @@ function renderLinks(){
     el.onclick=()=>moChonLink(c);
   });
 }
+/* So do khach: doc 5 o; chi giu trong trang (F5 la mat) — khong ghi xuong may, khong len mang */
+/* Gioi han hop ly: go nham (vd 677kg) thi o do len va bo qua so do */
+const SD_GIOI_HAN = { cao:[100,220], nang:[25,200], v1:[50,160], v2:[40,160], v3:[50,170] };
+function soDoKhach(){
+  const kh = {};
+  document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>{
+    const v = parseFloat(String(i.value).replace(',','.'));
+    const [lo, hi] = SD_GIOI_HAN[i.dataset.sd];
+    const hopLe = Number.isFinite(v) && v>=lo && v<=hi;
+    i.classList.toggle('sai', String(i.value).trim()!=='' && !hopLe);
+    i.title = i.classList.contains('sai') ? `Số này lạ quá (thường ${lo}–${hi})` : '';
+    kh[i.dataset.sd] = hopLe ? v : 0;
+  });
+  return kh;
+}
+document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>i.addEventListener('input', renderLinks));
+$('lcSoDoChiVua').addEventListener('change', renderLinks);
+$('lcSoDoXoa').onclick = ()=>{
+  document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>i.value='');
+  $('lcSoDoChiVua').checked = false;
+  renderLinks();
+};
+
 /* Co anh o tab Concept — nho rieng tung may, nhu so cot ben Tra loi nhanh */
 const CO_ANH_KEY = 'kyanh-concept-co-anh';
 function datCoAnh(co){
@@ -3484,11 +3654,25 @@ function docGia(t){
 }
 
 const lkOverlay=$('lkOverlay');
+/* Dong size trong bang chon link: liet ke size + chieu cao/can nang; co so do khach thi ghi luon ket qua */
+function veSizeLk(c){
+  const sd = c.sizeDo;
+  const kq = soSize(sd, soDoKhach());
+  if(!sd && !kq) return '';
+  const k = (x,dv)=> x ? `${x.tu??''}${x.tu!==x.den?'–'+(x.den??''):''}${dv}` : '';
+  const dong = sd ? [
+    sd.ds.map(s=>(s.nhan?s.nhan+': ':'')+s.v.map(v=>v??'?').join('-')).join(' · '),
+    sd.cao ? 'Cao '+k(sd.cao,'cm') : '', sd.nang ? 'Nặng '+k(sd.nang,'kg') : ''
+  ].filter(Boolean).join(' · ') : '';
+  return `<small class="lk-size">📏 ${dong ? 'Số đo đồ — '+esc(dong) : 'Chưa có size'}</small>`
+    + (kq && kq.muc!=='chua' ? `<small class="lk-size-kq sd-${kq.muc}">${esc(nhanSize(kq))}${kq.lech.length?' — '+esc(kq.lech.join(', ')):''}</small>` : '');
+}
 function moChonLink(c){
   $('lkHead').innerHTML = `
     <img src="${esc(c.image||ANH_TRONG)}" alt="" onerror="this.src='${ANH_TRONG}'">
     <span><b>${esc(c.title)}</b>
-      <small>${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · ')) || '—'}</small></span>`;
+      <small>${esc([nhanDang(c.dang), c.model].filter(Boolean).join(' · ')) || '—'}</small>
+      ${veSizeLk(c)}</span>`;
 
   const veNut = (n, thieu, laGia)=>{
     const v = (c[n.truong]||'').trim();
