@@ -94,9 +94,25 @@
   .lc-sodo-xoa { padding: 0.3rem 0.7rem; font-family: 'Montserrat', sans-serif; font-size: 0.68rem; font-weight: 600; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 20px; cursor: pointer; }
   .lc-sodo-xoa:hover { border-color: var(--gold); color: var(--gold-dark); }
   .lc-sodo-xoa[hidden] { display: none; }
+  /* O dan tin khach: rong het hang, nam ngay sau chu "So do khach" */
+  .lc-sodo-ngat { flex-basis: 100%; height: 0; }
+  .lc-sodo-dan { flex: 1 1 60%; min-width: 0; text-align: left !important; padding: 0.4rem 0.65rem; font-family: 'Montserrat', sans-serif; font-size: 0.76rem; color: var(--ink-dark); background: #FFFDFA; border: 1px dashed rgba(184,149,110,0.55); border-radius: 7px; }
+  .lc-sodo-dan:focus { outline: none; border-style: solid; border-color: var(--gold); }
+  .lc-sodo-dan::placeholder { color: #B5ADA4; }
+  /* Dong tom tat: moi mau mot vien nho, cung mau voi nhan tren the */
+  .lc-sodo-tom { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 0.35rem; padding-top: 0.45rem; border-top: 1px dashed var(--line); }
+  .lc-sodo-tom[hidden] { display: none; }
+  .lc-sodo-tom span { padding: 0.12rem 0.55rem; border-radius: 20px; font-size: 0.66rem; font-weight: 500; }
+  .lc-sodo-tom b { font-weight: 700; }
+  .lc-sodo-tom .sd-vua { color: #3F6B44; background: #E3F0DF; }
+  .lc-sodo-tom .sd-kep { color: #2F5F8A; background: #DFEAF5; }
+  .lc-sodo-tom .sd-sat { color: #8A6420; background: #F7EBD3; }
+  .lc-sodo-tom .sd-khong { color: #B03A2E; background: #F8E1DD; }
+  .lc-sodo-tom .sd-chua, .lc-sodo-tom .sd-chuaso { color: var(--muted); background: rgba(139,129,120,0.08); }
   @media (max-width: 560px) {
     .lc-sodo { gap: 0.4rem; }
     .lc-sodo-nhan { width: 100%; }
+    .lc-sodo-dan { flex-basis: 100%; }
     .lc-sodo label:not(.lc-sodo-loc) { flex: 1 1 28%; }
     .lc-sodo input[type=text] { width: 100%; }
     .lc-sodo-loc { margin-left: 0; }
@@ -871,6 +887,8 @@
     <!-- So do khach (13/11): go so do -> the concept hien vua / sat / khong vua theo cot Size trong sheet. Chi nam tren may, khong luu len mang -->
     <div class="lc-sodo" id="lcSoDo">
       <span class="lc-sodo-nhan">📏 Số đo khách</span>
+      <input type="text" class="lc-sodo-dan" id="lcSoDoDan" placeholder="Dán tin khách, vd: em cao 1m58, 48kg, số đo 82-64-88" autocomplete="off">
+      <span class="lc-sodo-ngat" aria-hidden="true"></span>
       <label><span>Cao</span><input type="text" inputmode="decimal" data-sd="cao" placeholder="cm"></label>
       <label><span>Nặng</span><input type="text" inputmode="decimal" data-sd="nang" placeholder="kg"></label>
       <label><span>V1</span><input type="text" inputmode="decimal" data-sd="v1" placeholder="cm"></label>
@@ -878,6 +896,7 @@
       <label><span>V3</span><input type="text" inputmode="decimal" data-sd="v3" placeholder="cm"></label>
       <label class="lc-sodo-loc"><input type="checkbox" id="lcSoDoChiVua"> Chỉ hiện bộ vừa</label>
       <button type="button" class="lc-sodo-xoa" id="lcSoDoXoa" hidden>Xoá</button>
+      <div class="lc-sodo-tom" id="lcSoDoTom" hidden></div>
     </div>
     <div class="lc-dang-chips" id="lcDangChips" role="group" aria-label="Lọc theo dạng concept"></div>
     <main id="lcGrid"></main>
@@ -2944,9 +2963,21 @@ function renderLinks(){
   /* So do khach: tinh ket qua cho tung concept; bat "Chi hien bo vua" thi bo the khong vua / chua co size */
   const kh = soDoKhach();
   const kqSize = new Map(ds.map(c=>[c.id, soSize(c.sizeDo, kh)]));
-  $('lcSoDoXoa').hidden = ![...document.querySelectorAll('#lcSoDo [data-sd]')].some(i=>i.value.trim());
-  if($('lcSoDoChiVua').checked && Object.values(kh).some(Boolean))
+  $('lcSoDoXoa').hidden = ![...document.querySelectorAll('#lcSoDo input[type=text]')].some(i=>i.value.trim());
+  const coSoDo = Object.values(kh).some(Boolean);
+  /* Dong tom tat: dem theo tung mau tren danh sach dang xem (truoc khi loc "chi hien bo vua") */
+  const tom = $('lcSoDoTom');
+  if(coSoDo){
+    const dem = {}; ds.forEach(c=>{ const m=kqSize.get(c.id)?.muc; if(m) dem[m]=(dem[m]||0)+1; });
+    const muc = [['vua','vừa'],['kep','cần kẹp'],['sat','sát'],['khong','không vừa'],['chuaso','chưa so được'],['chua','chưa có size']];
+    tom.innerHTML = muc.filter(([k])=>dem[k]).map(([k,n])=>`<span class="sd-${k}"><b>${dem[k]}</b> ${n}</span>`).join('');
+    tom.hidden = false;
+  } else tom.hidden = true;
+  if($('lcSoDoChiVua').checked && coSoDo)
     ds = ds.filter(c=>['vua','kep','sat'].includes(kqSize.get(c.id)?.muc));
+  /* Co so do thi bo vua len dau trong moi nhom: xanh la -> xanh duong -> vang -> do -> xam (giu thu tu cu khi cung mau) */
+  const HANG = { vua:0, kep:1, sat:2, khong:3, chuaso:4, chua:5 };
+  const xepSize = arr => coSoDo ? arr.map((c,i)=>[c,i]).sort((a,b)=>(HANG[kqSize.get(a[0].id)?.muc]??9)-(HANG[kqSize.get(b[0].id)?.muc]??9) || a[1]-b[1]).map(x=>x[0]) : arr;
   const grid=$('lcGrid');
 
   if(!ds.length){
@@ -2961,17 +2992,17 @@ function renderLinks(){
 
   /* Khoi dau tien: nhung concept Ky Anh tu ghim. Chung VAN hien lai o dang cua no ben duoi
      (Ky Anh: ghim xong dung mat khoi danh muc — vd Birthday #4). */
-  const daGhim = ds.filter(c=>c.ghim);
+  const daGhim = xepSize(ds.filter(c=>c.ghim));
   const conLai = ds;
   const nhom = daGhim.length ? [{ nhan:'Ghim lên đầu', ds:daGhim }] : [];
 
   /* Gom theo dang, giu dung thu tu trong LC_DANG; dang la khong khop thi don xuong cuoi */
   LC_DANG.forEach(d=>{
-    const g = conLai.filter(c=>c.dang===d.id);
+    const g = xepSize(conLai.filter(c=>c.dang===d.id));
     if(g.length) nhom.push({ nhan:d.nhan, ds:g });
   });
   const idHopLe = LC_DANG.map(d=>d.id);
-  const con = conLai.filter(c=>!idHopLe.includes(c.dang));
+  const con = xepSize(conLai.filter(c=>!idHopLe.includes(c.dang)));
   if(con.length) nhom.push({ nhan:'Chưa xếp dạng', ds:con });
 
   const veThe = c=>{ const kq = kqSize.get(c.id); return `
@@ -3017,10 +3048,42 @@ function soDoKhach(){
   });
   return kh;
 }
+/* Tach so do tu tin khach (13/11): "em cao 1m58, 48kg, số đo 82-64-88", "1m6 50 ký 80 62 90", "v1 82 v2 64 v3 88"...
+   Chi tra ve nhung so tim thay; o nao khong thay thi de nguyen. */
+function tachSoDo(txt){
+  let s = ' ' + String(txt||'').toLowerCase().replace(/,(?=\d)/g,'.') + ' ';
+  const kq = {};
+  const bo = m => { s = s.replace(m, ' '); };
+  // Chieu cao: 1m58 / 1m6 / 1.58m / 158cm / cao 158
+  let m = s.match(/(\d)\s*m\s*(\d{1,2})(?!\d)/);
+  if(m){ kq.cao = +m[1]*100 + (m[2].length===1 ? +m[2]*10 : +m[2]); bo(m[0]); }
+  else if((m = s.match(/(\d)\.(\d{1,2})\s*m(?![a-z])/))){ kq.cao = +m[1]*100 + (m[2].length===1 ? +m[2]*10 : +m[2]); bo(m[0]); }
+  else if((m = s.match(/cao\D{0,8}?(\d{3})/)) || (m = s.match(/(\d{3})\s*cm/))){ const v=+m[1]; if(v>=130 && v<=200){ kq.cao=v; bo(m[0]); } }
+  // Can nang: 48kg / 48 ký / 48 ki / 48k / nặng 48
+  if((m = s.match(/(\d{2,3}(?:\.\d)?)\s*(?:kg|ký|kí|ky|ki|cân|can|k)(?![a-zà-ỹ])/)) || (m = s.match(/(?:nặng|nang|cân|can)\D{0,8}?(\d{2,3}(?:\.\d)?)/))){
+    const v=+m[1]; if(v>=30 && v<=150){ kq.nang=v; bo(m[0]); } }
+  // 3 vong: ghi ro v1/v2/v3 (hoac "vòng 1")
+  ['v1','v2','v3'].forEach((t,i)=>{
+    const r = new RegExp('(?:v|vòng|vong)\\s*' + (i+1) + '\\D{0,4}?(\\d{2,3})');
+    const x = s.match(r); if(x){ kq[t] = +x[1]; bo(x[0]); }
+  });
+  // hoac 3 so lien nhau: 82-64-88 / 82 64 88 / 82/64/88 / 82.64.88
+  if(!kq.v1 && (m = s.match(/(\d{2,3})\s*[-–\/ .,x*]\s*(\d{2,3})\s*[-–\/ .,x*]\s*(\d{2,3})(?!\d)/))){
+    const v=[+m[1],+m[2],+m[3]];
+    if(v.every(x=>x>=45 && x<=140)){ kq.v1=v[0]; kq.v2=v[1]; kq.v3=v[2]; }
+  }
+  return kq;
+}
+$('lcSoDoDan').addEventListener('input', ()=>{
+  const kq = tachSoDo($('lcSoDoDan').value);
+  document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>{ if(kq[i.dataset.sd]!=null) i.value = kq[i.dataset.sd]; });
+  renderLinks();
+});
 document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>i.addEventListener('input', renderLinks));
 $('lcSoDoChiVua').addEventListener('change', renderLinks);
 $('lcSoDoXoa').onclick = ()=>{
   document.querySelectorAll('#lcSoDo [data-sd]').forEach(i=>i.value='');
+  $('lcSoDoDan').value = '';
   $('lcSoDoChiVua').checked = false;
   renderLinks();
 };
