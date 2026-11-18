@@ -10,7 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # Ma studio (= mat khau tai khoan MA_EMAIL) lay tu bien moi truong REPLY_MA, hoac file
 # Reply/ma-studio.txt — file nay nam NGOAI repo nen khong len GitHub. Khong co ma -> doc khong dang nhap
 # (chi chay duoc khi Rules chua khoa).
-MA_EMAIL = "nhanvien@kyanh.studio"
+MA_EMAIL = "reply@kyanh.studio"
 FILE_MA = os.path.normpath(os.path.join(HERE, "..", "..", "ma-studio.txt"))
 
 

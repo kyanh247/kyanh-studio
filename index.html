@@ -1665,7 +1665,7 @@ function clChotWire(){
    - May da nhap ma: MO_KEY + dang nhap Firebase luu tren may -> lan sau vao thang, ve ngay tu ban luu.
    - Doi ma (doi mat khau trong Firebase) -> may cu bi day ra (~1 tieng) -> khoa lai + xoa ban luu mau tren may.
    - Quan tri = da dang nhap va KHONG phai tai khoan studio (email quan tri chi nam trong Rules, khong ghi ra day). */
-const MA_EMAIL = 'nhanvien@kyanh.studio';
+const MA_EMAIL = 'reply@kyanh.studio';
 const MO_KEY = 'kyanh-reply-mo';
 const khoaMan = $('khoaMan'), khoaMa = $('khoaMa'), khoaLoi = $('khoaLoi'), khoaNut = $('khoaNut');
 function khoaApp(xoaLuu){
@@ -4343,7 +4343,7 @@ init();
        match /databases/{database}/documents {
          match /replies/{docId} {
            allow read: if request.auth != null
-                       && request.auth.token.email in [ 'nhanvien@kyanh.studio', /* + email quản trị */ ];
+                       && request.auth.token.email in [ 'reply@kyanh.studio', /* + email quản trị */ ];
            allow write: if request.auth != null
                         && request.auth.token.email in [
                              /* danh sách email quản trị — xem trong
@@ -4356,7 +4356,7 @@ init();
      }
 
      Từ 19/11/2026: phải nhập MÃ STUDIO mới đọc được (mã = mật khẩu tài khoản chung
-     nhanvien@kyanh.studio trong Authentication > Users). Đổi mã = đổi mật khẩu tài khoản đó.
+     reply@kyanh.studio trong Authentication > Users). Đổi mã = đổi mật khẩu tài khoản đó.
      Chỉ các email quản trị mới THÊM / SỬA / XOÁ được.
      Sao lưu tuần (backup/sao-luu.py) và báo cáo Telegram đăng nhập bằng mã studio để đọc.
 
