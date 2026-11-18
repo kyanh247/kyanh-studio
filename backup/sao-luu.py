@@ -1,10 +1,45 @@
 """Sao lưu toàn bộ collection `replies` từ Firestore ra file JSON trong repo."""
-import json, urllib.request, datetime, os, sys
+import json, re, urllib.request, urllib.error, datetime, os, sys
 
 PROJECT = "ky-anh-studio---reply-d43ff"
 URL = (f"https://firestore.googleapis.com/v1/projects/{PROJECT}"
        "/databases/(default)/documents/replies?pageSize=300")
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Tu 19/11/2026 app khoa bang ma studio: Rules chi cho doc `replies` khi dang nhap tai khoan studio.
+# Ma studio (= mat khau tai khoan MA_EMAIL) lay tu bien moi truong REPLY_MA, hoac file
+# Reply/ma-studio.txt — file nay nam NGOAI repo nen khong len GitHub. Khong co ma -> doc khong dang nhap
+# (chi chay duoc khi Rules chua khoa).
+MA_EMAIL = "nhanvien@kyanh.studio"
+FILE_MA = os.path.normpath(os.path.join(HERE, "..", "..", "ma-studio.txt"))
+
+
+def lay_token():
+    ma = os.environ.get("REPLY_MA", "")
+    if not ma and os.path.exists(FILE_MA):
+        with open(FILE_MA, encoding="utf-8-sig") as f:
+            ma = f.read().strip()
+    if not ma:
+        return ""
+    # Khoa web cong khai cua app (da nam san trong index.html)
+    with open(os.path.join(HERE, "..", "index.html"), encoding="utf-8") as f:
+        key = re.search(r'apiKey:\s*"([^"]+)"', f.read()).group(1)
+    req = urllib.request.Request(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + key,
+        data=json.dumps({"email": MA_EMAIL, "password": ma, "returnSecureToken": True}).encode(),
+        headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.load(r)["idToken"]
+    except urllib.error.HTTPError as e:
+        try:
+            ly_do = json.load(e).get("error", {}).get("message", "")
+        except Exception:
+            ly_do = str(e.code)
+        sys.exit(f"KHONG dang nhap duoc bang ma studio ({ly_do}) — kiem tra file {FILE_MA}. Chua ghi gi.")
+
+
+TOKEN = lay_token()
 
 # Mac dinh: ghi de replies-backup.json ngay canh script (ban trong repo).
 # Them "--ra <thu muc>": luu ra cho khac, dat ten kem ngay gio va giu lai
@@ -42,8 +77,15 @@ def untype(v):
 docs = []
 url = URL
 while url:
-    with urllib.request.urlopen(url) as r:
-        page = json.load(r)
+    req = urllib.request.Request(url, headers={"Authorization": "Bearer " + TOKEN} if TOKEN else {})
+    try:
+        with urllib.request.urlopen(req) as r:
+            page = json.load(r)
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            sys.exit("KHONG doc duoc mau (may chu tu choi) — thieu ma studio? Tao file "
+                     f"{FILE_MA} (1 dong: ma studio). Backup cu giu nguyen.")
+        raise
     for d in page.get("documents", []):
         # Bo _key (ma PIN) — script khoi phuc tu gan lai, khong can luu them mot ban
         item = {k: untype(v) for k, v in d.get("fields", {}).items() if k != "_key"}

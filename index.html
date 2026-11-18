@@ -664,6 +664,24 @@
   .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
   .btn-ghost:hover { border-color: var(--gold); color: var(--gold-dark); }
 
+  /* Man khoa: nhap ma studio moi vao app (19/11). Duoi .modal-overlay (100) de khung Dang nhap quan tri noi len tren duoc */
+  .khoa-man { position: fixed; inset: 0; z-index: 96; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom)); background: var(--cream); overflow-y: auto; }
+  .khoa-man[hidden] { display: none; }
+  .khoa-hop { width: 100%; max-width: 340px; text-align: center; }
+  .khoa-logo svg { display: block; width: 170px; height: auto; margin: 0 auto; }
+  .khoa-tieu { margin: 0.85rem 0 2rem; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold-dark); }
+  .khoa-hop h2 { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 1.45rem; color: var(--ink-dark); margin: 0 0 0.35rem; }
+  .khoa-mo-ta { font-size: 0.76rem; color: var(--muted); line-height: 1.6; margin: 0 0 1.3rem; }
+  .khoa-an { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .khoa-o { position: relative; }
+  .khoa-o .f-input { height: 50px; padding: 0 3.1rem; font-size: 16px; text-align: center; letter-spacing: 0.06em; box-sizing: border-box; }
+  .khoa-mat { position: absolute; top: 3px; right: 3px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 6px; color: var(--muted); cursor: pointer; }
+  .khoa-mat svg { width: 19px; height: 19px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .khoa-loi { min-height: 1.15rem; margin: 0.55rem 0 0.35rem; font-size: 0.74rem; line-height: 1.5; color: var(--danger); }
+  .khoa-nut { width: 100%; height: 48px; flex: none; padding: 0; }
+  .khoa-qt { margin-top: 1.4rem; padding: 0.5rem 0.8rem; background: none; border: none; font-family: 'Montserrat', sans-serif; font-size: 0.7rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .khoa-qt:hover { color: var(--gold-dark); }
+
   .pin-modal { max-width: 360px; text-align: center; }
   .pin-modal h3 { margin-bottom: 0.5rem; }
   .pin-modal p { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.2rem; }
@@ -1152,6 +1170,24 @@
   </div>
 </div>
 
+<!-- Man khoa: chua nhap ma studio thi chi thay man nay (19/11) -->
+<div class="khoa-man" id="khoaMan" hidden>
+  <form class="khoa-hop" id="khoaForm" autocomplete="on" novalidate>
+    <div class="khoa-logo" id="khoaLogo" role="img" aria-label="Kỳ Anh Studio"></div>
+    <div class="khoa-tieu">Nội bộ · Trả lời nhanh</div>
+    <h2>Nhập mã studio</h2>
+    <p class="khoa-mo-ta">App chỉ dành cho người của studio.<br>Nhập một lần, máy này sẽ tự nhớ.</p>
+    <input type="text" class="khoa-an" id="khoaTen" name="username" autocomplete="username" tabindex="-1" aria-hidden="true">
+    <div class="khoa-o">
+      <input type="password" class="f-input" id="khoaMa" name="password" autocomplete="current-password" placeholder="Mã studio" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Mã studio">
+      <button type="button" class="khoa-mat" id="khoaMat" aria-label="Hiện mã" title="Hiện mã"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    </div>
+    <div class="khoa-loi" id="khoaLoi" role="alert"></div>
+    <button type="submit" class="btn-primary khoa-nut" id="khoaNut">Mở app</button>
+    <button type="button" class="khoa-qt" id="khoaQT">Đăng nhập quản trị</button>
+  </form>
+</div>
+
 <div class="modal-overlay" id="pinOverlay">
   <div class="modal pin-modal">
     <button class="modal-x" data-dong="pinOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -1337,6 +1373,7 @@ const RECENT_KEY = 'kyanh-reply-recent';
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
   set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} },
 };
 const SS = {
   get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } },
@@ -1429,10 +1466,10 @@ function startThongKe(){
   try {
     const col = fb.collection(fb.db, 'thongke'), ma = fb.documentId();
     [ fb.query(col, fb.where(ma, '<', 'd-')), fb.query(col, fb.where(ma, '>=', 'd.')) ].forEach((q, i)=>
-      fb.onSnapshot(q, snap=>{
+      huyNghe.push(fb.onSnapshot(q, snap=>{
         const o = {}; snap.forEach(d=>{ const v=d.data(); if(v && v.n>0) o[d.id] = { n:v.n, at:v.at||0 }; });
         phan[i] = o; gop();
-      }, loi));
+      }, loi)));
   } catch(e){ console.warn(e); }
 }
 
@@ -1621,6 +1658,78 @@ function clChotWire(){
   });
 }
 
+/* ===== Khoa app bang ma studio (19/11) =====
+   Ma studio = mat khau cua MOT tai khoan Firebase chung (MA_EMAIL) — Google kiem ma, khong phai app tu kiem.
+   Firestore Rules chi cho doc `replies` khi dang nhap dung tai khoan studio hoac quan tri -> nguoi la mo link,
+   hay goi thang may chu, deu khong doc duoc mau nao.
+   - May da nhap ma: MO_KEY + dang nhap Firebase luu tren may -> lan sau vao thang, ve ngay tu ban luu.
+   - Doi ma (doi mat khau trong Firebase) -> may cu bi day ra (~1 tieng) -> khoa lai + xoa ban luu mau tren may.
+   - Quan tri = da dang nhap va KHONG phai tai khoan studio (email quan tri chi nam trong Rules, khong ghi ra day). */
+const MA_EMAIL = 'nhanvien@kyanh.studio';
+const MO_KEY = 'kyanh-reply-mo';
+const khoaMan = $('khoaMan'), khoaMa = $('khoaMa'), khoaLoi = $('khoaLoi'), khoaNut = $('khoaNut');
+function khoaApp(xoaLuu){
+  LS.del(MO_KEY);
+  if (xoaLuu) { LS.del(CACHE_KEY); items = []; firstSnapshot = false; }
+  khoaMan.hidden = false;
+  setSync('local', 'Đã khoá — nhập mã studio');
+  if (matchMedia('(hover: hover)').matches) setTimeout(()=>khoaMa.focus(), 60);
+}
+function moKhoa(){
+  LS.set(MO_KEY, '1');
+  if (khoaMan.hidden) return;
+  khoaMan.hidden = true; khoaMa.value = ''; khoaLoi.textContent = '';
+}
+function maLoiMsg(code){
+  switch(code){
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/invalid-login-credentials': return 'Mã chưa đúng — bạn kiểm tra lại nha';
+    case 'auth/user-not-found':
+    case 'auth/user-disabled': return 'Mã studio đang tạm khoá — hỏi Kỳ Anh';
+    case 'auth/too-many-requests': return 'Nhập sai nhiều lần quá — đợi vài phút rồi thử lại';
+    case 'auth/network-request-failed': return 'Mất mạng — kiểm tra kết nối rồi thử lại';
+    default: return 'Chưa mở được' + (code ? ' (' + code + ')' : '') + ' — thử lại sau';
+  }
+}
+async function nhapMa(e){
+  if (e) e.preventDefault();
+  const ma = khoaMa.value.trim();
+  if (!ma) { khoaLoi.textContent = 'Nhập mã studio trước nha'; khoaMa.focus(); return; }
+  khoaNut.disabled = true; khoaLoi.textContent = ''; khoaNut.textContent = 'Đang mở...';
+  try {
+    await fbSan;
+    if (!auth) { khoaLoi.textContent = 'Chưa kết nối được máy chủ — kiểm tra mạng rồi tải lại trang'; return; }
+    await auth.signInWithEmailAndPassword(auth.instance, MA_EMAIL, ma);
+    // onAuthStateChanged lo phan con lai: an man khoa + noi may chu
+  } catch(err) {
+    khoaLoi.textContent = maLoiMsg(err && err.code);
+    khoaMa.select();
+  } finally { khoaNut.disabled = false; khoaNut.textContent = 'Mở app'; }
+}
+$('khoaForm').addEventListener('submit', nhapMa);
+$('khoaTen').value = MA_EMAIL;   // cho iPhone / Chrome luu ma vao Mat khau da luu
+$('khoaLogo').innerHTML = document.querySelector('.app-logo').innerHTML;
+$('khoaMat').onclick = ()=>{
+  const hien = khoaMa.type === 'password';
+  khoaMa.type = hien ? 'text' : 'password';
+  $('khoaMat').setAttribute('aria-label', hien ? 'Ẩn mã' : 'Hiện mã');
+  $('khoaMat').title = hien ? 'Ẩn mã' : 'Hiện mã';
+};
+$('khoaQT').onclick = ()=>openPin();
+/* Noi / ngat may chu theo dang nhap: chi nghe Firestore khi da mo khoa */
+let huyNghe = [], daNoi = false;
+function noiMayChu(){
+  if (daNoi || !fb) return;
+  daNoi = true;
+  setSync(navigator.onLine ? 'online' : 'offline', navigator.onLine ? 'Đồng bộ realtime' : 'Ngoại tuyến — vẫn copy được');
+  startFirestore();
+}
+function ngatMayChu(){
+  huyNghe.forEach(f=>{ try { f(); } catch(e){} });
+  huyNghe = []; daNoi = false;
+}
+
 async function init() {
   loadRecent(); loadDem(); napSoCot(); capNhatTet(); setInterval(capNhatTet, 3600000); clChotWire();
   napSheetConcept();   // chay nen, khong cho
@@ -1629,28 +1738,34 @@ async function init() {
   // Không có Firebase (chế độ máy đơn) thì không mở quyền quản trị — mã PIN cũ đã gỡ 09/11.
   isAdmin = false;
   applyAdminUI();
+  /* Chua nhap ma tren may nay -> hien man khoa ngay, khong ve gi (19/11) */
+  const daMo = !!LS.get(MO_KEY);
+  if (firebaseEnabled && !daMo) khoaApp(false);
   /* Ve NGAY tu ban luu tren may (13/11) — khong doi Firebase tai xong nua */
-  const cached0 = loadCache();
+  const cached0 = (daMo || !firebaseEnabled) ? loadCache() : null;
   if (cached0 && cached0.length) { items = cached0; render(); }
   else showSkeleton();
   await fbSan;   // Firebase tai xong (hoac loi) roi moi noi dang nhap + may chu
   if (auth) {
     auth.onAuthStateChanged(auth.instance, user => {
-      isAdmin = !!user;
-      adminEmail = user ? (user.email || '') : '';
+      const email = user ? String(user.email || '').toLowerCase() : '';
+      isAdmin = !!user && email !== MA_EMAIL;
+      adminEmail = isAdmin ? email : '';
+      if (user) { moKhoa(); noiMayChu(); }
+      else { ngatMayChu(); khoaApp(true); }   // chua nhap ma / da dang xuat / ma da doi -> khoa + xoa ban luu mau
       applyAdminUI(); render();
     });
   }
   if (fb) {
-    setSync('online', 'Đồng bộ realtime');
-    startFirestore();
-    window.addEventListener('online',  () => setSync('online', 'Đồng bộ realtime'));
-    window.addEventListener('offline', () => setSync('offline', 'Ngoại tuyến — vẫn copy được'));
-    if (!navigator.onLine) setSync('offline', 'Ngoại tuyến — vẫn copy được');
-  } else {
+    window.addEventListener('online',  () => { if (daNoi) setSync('online', 'Đồng bộ realtime'); });
+    window.addEventListener('offline', () => { if (daNoi) setSync('offline', 'Ngoại tuyến — vẫn copy được'); });
+  } else if (daMo || !firebaseEnabled) {
+    // Khong tai duoc Firebase (mat mang luc mo) -> may da nhap ma van copy duoc tu ban luu
     setSync('local', firebaseEnabled ? 'Chế độ máy đơn (không tải được máy chủ)' : 'Chế độ máy đơn — lưu trên máy này');
-    if (!items.length) { items = SEED_ITEMS.map(withId); saveCache(); }
+    if (!firebaseEnabled && !items.length) { items = SEED_ITEMS.map(withId); saveCache(); }
     render();
+  } else {
+    khoaLoi.textContent = 'Chưa kết nối được máy chủ — kiểm tra mạng rồi tải lại trang';
   }
 }
 function withId(x){ return { id: 'c-' + Math.random().toString(36).slice(2,10), order: Date.now(), ...x }; }
@@ -1660,7 +1775,7 @@ function startFirestore() {
   colRef = fb.collection(fb.db, 'replies');
   startThongKe();
   const q = fb.query(colRef, fb.orderBy('order', 'asc'));
-  fb.onSnapshot(q, async (snap) => {
+  huyNghe.push(fb.onSnapshot(q, async (snap) => {
     if (snap.empty && !firstSnapshot && isAdmin) {
       firstSnapshot = true; await seedToFirestore(); return;
     }
@@ -1672,9 +1787,11 @@ function startFirestore() {
             navigator.onLine ? 'Đồng bộ realtime' : 'Ngoại tuyến — vẫn copy được');
   }, (err) => {
     console.warn('Firestore lỗi:', err);
+    if (!daNoi) return;   // vua dang xuat / khoa lai -> khong ve lai ban luu
+    ngatMayChu();         // listener nay da chet -> dung het, lan dang nhap sau noi lai tu dau
     setSync('local', 'Lỗi kết nối — dùng bản lưu trên máy');
     const c = loadCache(); if (c) { items = c; render(); }
-  });
+  }));
 }
 async function seedToFirestore() {
   try {
@@ -1737,7 +1854,8 @@ function applyAdminUI() {
 lockBtn.onclick = async () => {
   if (!isAdmin) { openPin(); return; }
   if (auth) {
-    try { await auth.signOut(auth.instance); showToast('Đã đăng xuất'); }
+    // Dang xuat quan tri = ve man khoa (may nay nhap lai ma studio de dung tiep)
+    try { await auth.signOut(auth.instance); showToast('Đã đăng xuất quản trị'); }
     catch(e){ console.warn(e); showToast('Không đăng xuất được', true); }
   } else {
     isAdmin=false; SS.del('kyanh-admin'); applyAdminUI(); render();
@@ -1782,7 +1900,7 @@ async function doLogin(){
   try {
     await auth.signInWithEmailAndPassword(auth.instance, email, pass);
     closePin(); loginPass.value='';
-    showToast('Đã đăng nhập — mở khoá quản trị');
+    showToast(email.toLowerCase()===MA_EMAIL ? 'Đã mở app' : 'Đã đăng nhập — mở khoá quản trị');
     if (fb && firstSnapshot && items.length===0) seedToFirestore();
   } catch(e) {
     pinErr.textContent=loginErrMsg(e && e.code);
@@ -4224,7 +4342,8 @@ init();
      service cloud.firestore {
        match /databases/{database}/documents {
          match /replies/{docId} {
-           allow read: if true;
+           allow read: if request.auth != null
+                       && request.auth.token.email in [ 'nhanvien@kyanh.studio', /* + email quản trị */ ];
            allow write: if request.auth != null
                         && request.auth.token.email in [
                              /* danh sách email quản trị — xem trong
@@ -4236,8 +4355,10 @@ init();
        }
      }
 
-     Ai cũng ĐỌC được (để nhân viên mở lên copy mẫu, không cần đăng nhập).
-     Chỉ các email trong danh sách mới THÊM / SỬA / XOÁ được.
+     Từ 19/11/2026: phải nhập MÃ STUDIO mới đọc được (mã = mật khẩu tài khoản chung
+     nhanvien@kyanh.studio trong Authentication > Users). Đổi mã = đổi mật khẩu tài khoản đó.
+     Chỉ các email quản trị mới THÊM / SỬA / XOÁ được.
+     Sao lưu tuần (backup/sao-luu.py) và báo cáo Telegram đăng nhập bằng mã studio để đọc.
 
      ⚠️ Phải khoá theo đúng email, KHÔNG dùng mỗi `request.auth != null`:
      apiKey nằm công khai trong file này, người lạ có thể tự tạo tài khoản
