@@ -674,7 +674,8 @@
   .khoa-mo-ta { font-size: 0.76rem; color: var(--muted); line-height: 1.6; margin: 0 0 1.3rem; }
   .khoa-an { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .khoa-o { position: relative; }
-  .khoa-o .f-input { height: 50px; padding: 0 3.1rem; font-size: 16px; text-align: center; letter-spacing: 0.06em; box-sizing: border-box; }
+  .khoa-o .f-input { height: 50px; padding: 0 3.1rem; font-size: 18px; text-align: center; letter-spacing: 0.3em; box-sizing: border-box; }
+  .khoa-o .f-input::placeholder { font-size: 15px; letter-spacing: 0.04em; }
   .khoa-mat { position: absolute; top: 3px; right: 3px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 6px; color: var(--muted); cursor: pointer; }
   .khoa-mat svg { width: 19px; height: 19px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .khoa-loi { min-height: 1.15rem; margin: 0.55rem 0 0.35rem; font-size: 0.74rem; line-height: 1.5; color: var(--danger); }
@@ -1179,7 +1180,7 @@
     <p class="khoa-mo-ta">App chỉ dành cho người của studio.<br>Nhập một lần, máy này sẽ tự nhớ.</p>
     <input type="text" class="khoa-an" id="khoaTen" name="username" autocomplete="username" tabindex="-1" aria-hidden="true">
     <div class="khoa-o">
-      <input type="password" class="f-input" id="khoaMa" name="password" autocomplete="current-password" placeholder="Mã studio" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Mã studio">
+      <input type="password" class="f-input" id="khoaMa" name="password" autocomplete="current-password" placeholder="Mã 5 số" inputmode="numeric" pattern="[0-9]*" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Mã studio 5 số">
       <button type="button" class="khoa-mat" id="khoaMat" aria-label="Hiện mã" title="Hiện mã"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <div class="khoa-loi" id="khoaLoi" role="alert"></div>
@@ -1667,6 +1668,10 @@ function clChotWire(){
    - Quan tri = da dang nhap va KHONG phai tai khoan studio (email quan tri chi nam trong Rules, khong ghi ra day). */
 const MA_EMAIL = 'reply@kyanh.studio';
 const MO_KEY = 'kyanh-reply-mo';
+/* Ky Anh chon ma 5 so (19/11) nhung Firebase bat mat khau >= 6 ky tu -> go dung 5 so thi app tu ghep MA_DUOI
+   vao sau: mat khau that trong Firebase = "<5 so>kas". Go ma dai hon / co chu thi gui nguyen (de sau nay doi ma dai). */
+const MA_DUOI = 'kas';
+const matKhauTuMa = ma => /^\d{5}$/.test(ma) ? ma + MA_DUOI : ma;
 const khoaMan = $('khoaMan'), khoaMa = $('khoaMa'), khoaLoi = $('khoaLoi'), khoaNut = $('khoaNut');
 function khoaApp(xoaLuu){
   LS.del(MO_KEY);
@@ -1692,22 +1697,26 @@ function maLoiMsg(code){
     default: return 'Chưa mở được' + (code ? ' (' + code + ')' : '') + ' — thử lại sau';
   }
 }
+let dangMoMa = false;
 async function nhapMa(e){
   if (e) e.preventDefault();
+  if (dangMoMa) return;
   const ma = khoaMa.value.trim();
   if (!ma) { khoaLoi.textContent = 'Nhập mã studio trước nha'; khoaMa.focus(); return; }
-  khoaNut.disabled = true; khoaLoi.textContent = ''; khoaNut.textContent = 'Đang mở...';
+  dangMoMa = true; khoaNut.disabled = true; khoaLoi.textContent = ''; khoaNut.textContent = 'Đang mở...';
   try {
     await fbSan;
     if (!auth) { khoaLoi.textContent = 'Chưa kết nối được máy chủ — kiểm tra mạng rồi tải lại trang'; return; }
-    await auth.signInWithEmailAndPassword(auth.instance, MA_EMAIL, ma);
+    await auth.signInWithEmailAndPassword(auth.instance, MA_EMAIL, matKhauTuMa(ma));
     // onAuthStateChanged lo phan con lai: an man khoa + noi may chu
   } catch(err) {
     khoaLoi.textContent = maLoiMsg(err && err.code);
     khoaMa.select();
-  } finally { khoaNut.disabled = false; khoaNut.textContent = 'Mở app'; }
+  } finally { dangMoMa = false; khoaNut.disabled = false; khoaNut.textContent = 'Mở app'; }
 }
 $('khoaForm').addEventListener('submit', nhapMa);
+// Go du 5 so la tu mo, khoi bam nut
+khoaMa.addEventListener('input', ()=>{ khoaLoi.textContent = ''; if (/^\d{5}$/.test(khoaMa.value.trim())) nhapMa(); });
 $('khoaTen').value = MA_EMAIL;   // cho iPhone / Chrome luu ma vao Mat khau da luu
 $('khoaLogo').innerHTML = document.querySelector('.app-logo').innerHTML;
 $('khoaMat').onclick = ()=>{

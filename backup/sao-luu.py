@@ -21,6 +21,8 @@ def lay_token():
             ma = f.read().strip()
     if not ma:
         return ""
+    if re.fullmatch(r"\d{5}", ma):
+        ma += "kas"   # ma 5 so: app tu ghep duoi "kas" (Firebase bat mat khau >= 6 ky tu) — giong matKhauTuMa trong index.html
     # Khoa web cong khai cua app (da nam san trong index.html)
     with open(os.path.join(HERE, "..", "index.html"), encoding="utf-8") as f:
         key = re.search(r'apiKey:\s*"([^"]+)"', f.read()).group(1)
