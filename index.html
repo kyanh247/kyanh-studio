@@ -413,9 +413,13 @@
   .lc-trong { display: flex; align-items: center; justify-content: center; min-height: 90px; padding: 1rem; font-size: 0.7rem; line-height: 1.6; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 9px; }
   .lc-xem-het { margin-left: 0.6rem; padding: 0; background: none; border: none; font: inherit; letter-spacing: 0.02em; text-transform: none; color: var(--gold-dark); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   @media (min-width: 640px) {
-    .lc-doi { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    /* Ky Anh 20/11: gian 2 ben ra + vach doc mo o giua cho thay ro 2 khung */
+    .lc-doi { grid-template-columns: 1fr 1fr; gap: 2.2rem; }
+    .lc-doi > div + div { position: relative; }
+    .lc-doi > div + div::before { content: ""; position: absolute; top: 0; bottom: 0; left: -1.1rem; width: 1px; background: var(--line); }
     .lc-doi .lc-grid { grid-template-columns: repeat(3, 1fr); }
-    #lcGrid.anh-nho .lc-doi { gap: 0.4rem; }
+    #lcGrid.anh-nho .lc-doi { gap: 1.6rem; }
+    #lcGrid.anh-nho .lc-doi > div + div::before { left: -0.8rem; }
     #lcGrid.anh-nho .lc-doi .lc-grid { grid-template-columns: repeat(6, 1fr); }
   }
   #lcGrid.anh-nho .lc-card { border-radius: 7px; }
