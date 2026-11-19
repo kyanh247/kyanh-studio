@@ -406,6 +406,18 @@
   /* Anh nho: gap doi so cot -> moi anh con mot nua */
   #lcGrid.anh-nho .lc-grid { grid-template-columns: repeat(6, 1fr); gap: 0.35rem; }
   @media (min-width: 640px) { #lcGrid.anh-nho .lc-grid { grid-template-columns: repeat(12, 1fr); gap: 0.4rem; } }
+  /* Khoi dau (20/11): Ghim ben trai + Gan day ben phai, moi ben toi da 6 bo.
+     Khe giua 2 ben = khe giua the -> the y het co cu (6 cot). Dien thoai: xep chong, moi ben luoi nhu cu. */
+  .lc-doi { display: grid; grid-template-columns: 1fr; gap: 1.6rem; }
+  .lc-doi > div { min-width: 0; }
+  .lc-trong { display: flex; align-items: center; justify-content: center; min-height: 90px; padding: 1rem; font-size: 0.7rem; line-height: 1.6; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 9px; }
+  .lc-xem-het { margin-left: 0.6rem; padding: 0; background: none; border: none; font: inherit; letter-spacing: 0.02em; text-transform: none; color: var(--gold-dark); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  @media (min-width: 640px) {
+    .lc-doi { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .lc-doi .lc-grid { grid-template-columns: repeat(3, 1fr); }
+    #lcGrid.anh-nho .lc-doi { gap: 0.4rem; }
+    #lcGrid.anh-nho .lc-doi .lc-grid { grid-template-columns: repeat(6, 1fr); }
+  }
   #lcGrid.anh-nho .lc-card { border-radius: 7px; }
   #lcGrid.anh-nho .lc-name { font-size: 0.52rem; margin: 0.3rem 0.15rem 0; }
   #lcGrid.anh-nho .lc-dau-ghim { width: 15px; height: 15px; top: 0.2rem; left: 0.2rem; }
@@ -3158,6 +3170,8 @@ function capNhatDsModel(){
   o.innerHTML='<option value="">Model</option>' + ds.map(([t,k])=>`<option value="${esc(t)}" data-phu="${k}">${esc(t)}</option>`).join('');
   o.value = dem.has(dangChon) ? dangChon : '';
 }
+const LC_DAU_TOI_DA = 6;      // khoi dau: moi ben (Ghim | Gan day) toi da 6 bo
+let lcGhimMoHet = false;      // bam "Xem hết" o ben Ghim
 function renderLinks(){
   const q=($('lcSearch').value||'').trim().toLowerCase();
   const dang=$('lcFilter').value;
@@ -3213,10 +3227,14 @@ function renderLinks(){
   }
 
   /* Khoi dau tien: nhung concept Ky Anh tu ghim. Chung VAN hien lai o dang cua no ben duoi
-     (Ky Anh: ghim xong dung mat khoi danh muc — vd Birthday #4). */
+     (Ky Anh: ghim xong dung mat khoi danh muc — vd Birthday #4).
+     20/11: chia doi — trai Ghim, phai Gan day (6 concept copy gan nhat tren may nay, theo demCopy[..].at). Moi ben 6 bo;
+     ghim nhieu hon 6 thi co nut "Xem hết". */
   const daGhim = xepSize(ds.filter(c=>c.ghim));
+  const lucCopy = c => (demCopy[idConcept(c.title)]||{}).at || 0;
+  const ganDay = xepSize(ds.filter(lucCopy).sort((a,b)=>lucCopy(b)-lucCopy(a)).slice(0, LC_DAU_TOI_DA));
   const conLai = ds;
-  const nhom = daGhim.length ? [{ nhan:'Ghim lên đầu', ds:daGhim }] : [];
+  const nhom = [];
 
   /* Gom theo dang, giu dung thu tu trong LC_DANG; dang la khong khop thi don xuong cuoi */
   LC_DANG.forEach(d=>{
@@ -3234,18 +3252,34 @@ function renderLinks(){
       <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy" decoding="async"
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
-      <div class="lc-gia">${esc(c.gia || docGia(c.gia_fb))}</div>
-      ${kq ? `<div class="lc-size" title="${esc(kq.lech?.join(' · ')||'')}">${esc(nhanSize(kq))}${kq.lech?.length && kq.muc!=='vua' ? `<small>${esc(kq.lech.join(' · '))}</small>` : ''}</div>` : ''}
+      ${coSoDo ? '' : `<div class="lc-gia">${esc(c.gia || docGia(c.gia_fb))}</div>`}
+      ${kq ?`<div class="lc-size" title="${esc(kq.lech?.join(' · ')||'')}">${esc(nhanSize(kq))}${kq.lech?.length && kq.muc!=='vua' ? `<small>${esc(kq.lech.join(' · '))}</small>` : ''}</div>` : ''}
     </article>`; };
 
+  /* Khoi dau: Ghim | Gan day — hien khi it nhat mot ben co concept */
+  const ghimHien = lcGhimMoHet ? daGhim : daGhim.slice(0, LC_DAU_TOI_DA);
+  const nuaKhoi = (nhan, tat, hien, trong, nut) => `<div>
+      <div class="lc-tieu-de">${nhan}<span class="lc-dem">${tat.length}${nut}</span></div>
+      ${hien.length ? `<div class="lc-grid">${hien.map(veThe).join('')}</div>` : `<div class="lc-trong">${trong}</div>`}
+    </div>`;
+  const khoiDau = (daGhim.length || ganDay.length) ? `
+        <section class="lc-khoi">
+          <div class="lc-doi">
+            ${nuaKhoi('Ghim lên đầu', daGhim, ghimHien, 'Chưa ghim concept nào',
+                daGhim.length > LC_DAU_TOI_DA ? `<button class="lc-xem-het" id="lcGhimHet">${lcGhimMoHet ? 'Thu gọn' : 'Xem hết'}</button>` : '')}
+            ${nuaKhoi('Gần đây', ganDay, ganDay, 'Concept bạn copy sẽ hiện ở đây<br>(riêng máy này)', '')}
+          </div>
+        </section>` : '';
+
   /* Chi mot khoi thi khoi can tieu de — dang loc san roi, ghi lai thanh thua */
-  grid.innerHTML = (nhom.length===1 && dang && !daGhim.length)
+  grid.innerHTML = (nhom.length===1 && dang && !khoiDau)
     ? `<div class="lc-grid">${nhom[0].ds.map(veThe).join('')}</div>`
-    : nhom.map(g=>`
+    : khoiDau + nhom.map(g=>`
         <section class="lc-khoi">
           <div class="lc-tieu-de">${esc(g.nhan)}<span class="lc-dem">${g.ds.length}</span></div>
           <div class="lc-grid">${g.ds.map(veThe).join('')}</div>
         </section>`).join('');
+  if($('lcGhimHet')) $('lcGhimHet').onclick = e=>{ e.stopPropagation(); lcGhimMoHet = !lcGhimMoHet; renderLinks(); };
 
   if(sheetLuc) grid.insertAdjacentHTML('beforeend',
     `<p class="section-note" style="margin-top:1.4rem">Lấy từ Google Sheet · cập nhật ${new Date(sheetLuc).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}</p>`);
@@ -4048,7 +4082,8 @@ function moChonLink(c){
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
         if(tangDem(idConcept(c.title)))   // chi dem kenh khi luot nay duoc cong (khong phai bam lon 2 lan)
           tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
-        setTimeout(()=>lkOverlay.classList.remove('show'), 650);
+        // dong khung roi ve lai de concept vua copy len khoi "Gan day"
+        setTimeout(()=>{ lkOverlay.classList.remove('show'); if(activeView==='link') renderLinks(); }, 650);
       } else showToast('Không copy được', true);
     };
   });
