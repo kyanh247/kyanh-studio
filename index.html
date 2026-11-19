@@ -138,8 +138,12 @@
     .lc-sodo-o input { font-size: 0.82rem; padding: 0.42rem 0.1rem; }
     .lc-sodo-loc { padding-bottom: 0; }
   }
-  .lc-size { margin: -0.2rem 0.3rem 0.45rem; padding: 0.2rem 0.3rem; font-size: 0.6rem; font-weight: 700; text-align: center; border-radius: 6px; line-height: 1.3; }
-  .lc-size small { display: block; font-size: 0.54rem; font-weight: 500; margin-top: 0.1rem; }
+  /* O size tren the (20/11, theo gop y Fable): luon 1 dong, cao co dinh -> ca hang thang nhau.
+     Chi tiet lech ("V1 rong 15cm...") xem o khung bam vao the (veSizeLk) hoac di chuot (title). */
+  .lc-size { display: flex; align-items: center; justify-content: center; gap: 0.25em; height: 1.4rem; margin: -0.2rem 0.3rem 0.45rem; padding: 0 0.3rem; font-size: 0.6rem; font-weight: 700; line-height: 1; border-radius: 6px; white-space: nowrap; overflow: hidden; }
+  .lc-size .sz-i, .lc-size .sz-s { flex: none; }
+  .lc-size .sz-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .lc-size .sz-s::before { content: "· "; font-weight: 500; opacity: 0.7; }
   /* 5 mau trang thai (Ky Anh chot 13/11): xanh la = vua · xanh duong = mac duoc can kep · vang = sat (chat 1-2cm) · do = khong vua · xam = chua co size / chua so duoc */
   .sd-vua .lc-size, .lk-size-kq.sd-vua { color: #3F6B44; background: #E3F0DF; }
   .sd-kep .lc-size, .lk-size-kq.sd-kep { color: #2F5F8A; background: #DFEAF5; }
@@ -154,8 +158,12 @@
   .lc-card.sd-khong { opacity: 0.7; }   /* mo nhe thoi de mau do van ro */
   .lc-card.sd-khong:hover, .lc-card.sd-chua:hover, .lc-card.sd-chuaso:hover { opacity: 1; }
   .lc-sodo input.sai { border-color: var(--danger); background: rgba(176,86,60,0.07); color: var(--danger); }
-  #lcGrid.anh-nho .lc-size { font-size: 0.46rem; margin: -0.1rem 0.1rem 0.25rem; padding: 0.12rem; }
-  #lcGrid.anh-nho .lc-size small { display: none; }
+  #lcGrid.anh-nho .lc-size { height: 1rem; font-size: 0.5rem; margin: -0.1rem 0.1rem 0.25rem; padding: 0 0.12rem; gap: 0.2em; }
+  /* anh nho: chi con ky hieu + ten size (mau da noi trang thai) */
+  #lcGrid.anh-nho .lc-size .sz-t { display: none; }
+  #lcGrid.anh-nho .lc-size .sz-s { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  #lcGrid.anh-nho .lc-size .sz-s::before { content: none; }
+  #lcGrid.anh-nho .sd-chua .lc-size::before { content: "–"; }
   /* 20/11: co so do -> an gia; o size xuong day the (ca hang thang nhau), cach ten mot khoang — truoc do dinh sat ten, che dong 2 */
   #lcGrid .lc-card.kg .lc-name { margin-bottom: 0.55rem; }
   #lcGrid .lc-card.kg .lc-size { margin-top: auto; }
@@ -2113,6 +2121,12 @@ function nhanSize(kq){
   if(kq.muc==='chuaso') return '? Chưa so được';
   return 'Chưa có size';
 }
+/* Nhan ngan cho the concept (1 dong, 20/11). Ban day du van la nhanSize() o khung bam vao the */
+function nhanSizeThe(kq){
+  const [i, t] = { vua:['✓','Vừa'], kep:['📎','Cần kẹp'], sat:['⚠','Sát'], khong:['✕','Không vừa'], chuaso:['?','Chưa so được'] }[kq.muc] || ['', 'Chưa có size'];
+  const sz = kq.size && ['vua','kep','sat'].includes(kq.muc) ? kq.size : '';
+  return (i ? `<span class="sz-i">${i}</span>` : '') + `<span class="sz-t">${t}</span>` + (sz ? `<span class="sz-s">${esc(sz)}</span>` : '');
+}
 
 /* Tim cot theo ten tieu de, khong theo vi tri — Ky Anh doi thu tu cot trong sheet cung khong hong */
 function conceptTuSheet(rows){
@@ -3240,7 +3254,7 @@ function renderLinks(){
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
       ${coSoDo ? '' : `<div class="lc-gia">${esc(c.gia || docGia(c.gia_fb))}</div>`}
-      ${kq ?`<div class="lc-size" title="${esc(kq.lech?.join(' · ')||'')}">${esc(nhanSize(kq))}${kq.lech?.length && kq.muc!=='vua' ? `<small>${esc(kq.lech.join(' · '))}</small>` : ''}</div>` : ''}
+      ${kq ?`<div class="lc-size" title="${esc([nhanSize(kq), ...(kq.lech||[])].join(' · '))}">${nhanSizeThe(kq)}</div>` : ''}
     </article>`; };
 
   /* Chi mot khoi thi khoi can tieu de — dang loc san roi, ghi lai thanh thua */
