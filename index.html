@@ -569,6 +569,15 @@
   .tk-truc { display: flex; gap: 2px; margin-top: 0.35rem; }
   .tk-truc span { flex: 1 1 0; text-align: center; font-size: 0.54rem; color: var(--muted); white-space: nowrap; }
   .tk-truc span.nay { color: var(--ink-dark); font-weight: 700; }
+  /* Gui gia tung ngay (20/11): cot chong 2 tong vang dong — Facebook dam (duoi), TikTok nhat (tren) */
+  .tk-chong { display: flex; flex-direction: column; width: 100%; max-width: 24px; border-radius: 4px 4px 0 0; overflow: hidden; transition: filter 0.15s ease; }
+  .tk-chong b, .tk-chu-giai b { display: block; }
+  .tk-chong .f, .tk-chu-giai .f { background: var(--gold); }
+  .tk-chong .t, .tk-chu-giai .t { background: #DCC7AA; }
+  .tk-cot:hover .tk-chong, .tk-cot:focus-visible .tk-chong { filter: brightness(0.9); }
+  .tk-chu-giai { display: flex; justify-content: center; gap: 1.1rem; margin-top: 0.7rem; font-size: 0.66rem; color: var(--muted); }
+  .tk-chu-giai span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .tk-chu-giai b { width: 10px; height: 10px; border-radius: 3px; }
   /* Thanh ngang theo nhom */
   /* ten | thanh (ngan, toi da 38% the) | so */
   .tk-nhom { display: grid; grid-template-columns: 1fr minmax(2.5rem, 38%) auto; align-items: center; gap: 0.45rem 0.6rem; }
@@ -1467,6 +1476,7 @@ function demGuiGia(k, idCon){
     if (tkDu[ym]) { const m = tkDu[ym]; m.muc[id] = { n: ((m.muc[id]||{}).n||0) + 1, at: Date.now() }; }
     congChung(id);
   });
+  if (activeView==='thongke') renderThongKe();
 }
 function demTemplate(loai){
   if(!demDuocCong('tpl-'+loai)) return;
@@ -1518,11 +1528,16 @@ async function napThang(ym){
   try {
     const col = fb.collection(fb.db, 'thongke'), ma = fb.documentId();
     const snap = await fb.getDocs(fb.query(col, fb.where(ma, '>=', `d-${ym}-`), fb.where(ma, '<', `d-${ym}.`)));
-    const du = { ngay:{}, muc:{} };
+    const du = { ngay:{}, muc:{}, chot:null };
     snap.forEach(d=>{
       const v = d.data(); if(!v || !(v.n>0)) return;
       if(/^d-\d{4}-\d{2}-\d{2}$/.test(d.id)) du.ngay[d.id] = v.n; else du.muc[d.id] = { n:v.n, at:v.at||0 };
     });
+    /* So lich da chot tung ngay (o "lich da chot" quan tri tu ghi) — cho bieu do Gui gia tung ngay (20/11) */
+    try {
+      const cs = await fb.getDocs(fb.query(fb.collection(fb.db, 'chotlich'), fb.where(ma, '>=', `${ym}-`), fb.where(ma, '<', `${ym}.`)));
+      du.chot = {}; cs.forEach(d=>{ const v = d.data(); if(v && v.so!=null) du.chot[d.id] = +v.so || 0; });
+    } catch(e){ du.chot = null; }
     tkDu[ym] = du;
   } catch(e){ console.warn('Không tải được số liệu tháng', ym, e.code||e); tkDu[ym] = tkDu[ym] || null; }
   tkDangTai = '';
@@ -1665,6 +1680,8 @@ function clChotLuu(){
       try {
         // Ghi de ca doc (khong merge) -> chi con so, at; dong thoi xoa luon coc cu neu con
         await fb.setDoc(fb.doc(fb.db,'chotlich', clChotKey), rec);
+        const ymChot = clChotKey.slice(0, 7);   // bieu do Report doc lai ngay, khoi phai tai lai
+        if (tkDu[ymChot] && tkDu[ymChot].chot) tkDu[ymChot].chot[clChotKey] = rec.so;
         ghi.textContent = '✓ Đã lưu lên máy chủ';
         setTimeout(()=>{ if(clChotServer) ghi.textContent=''; }, 1500); return;
       } catch(e){ clChotServer = false; }
@@ -3007,19 +3024,29 @@ function renderThongKe(){
     <div><b>${tongCon}</b><span>Concept</span><small>${cons.length} concept</small></div>
   </div>`);
 
-  /* 2. Luot copy tung ngay trong thang */
-  khoi('Lượt copy từng ngày · '+tenThang, maxNgay ? `nhiều nhất ${maxNgay} lượt/ngày` : '', maxNgay
+  /* 2. Gui gia tung ngay (20/11, Ky Anh: report chi tinh "Gia gui khach").
+     Moi cot = so lan copy Gia Facebook (d-..-gfb) + Gia TikTok (d-..-gtt), chong 2 tong vang dong. Di chuot / cham: tach FB · TikTok + so lich chot (chotlich).
+     App bat dau dem tu 20/11/2026 — truoc do khong co so, khong bu. Trang day du o KAS Center → "Tu van khach". */
+  const gia = ngay.map(x=>{
+    const k = maNgay(x.d), f = (du.muc[k+'-gfb']||{}).n||0, t = (du.muc[k+'-gtt']||{}).n||0;
+    return { d:x.d, f, t, n:f+t, chot: du.chot ? du.chot[k.slice(2)] : undefined };
+  });
+  const maxGia = Math.max(...gia.map(x=>x.n)), tongF = gia.reduce((s,x)=>s+x.f,0), tongT = gia.reduce((s,x)=>s+x.t,0);
+  const tongChot = gia.reduce((s,x)=>s+(x.chot||0),0);
+  khoi('Gửi giá từng ngày', [maxGia ? `${tongF+tongT} lượt` : '', tongChot ? `chốt ${tongChot} lịch` : ''].filter(Boolean).join(' · '), maxGia
     ? `<div class="tk-the">
-         <div class="tk-ngay">${ngay.map((x,i)=>{
-            const cao=x.n ? Math.max(3, Math.round(x.n/maxNgay*100)) : 0;
+         <div class="tk-ngay">${gia.map((x,i)=>{
+            const cao=x.n ? Math.max(3, Math.round(x.n/maxGia*100)) : 0;
             /* chi ghi so len cot cao nhat va cot hom nay — ghi het thi roi mat */
-            const ghiSo = x.n && (x.n===maxNgay || i===iNay);
-            return `<button type="button" class="tk-cot" data-meo="${x.d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'})}: ${x.n} lượt" aria-label="${x.d.toLocaleDateString('vi-VN')}: ${x.n} lượt copy">
-              ${ghiSo?`<em style="bottom:calc(${cao}% + 3px)">${x.n}</em>`:''}<i style="height:${cao}%"></i></button>`;
+            const ghiSo = x.n && (x.n===maxGia || i===iNay);
+            const meo = `${x.d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'})}: ${x.n} lượt gửi giá (Facebook ${x.f} · TikTok ${x.t})${x.chot!=null ? ' · chốt '+x.chot : ''}`;
+            return `<button type="button" class="tk-cot" data-meo="${meo}" aria-label="${meo}">
+              ${ghiSo?`<em style="bottom:calc(${cao}% + 3px)">${x.n}</em>`:''}<span class="tk-chong" style="height:${cao}%">${x.t?`<b class="t" style="flex:${x.t}"></b>`:''}${x.f?`<b class="f" style="flex:${x.f}"></b>`:''}</span></button>`;
          }).join('')}</div>
-         <div class="tk-truc">${ngay.map((x,i)=>`<span class="${i===iNay?'nay':''}">${(i===0||(i+1)%5===0||i===iNay)?(i+1):''}</span>`).join('')}</div>
+         <div class="tk-truc">${gia.map((x,i)=>`<span class="${i===iNay?'nay':''}">${(i===0||(i+1)%5===0||i===iNay)?(i+1):''}</span>`).join('')}</div>
+         <div class="tk-chu-giai"><span><b class="f"></b>Facebook ${tongF}</span><span><b class="t"></b>TikTok ${tongT}</span></div>
        </div>`
-    : trong('Chưa có lượt copy nào được ghi theo ngày trong '+tenThang+'.'));
+    : trong('Chưa có lượt gửi giá nào trong '+tenThang+'. Mỗi lần copy <b>Giá Facebook</b> / <b>Giá TikTok</b> ở khung concept là một lượt — app bắt đầu đếm từ 20/11/2026.'));
 
   /* 2b. Theo nen tang (Ky Anh xin 25/10/2026).
      Mau tra loi: suy tu muc cua mau (Tu Van TikTok -> TikTok; Tu Van FB/Zalo, Bang Gia -> Facebook/Zalo; con lai -> Chung).
