@@ -3349,10 +3349,13 @@ function tachSoDo(txt){
   let s = ' ' + String(txt||'').toLowerCase().replace(/,(?=\d)/g,'.') + ' ';
   const kq = {};
   const bo = m => { s = s.replace(m, ' '); };
-  // Chieu cao: 1m58 / 1m6 / 1.58m / 158cm / cao 158
-  let m = s.match(/(\d)\s*m\s*(\d{1,2})(?!\d)/);
-  if(m){ kq.cao = +m[1]*100 + (m[2].length===1 ? +m[2]*10 : +m[2]); bo(m[0]); }
-  else if((m = s.match(/(\d)\.(\d{1,2})\s*m(?![a-z])/))){ kq.cao = +m[1]*100 + (m[2].length===1 ? +m[2]*10 : +m[2]); bo(m[0]); }
+  // Chieu cao: 1.58m / 1.5 m / 1,6 m (so thap phan — xet TRUOC, 20/11: "1.5 m 50kg" tung bi doc thanh "5 m 50" = 550)
+  //            1m58 / 1m6 / 1 mét 58 · 158cm / cao 158. So dau chi la 1 hoac 2, khong dinh lien so/dau cham phia truoc.
+  // (Khong dung lookbehind (?<!..) — iPhone doi cu bao loi cu phap la hong ca app)
+  const raCao = (a, b) => +a*100 + (b.length===1 ? +b*10 : +b);
+  let m = s.match(/(?:^|[^\d.])([12])\.(\d{1,2})\s*(?:mét|met|m)(?![a-zà-ỹ])/);
+  if(!m) m = s.match(/(?:^|[^\d.])([12])\s*(?:mét|met|m)\s*(\d{1,2})(?!\d)/);
+  if(m && raCao(m[1], m[2])>=130 && raCao(m[1], m[2])<=200){ kq.cao = raCao(m[1], m[2]); bo(m[0]); }
   else if((m = s.match(/cao\D{0,8}?(\d{3})/)) || (m = s.match(/(\d{3})\s*cm/))){ const v=+m[1]; if(v>=130 && v<=200){ kq.cao=v; bo(m[0]); } }
   // Can nang: 48kg / 48 ký / 48 ki / 48k / nặng 48
   if((m = s.match(/(\d{2,3}(?:\.\d)?)\s*(?:kg|ký|kí|ky|ki|cân|can|k)(?![a-zà-ỹ])/)) || (m = s.match(/(?:nặng|nang|cân|can)\D{0,8}?(\d{2,3}(?:\.\d)?)/))){
@@ -3361,6 +3364,13 @@ function tachSoDo(txt){
   ['v1','v2','v3'].forEach((t,i)=>{
     const r = new RegExp('(?:v|vòng|vong)\\s*' + (i+1) + '\\D{0,4}?(\\d{2,3})');
     const x = s.match(r); if(x){ kq[t] = +x[1]; bo(x[0]); }
+  });
+  // hoac ghi bang chu (20/11): "ngực 98 eo có 70 mong 98", "vòng eo 64", co dau hay khong dau deu duoc.
+  // Chu dung rieng (khong nam giua tu: "theo" khong phai "eo"); so phai hop ly (SD_GIOI_HAN) — "mong là 15/12" khong bi lay.
+  [['v1','vòng ngực|vong nguc|ngực|ngưc|nguc|bust'], ['v2','vòng eo|vong eo|eo|waist'], ['v3','vòng mông|vong mong|mông|mong|vòng hông|hông|hip']].forEach(([t, chu])=>{
+    if(kq[t]) return;
+    const x = s.match(new RegExp('(?:^|[^a-zà-ỹ])(?:' + chu + ')(?![a-zà-ỹ])\\D{0,8}?(\\d{2,3})(?!\\d)'));
+    if(x){ const v = +x[1], [lo, hi] = SD_GIOI_HAN[t]; if(v>=lo && v<=hi){ kq[t] = v; bo(x[0]); } }
   });
   // hoac 3 so lien nhau: 82-64-88 / 82 64 88 / 82/64/88 / 82.64.88
   if(!kq.v1 && (m = s.match(/(\d{2,3})\s*[-–\/ .,x*]\s*(\d{2,3})\s*[-–\/ .,x*]\s*(\d{2,3})(?!\d)/))){
