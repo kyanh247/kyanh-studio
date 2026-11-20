@@ -1457,11 +1457,16 @@ function tangDem(id){
    Cung ap chong trung 2s (khoa rieng tung loai). */
 /* Dem luot gui gia cho khach theo ngay (20/11, Ky Anh muon bao cao theo "Gia gui khach"):
    moi lan copy Gia Facebook / Gia TikTok o khung concept -> "d-YYYY-MM-DD-gfb" / "d-YYYY-MM-DD-gtt" (+1).
-   Lot Rules ^[cd]-[a-z0-9-]{1,80}$ nhu -chot / -baogia. Chi co so tu 20/11/2026 tro di. */
-function demGuiGia(k){
-  const ngay = maNgay(new Date()), id = `${ngay}-${k}`, ym = ngay.slice(2, 9);
-  if (tkDu[ym]) { const m = tkDu[ym]; m.muc[id] = { n: ((m.muc[id]||{}).n||0) + 1, at: Date.now() }; }
-  congChung(id);
+   Them moi thang theo concept: "d-YYYY-MM-g-<ten concept, cat 60 ky tu nhu khoaThang>" (Fable de nghi: concept khach hoi GIA nhieu,
+   tach khoi d-YYYY-MM-c-... dang tron link + gia). Lot Rules ^[cd]-[a-z0-9-]{1,80}$ nhu -chot / -baogia. Chi co so tu luc ban nay len web.
+   Trang "Tu van khach" trong KAS Center doc cac so nay. */
+function demGuiGia(k, idCon){
+  const ngay = maNgay(new Date()), ym = ngay.slice(2, 9);
+  const ids = [`${ngay}-${k}`].concat(idCon ? [`d-${ym}-g-${idCon.slice(2, 62)}`] : []);
+  ids.forEach(id=>{
+    if (tkDu[ym]) { const m = tkDu[ym]; m.muc[id] = { n: ((m.muc[id]||{}).n||0) + 1, at: Date.now() }; }
+    congChung(id);
+  });
 }
 function demTemplate(loai){
   if(!demDuocCong('tpl-'+loai)) return;
@@ -4075,7 +4080,7 @@ function moChonLink(c){
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
         if(tangDem(idConcept(c.title))){   // chi dem kenh khi luot nay duoc cong (khong phai bam lon 2 lan)
           tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
-          if(n.id==='gfb' || n.id==='gtt') demGuiGia(n.id);
+          if(n.id==='gfb' || n.id==='gtt') demGuiGia(n.id, idConcept(c.title));
         }
         setTimeout(()=>lkOverlay.classList.remove('show'), 650);
       } else showToast('Không copy được', true);
