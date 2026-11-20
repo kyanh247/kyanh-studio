@@ -1455,6 +1455,14 @@ function tangDem(id){
 /* Dem luot dung Template moi ngay (tab Template: Chot lich / Bao gia).
    Ban ghi theo ngay: "d-YYYY-MM-DD-chot" va "d-YYYY-MM-DD-baogia" — lot Rules ^[cd]-[a-z0-9-]{1,80}$.
    Cung ap chong trung 2s (khoa rieng tung loai). */
+/* Dem luot gui gia cho khach theo ngay (20/11, Ky Anh muon bao cao theo "Gia gui khach"):
+   moi lan copy Gia Facebook / Gia TikTok o khung concept -> "d-YYYY-MM-DD-gfb" / "d-YYYY-MM-DD-gtt" (+1).
+   Lot Rules ^[cd]-[a-z0-9-]{1,80}$ nhu -chot / -baogia. Chi co so tu 20/11/2026 tro di. */
+function demGuiGia(k){
+  const ngay = maNgay(new Date()), id = `${ngay}-${k}`, ym = ngay.slice(2, 9);
+  if (tkDu[ym]) { const m = tkDu[ym]; m.muc[id] = { n: ((m.muc[id]||{}).n||0) + 1, at: Date.now() }; }
+  congChung(id);
+}
 function demTemplate(loai){
   if(!demDuocCong('tpl-'+loai)) return;
   const id = maNgay(new Date()) + '-' + loai;   // vd: d-2026-11-08-chot
@@ -4065,8 +4073,10 @@ function moChonLink(c){
         b.classList.add('vua-copy');
         b.querySelector('.lk-phu').textContent = '✓ Đã copy';
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
-        if(tangDem(idConcept(c.title)))   // chi dem kenh khi luot nay duoc cong (khong phai bam lon 2 lan)
+        if(tangDem(idConcept(c.title))){   // chi dem kenh khi luot nay duoc cong (khong phai bam lon 2 lan)
           tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
+          if(n.id==='gfb' || n.id==='gtt') demGuiGia(n.id);
+        }
         setTimeout(()=>lkOverlay.classList.remove('show'), 650);
       } else showToast('Không copy được', true);
     };
