@@ -3048,6 +3048,20 @@ function renderThongKe(){
        </div>`
     : trong('App bắt đầu đếm từ 20/11/2026.'));
 
+  /* 2a. Luot copy tung ngay (moi lan copy, mau + concept) — Ky Anh xin hien lai ben duoi bieu do gui gia (20/11) */
+  khoi('Lượt copy từng ngày', maxNgay ? `nhiều nhất ${maxNgay} lượt/ngày` : '', maxNgay
+    ? `<div class="tk-the">
+         <div class="tk-ngay">${ngay.map((x,i)=>{
+            const cao=x.n ? Math.max(3, Math.round(x.n/maxNgay*100)) : 0;
+            /* chi ghi so len cot cao nhat va cot hom nay — ghi het thi roi mat */
+            const ghiSo = x.n && (x.n===maxNgay || i===iNay);
+            return `<button type="button" class="tk-cot" data-meo="${x.d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'})}: ${x.n} lượt" aria-label="${x.d.toLocaleDateString('vi-VN')}: ${x.n} lượt copy">
+              ${ghiSo?`<em style="bottom:calc(${cao}% + 3px)">${x.n}</em>`:''}<i style="height:${cao}%"></i></button>`;
+         }).join('')}</div>
+         <div class="tk-truc">${ngay.map((x,i)=>`<span class="${i===iNay?'nay':''}">${(i===0||(i+1)%5===0||i===iNay)?(i+1):''}</span>`).join('')}</div>
+       </div>`
+    : trong('Chưa có lượt copy nào được ghi theo ngày trong '+tenThang+'.'));
+
   /* 2b. Theo nen tang (Ky Anh xin 25/10/2026).
      Mau tra loi: suy tu muc cua mau (Tu Van TikTok -> TikTok; Tu Van FB/Zalo, Bang Gia -> Facebook/Zalo; con lai -> Chung).
      Concept: theo nut da bam, chi dem tu 25/10/2026 — phan concept truoc do khong biet kenh. */
