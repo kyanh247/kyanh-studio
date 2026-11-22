@@ -317,6 +317,13 @@
   .lk-btn.vua-copy { border-color: var(--gold); background: #FFFDFA; }
   .lk-btn.vua-copy .lk-phu { color: var(--gold-dark); font-weight: 700; }
 
+  /* 22/11: 3 link gom 1 hang 3 o bang nhau. Dong duoi luon co chu -> copy xong doi chu ma o khong nhay */
+  .lk-ba { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+  .lk-ba .lk-btn { flex-direction: column; justify-content: center; gap: 0.3rem; height: 58px; padding: 0 0.2rem; margin: 0; text-align: center; }
+  .lk-ba .lk-ten { display: flex; align-items: center; justify-content: center; gap: 0.35rem; max-width: 100%; font-size: 0.72rem; white-space: nowrap; }
+  .lk-ba .lk-btn svg { width: 15px; height: 15px; }
+  .lk-ba .lk-phu { margin: 0; font-size: 0.58rem; line-height: 1; white-space: nowrap; }
+
   /* Hai nut quan tri cuoi bang chon link — cung ngon ngu voi cac nut nen tang o tren */
   .lk-btn .lk-phu.co-gia { font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); letter-spacing: 0; }
   .lk-nhan { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.5rem 0.2rem; }
@@ -2181,7 +2188,7 @@ function conceptTuSheet(rows){
     const dongCuoi = gom ? '\n' + boldify(gom, true) : '';
     const ten=boldify(title,false);
     const dangCon=(DANG.find(d=>dm.includes(d[0]))||[])[1]||'';
-    return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
+    return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, gom, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
              dang:dangCon,
              sizeDo: docSizeDo(o(r,C.size), o(r,C.cao), o(r,C.nang)),
              ghiSize: o(r,C.ghiSize),
@@ -4043,6 +4050,27 @@ function veSizeLk(c){
     + String(c.ghiSize||'').split('\n').map(x=>x.trim()).filter(Boolean).map(x=>`<small class="lk-size-dong lk-size-ghi">📝 ${esc(x)}</small>`).join('')
     + (kq && kq.muc!=='chua' ? `<small class="lk-size-kq sd-${kq.muc}">${esc(nhanSize(kq))}${kq.lech.length?' — '+esc(kq.lech.join(', ')):''}</small>` : '');
 }
+/* Cau phi toc phim trong khung chon link (22/11, Ky Anh xin). Chu lay thang tu mau "Tóc Phím" tren may chu
+   -> sua mau trong app la nut nay doi theo, khong giu ban chu thu hai trong code.
+   Concept ghi da gom toc phim / toc gia (cot C cua sheet, hoac tin gia nhap tay) -> nut tat, khoi bao phi nham. */
+const ICON_TOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M7 3c-3 4 3 6 0 10s1 7 0 8"/><path d="M12 3c-3 4 3 6 0 10s1 7 0 8"/><path d="M17 3c-3 4 3 6 0 10s1 7 0 8"/></svg>';
+function mauTocPhim(){
+  return itemsReply().find(i => String(i.title||'').normalize('NFC').trim().toLowerCase()==='tóc phím' && String(i.content||'').trim());
+}
+function daGomToc(c){
+  const s = ((c.gom||'') + '\n' + (c.gia_fb||'')).normalize('NFKC').toLowerCase()   // NFKC: chu in dam Unicode -> chu thuong
+    .replace(/(không|chưa) (bao )?gồm[^\n]*/g, '');
+  return /(bao gồm|đã gồm)[^\n]{0,20}tóc (phím|giả)/.test(s);
+}
+function veNutToc(c){
+  const gom = daGomToc(c), mau = mauTocPhim(), bat = !gom && !!mau;
+  const k = mau && String(mau.content).match(/(\d{2,4})\s*k(?![a-zà-ỹ])/i);   // "400k" trong cau -> "+400.000đ"
+  const phu = gom ? 'Đã gồm trong gói' : !mau ? 'Chưa có mẫu “Tóc Phím”' : k ? '+' + (k[1]*1000).toLocaleString('vi-VN') + 'đ' : 'Chạm để copy';
+  return `<button class="lk-btn${bat?'':' tat'}" data-kem="toc"${bat?'':' disabled'}>
+      ${ICON_TOC}<span>Phí tóc phím</span>
+      <span class="lk-phu${bat&&k?' co-gia':''}">${phu}</span>
+    </button>`;
+}
 function moChonLink(c){
   $('lkHead').innerHTML = `
     <img src="${esc(c.image||ANH_TRONG)}" alt="" onerror="this.src='${ANH_TRONG}'">
@@ -4058,12 +4086,19 @@ function moChonLink(c){
       <span class="lk-phu${gia?' co-gia':''}">${v ? (gia || 'Chạm để copy') : thieu}</span>
     </button>`;
   };
+  const veLink = n=>{
+    const v = (c[n.truong]||'').trim();
+    return `<button class="lk-btn${v?'':' tat'}" data-nen="${n.id}"${v?'':' disabled'}>
+      <span class="lk-ten">${n.icon}${n.nhan}</span>
+      <span class="lk-phu">${v ? 'Copy' : 'Chưa có'}</span>
+    </button>`;
+  };
   const coGia = NHOM_GIA.some(n=>(c[n.truong]||'').trim());
   $('lkDsNut').innerHTML =
-      `<div class="lk-nhan">Link</div>`
-    + NEN_TANG.map(n=>veNut(n,'Chưa có link')).join('')
-    + (coGia ? `<div class="lk-nhan">Giá gửi khách</div>`
-               + NHOM_GIA.map(n=>veNut(n,'Chưa có',true)).join('') : '');
+      `<div class="lk-nhan">Link</div><div class="lk-ba">${NEN_TANG.map(veLink).join('')}</div>`
+    + `<div class="lk-nhan">Giá gửi khách</div>`
+    + (coGia ? NHOM_GIA.map(n=>veNut(n,'Chưa có',true)).join('') : '')
+    + veNutToc(c);
 
   if(isAdmin && c.tuSheet){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
@@ -4121,7 +4156,18 @@ function moChonLink(c){
     };
   }
 
-  $('lkDsNut').querySelectorAll('.lk-btn:not(.tat)').forEach(b=>{
+  const nutToc = $('lkDsNut').querySelector('[data-kem="toc"]:not(.tat)');
+  if(nutToc) nutToc.onclick = async()=>{
+    const mau = mauTocPhim();   // doc lai luc bam, lo mau vua duoc sua
+    if(mau && await copyText(mau.content)){
+      nutToc.classList.add('vua-copy');
+      nutToc.querySelector('.lk-phu').textContent = '✓ Đã copy';
+      showToast('Đã copy câu phí tóc phím');
+      addRecent(mau.id);   // dem nhu copy mau "Tóc Phím", KHONG tinh la luot gui gia / luot concept
+      setTimeout(()=>lkOverlay.classList.remove('show'), 650);
+    } else showToast('Không copy được', true);
+  };
+  $('lkDsNut').querySelectorAll('.lk-btn[data-nen]:not(.tat)').forEach(b=>{
     b.onclick = async()=>{
       const n = [...NEN_TANG, ...NHOM_GIA].find(x=>x.id===b.dataset.nen);
       const url = (c[n.truong]||'').trim();
