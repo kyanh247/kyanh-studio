@@ -333,22 +333,13 @@
   .lk-nhan { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.5rem 0.2rem; }
   .lk-nhan:first-child { margin-top: 0; }
   .lk-hang { display: flex; gap: 0.5rem; margin-top: 1.1rem; padding-top: 0.95rem; border-top: 1px solid var(--line); }
-  .lk-ghim, .lk-sua { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.8rem 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.76rem; font-weight: 600; color: var(--ink-dark); transition: all 0.2s ease; }
-  .lk-ghim:hover, .lk-sua:hover { border-color: var(--gold); background: rgba(184,149,110,0.06); color: var(--gold-dark); }
-  .lk-ghim svg, .lk-sua svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; flex-shrink: 0; }
-  .lk-sua.lk-xoa { flex: 0 1 auto; color: var(--danger); }
-  .lk-sua.lk-xoa:hover { border-color: var(--danger); background: rgba(176,86,60,0.06); color: var(--danger); }
+  .lk-ghim { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.8rem 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 0.76rem; font-weight: 600; color: var(--ink-dark); transition: all 0.2s ease; }
+  .lk-ghim:hover { border-color: var(--gold); background: rgba(184,149,110,0.06); color: var(--gold-dark); }
+  .lk-ghim svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; flex-shrink: 0; }
   .lk-ghim.dang-ghim { background: var(--gold); border-color: var(--gold); color: #fff; }
   .lk-ghim.dang-ghim:hover { background: var(--gold-dark); border-color: var(--gold-dark); color: #fff; }
   .lk-ghim:disabled { opacity: 0.55; cursor: wait; }
 
-  .lc-ghim-o { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 0.95rem; background: #fff; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; transition: all 0.2s ease; color: var(--muted); }
-  .lc-ghim-o:hover { border-color: var(--gold); }
-  .lc-ghim-o input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; margin: 0; }
-  .lc-ghim-o svg { width: 17px; height: 17px; flex-shrink: 0; }
-  .lc-ghim-o b { display: block; font-size: 0.8rem; font-weight: 600; color: var(--ink-dark); }
-  .lc-ghim-o small { display: block; font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
-  .lc-ghim-o:has(input:checked) { border-color: var(--gold); background: #FFFDFA; color: var(--gold-dark); }
 
   .lc-dau-ghim { position: absolute; top: 0.35rem; left: 0.35rem; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.92); border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.12); color: var(--gold-dark); z-index: 1; }
   .lc-dau-ghim svg { width: 11px; height: 11px; stroke: currentColor; stroke-width: 2.4; fill: none; }
@@ -368,9 +359,6 @@
      The trong cung hang cao bang nhau nho luoi; gia luon nam sat day the. */
   .lc-name { margin: 0.45rem 0.4rem 0; font-size: 0.7rem; font-weight: 600; color: var(--ink-dark); line-height: 1.3; text-align: center; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   /* Dau "nhap tay trong app" — cung kieu voi dau ghim, dung canh no neu the co ca hai */
-  .lc-dau-ghim.lc-dau-tay { color: var(--muted); }
-  .lc-dau-ghim + .lc-dau-tay { left: calc(0.35rem + 24px); }
-  #lcGrid.anh-nho .lc-dau-ghim + .lc-dau-tay { left: calc(0.2rem + 18px); }
   .lc-gia { margin-top: auto; padding: 0.3rem 0.3rem 0.5rem; font-size: 0.62rem; font-weight: 600; color: var(--gold-dark); text-align: center; white-space: nowrap; }
   #lcGrid.anh-nho .lc-gia { font-size: 0.48rem; padding: 0.2rem 0.1rem 0.3rem; }
   .lc-card.copied { border-color: var(--gold); background: #FFFDFA; }
@@ -410,14 +398,12 @@
   /* Dien thoai: chu trong o loc dai hon be ngang o -> cho xuong hang rieng cho du cho */
   /* Thanh cong cu tab Concept: MOI o cung cao 44px, thang hang (Ky Anh 13/11 che "lech te le" — o tim 44, Model/Gia 50) */
   .lc-toolbar { align-items: stretch; }
-  .lc-toolbar .search-input, .lc-toolbar .ka-sel-btn.lc-filter, .lc-toolbar .chon-cot, .lc-toolbar .btn-add.show { height: 44px; box-sizing: border-box; }
+  .lc-toolbar .search-input, .lc-toolbar .ka-sel-btn.lc-filter, .lc-toolbar .chon-cot { height: 44px; box-sizing: border-box; }
   .lc-toolbar .ka-sel-btn.lc-filter { padding-top: 0; padding-bottom: 0; }
   .lc-toolbar .search-wrap, .lc-toolbar .lc-loc-wrap, .lc-toolbar .ka-sel { height: 44px; }
-  .lc-toolbar .btn-add.show { width: 44px; padding: 0; justify-content: center; }
   @media (max-width: 560px) {
     /* Hang 1: o tim (+ nut them) rong het hang. Hang 2: Model | Gia | co anh — mep trai/phai thang voi hang 1 */
     .lc-toolbar .search-wrap { flex: 1 1 70%; order: 1; }   /* 70% + o loc 35% > 100% -> o loc buoc phai xuong hang 2 */
-    .lc-toolbar .btn-add { order: 2; }
     .lc-loc-wrap { flex: 1 1 35%; order: 3; }
     .lc-toolbar .chon-cot { order: 4; flex: none; }
     .lc-toolbar .ka-sel-btn.lc-filter { font-size: 0.72rem; padding-left: 0.65rem; padding-right: 0.6rem; gap: 0.3rem; }
@@ -960,9 +946,6 @@
         <button type="button" data-co="lon" title="Ảnh lớn" aria-label="Ảnh lớn"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/></svg></button>
         <button type="button" data-co="nho" title="Ảnh nhỏ" aria-label="Ảnh nhỏ"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="4.8" height="4.8" rx="1.3"/><rect x="9.6" y="3.5" width="4.8" height="4.8" rx="1.3"/><rect x="15.7" y="3.5" width="4.8" height="4.8" rx="1.3"/><rect x="3.5" y="9.6" width="4.8" height="4.8" rx="1.3"/><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="1.3"/><rect x="15.7" y="9.6" width="4.8" height="4.8" rx="1.3"/><rect x="3.5" y="15.7" width="4.8" height="4.8" rx="1.3"/><rect x="9.6" y="15.7" width="4.8" height="4.8" rx="1.3"/><rect x="15.7" y="15.7" width="4.8" height="4.8" rx="1.3"/></svg></button>
       </div>
-      <button class="btn-add" id="lcAdd" title="Thêm concept mới">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
     </div>
     <!-- So do khach (13/11): go so do -> the concept hien vua / sat / khong vua theo cot Size trong sheet. Chi nam tren may, khong luu len mang -->
     <!-- Mac dinh thu gon (Ky Anh 13/11): bam dong tieu de moi mo ra; dang co so do thi tieu de ghi so + dong tom tat van hien -->
@@ -1045,61 +1028,6 @@
     <h3 style="margin-bottom:1.1rem">Chọn Link Để Copy</h3>
     <div class="lk-head" id="lkHead"></div>
     <div id="lkDsNut"></div>
-  </div>
-</div>
-
-<!-- Them / sua mot Link Concept -->
-<div class="modal-overlay" id="lcOverlay">
-  <div class="modal">
-    <button class="modal-x" data-dong="lcOverlay" title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    <h3 id="lcFormTitle">Thêm Concept</h3>
-
-    <div class="f-group"><label class="f-label" for="lcTen">Tên concept <span class="req">*</span></label>
-      <input type="text" class="f-input" id="lcTen"></div>
-
-    <div class="f-group"><label class="f-label" for="lcModel">Tên model</label>
-      <input type="text" class="f-input" id="lcModel" list="dsModel" autocomplete="off">
-      <datalist id="dsModel"></datalist>
-      <p class="f-hint">Để tìm nhanh theo tên mẫu chụp. Gõ vào sẽ hiện các tên đã có.</p></div>
-
-    <div class="f-group"><label class="f-label" for="lcLink">Link Website <span class="req">*</span></label>
-      <input type="url" class="f-input" id="lcLink"></div>
-
-    <div class="f-group"><label class="f-label" for="lcLinkFb">Link Facebook</label>
-      <input type="url" class="f-input" id="lcLinkFb"></div>
-
-    <div class="f-group"><label class="f-label" for="lcLinkTt">Link TikTok</label>
-      <input type="url" class="f-input" id="lcLinkTt"></div>
-
-    <div class="f-group"><label class="f-label" for="lcGiaFb">Giá Facebook</label>
-      <textarea class="f-textarea" id="lcGiaFb" style="min-height:130px"></textarea></div>
-
-    <div class="f-group"><label class="f-label" for="lcGiaTt">Giá TikTok</label>
-      <textarea class="f-textarea" id="lcGiaTt" style="min-height:110px"></textarea></div>
-
-    <div class="f-group"><label class="f-label" for="lcAnh">Link ảnh WordPress</label>
-      <input type="url" class="f-input" id="lcAnh">
-      <p class="f-hint">Trong WordPress: <b>Media</b> → chọn ảnh → copy <b>File URL</b>. Nên xuất 520×780, dưới 60 KB.</p></div>
-
-    <div class="f-group"><label class="f-label" for="lcDang">Dạng concept</label>
-      <select class="f-select" id="lcDang"></select></div>
-
-    <div class="f-group">
-      <label class="lc-ghim-o" for="lcGhim">
-        <input type="checkbox" id="lcGhim">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
-        <span><b>Ghim lên đầu</b><small>Hiện ở khối trên cùng, khỏi phải cuộn tìm</small></span>
-      </label>
-    </div>
-
-    <div class="f-group"><label class="f-label">Xem trước</label>
-      <div id="lcPreview" style="display:flex;justify-content:center;padding:0.5rem 0;"></div>
-      <p class="f-hint" id="lcNguon" style="text-align:center"></p></div>
-
-    <div class="modal-actions">
-      <button class="btn-ghost" id="lcHuy">Huỷ</button>
-      <button class="btn-primary" id="lcLuu">Lưu</button>
-    </div>
   </div>
 </div>
 
@@ -1905,7 +1833,6 @@ function applyAdminUI() {
     ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   btnAdd.classList.toggle('show', isAdmin);
-  $('lcAdd').classList.toggle('show', isAdmin);
   // Tab Thong ke chi danh cho nguoi da dang nhap quan tri; dang xem ma dang xuat thi ve lai Tra loi nhanh
   document.querySelector('.dock-item[data-view="thongke"]').hidden = !isAdmin;
   if (!isAdmin && activeView==='thongke') doiView('reply');
@@ -2010,16 +1937,14 @@ const CAT_GHIM = 'ghim-concept';
 const CAT_AN   = [CAT_LINK, CAT_CHI, CAT_GHIM];   // khong hien o bat ky tab nao ben Reply
 function itemsReply(){ return items.filter(i=>!CAT_AN.includes(i.cat)); }
 /* Concept lay tu Google Sheet cua Ky Anh (file le chi chua sheet concept, tu keo tu file tong).
-   Sua sheet la app doi theo. Concept nhap tay trong app (Firestore) trung ten thi ban trong app thang. */
+   Sua sheet la app doi theo. Tu 22/11 sheet la nguon DUY NHAT: Ky Anh bo tinh nang "+ concept" (khong dung; the thu
+   Moc Tam #1 tung de len sheet, gui sai ten + gia). Ban ghi 'link-concept' cu con sot / khoi phuc tu sao luu -> bo qua. */
 const SHEET_CONCEPT = 'https://docs.google.com/spreadsheets/d/1xhYHsQDVgUaIzj8_i0wBFDqa5k7OsUjPqgVc-Jn2CaE/export?format=csv';
 const SHEET_KEY = 'kyanh-concept-sheet';
 let sheetConcepts = [], sheetLuc = 0;
 function itemsLink(){
-  const tay = items.filter(i=>i.cat===CAT_LINK);
-  const daCo = new Set(tay.map(i=>String(i.title||'').trim().toLowerCase()));
   const ghimWeb = new Set((docGhim()?.ten||[]).map(t=>String(t).toLowerCase()));
-  return tay.concat(sheetConcepts.filter(c=>!daCo.has(c.title.toLowerCase()))
-    .map(c=>({ ...c, ghimSheet:c.ghim, ghim: c.ghim || ghimWeb.has(c.title.toLowerCase()) })));
+  return sheetConcepts.map(c=>({ ...c, ghimSheet:c.ghim, ghim: c.ghim || ghimWeb.has(c.title.toLowerCase()) }));
 }
 function docGhim(){ return items.find(i=>i.cat===CAT_GHIM); }
 /* Ghim / bo ghim mot concept tu sheet: sua danh sach ten trong ban ghi CAT_GHIM (chua co thi tao) */
@@ -2201,7 +2126,7 @@ function conceptTuSheet(rows){
     const dongCuoi = gom ? '\n' + boldify(gom, true) : '';
     const ten=boldify(title,false);
     const dangCon=(DANG.find(d=>dm.includes(d[0]))||[])[1]||'';
-    return { id:'s-'+k, tuSheet:true, cat:CAT_LINK, title, gom, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
+    return { id:'s-'+k, cat:CAT_LINK, title, gom, model:o(r,C.mod), gia:km, ghim:!!o(r,C.ghim),
              dang:dangCon,
              sizeDo: docSizeDo(o(r,C.size), o(r,C.cao), o(r,C.nang)),
              ghiSize: o(r,C.ghiSize),
@@ -2940,7 +2865,6 @@ document.querySelectorAll('.modal-x').forEach(b=>b.onclick=()=>{
   else if(id==='fillOverlay') closeFill();
   else if(id==='chonLoaiOverlay') dongChonLoai();
   else if(id==='baoGiaOverlay') dongBaoGia();
-  else if(id==='lcOverlay') dongFormLink();
   else if(id==='lkOverlay') dongChonLink();
   else if(id==='bqChonOverlay') dongChonCon();
 });
@@ -3203,10 +3127,9 @@ const ANH_TRONG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
      </g>
    </svg>`);
 
-/* Do danh sach dang vao o loc va o chon trong khung nhap */
+/* Do danh sach dang vao o loc */
 $('lcFilter').innerHTML = '<option value="">Tất cả dạng</option>' +
   LC_DANG.map(d=>`<option value="${d.id}">${esc(d.nhan)}</option>`).join('');
-$('lcDang').innerHTML = LC_DANG.map(d=>`<option value="${d.id}">${esc(d.nhan)}</option>`).join('');
 
 /* Hang chip dang concept: "Tất cả" + ten ngan tung dang (phan truoc dau " - "). Bam la loc ngay. */
 function veDangChips(){
@@ -3300,7 +3223,7 @@ function renderLinks(){
     const chuaCoGi = !itemsLink().length;
     grid.innerHTML = `<div class="empty">`
       + (chuaCoGi
-          ? '<h3>Chưa có concept nào</h3>' + (isAdmin ? 'Nhấn dấu + để thêm concept đầu tiên.' : 'Khu vực này đang trống.')
+          ? '<h3>Chưa có concept nào</h3>' + 'Chưa đọc được Google Sheet concept. Kiểm tra mạng rồi mở lại app.'
           : '<h3>Không tìm thấy</h3>' + ((dang||mau||gia) ? `Chưa có concept nào${gia?' giá '+gia.toLocaleString('vi-VN')+'đ':''}${mau?' của mẫu '+esc(mau):''}${dang?' thuộc '+esc(nhanDang(dang)):''}.` : ''))
       + `</div>`;
     return;
@@ -3325,7 +3248,6 @@ function renderLinks(){
   const veThe = c=>{ const kq = kqSize.get(c.id); return `
     <article class="lc-card${kq?' sd-'+kq.muc:''}${coSoDo?' kg':''}" data-id="${esc(c.id)}">
       ${c.ghim?`<span class="lc-dau-ghim" title="Đã ghim"><svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></span>`:''}
-      ${c.tuSheet?'':`<span class="lc-dau-ghim lc-dau-tay" title="Nhập tay trong app"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>`}
       <img class="lc-thumb" src="${esc(c.image||ANH_TRONG)}" alt="${esc(c.title)}" loading="lazy" decoding="async"
            onerror="this.src='${ANH_TRONG}'">
       <div class="lc-name">${esc(c.title)}</div>
@@ -4126,7 +4048,7 @@ function moChonLink(c){
     + (coGia ? `<div class="lk-nhan">Giá gửi khách</div>` + NHOM_GIA.map(n=>veNut(n,'Chưa có',true)).join('') : '')
     + `<div class="lk-nhan">Gửi kèm</div><div class="lk-ba lk-hai">${MAU_KEM.map(k=>veNutKem(k,c)).join('')}</div>`;
 
-  if(isAdmin && c.tuSheet){
+  if(isAdmin){
     const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
     const ghiChu = t=>`<p class="lk-nhan" style="text-transform:none;letter-spacing:0.02em;text-align:center">${t}</p>`;
     if(c.ghimSheet){
@@ -4149,37 +4071,6 @@ function moChonLink(c){
         nut.disabled=false;
       };
     }
-  } else if(isAdmin){
-    const bieuTuongGhim = '<svg viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>';
-    $('lkDsNut').insertAdjacentHTML('beforeend',
-      `<div class="lk-hang">
-         <button class="lk-ghim${c.ghim?' dang-ghim':''}" id="lkGhim">
-           ${bieuTuongGhim}<span>${c.ghim?'Bỏ ghim':'Ghim lên đầu'}</span></button>
-         <button class="lk-sua" id="lkSua">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-           Sửa</button>
-         <button class="lk-sua lk-xoa" id="lkXoa">
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-           Xoá</button>
-       </div>`);
-    $('lkSua').onclick = ()=>{ dongChonLink(); moFormLink(c); };
-    /* Chi concept nhap tay moi xoa duoc o day; concept tu sheet thi xoa dong trong sheet */
-    $('lkXoa').onclick = async()=>{
-      if(!confirm('Xoá concept nhập tay “'+c.title+'”? Không hoàn tác được. Concept cùng tên trong Google Sheet, nếu có, vẫn giữ nguyên.')) return;
-      if(await removeItem(c.id)){ dongChonLink(); showToast('Đã xoá concept ' + c.title); if(!fb) renderLinks(); }
-    };
-    $('lkGhim').onclick = async()=>{
-      const nut=$('lkGhim'); nut.disabled=true;
-      const moiGhim = !c.ghim;
-      if(await upsertItem(c.id, { ghim: moiGhim })){
-        c.ghim = moiGhim;
-        nut.classList.toggle('dang-ghim', moiGhim);
-        nut.querySelector('span').textContent = moiGhim ? 'Bỏ ghim' : 'Ghim lên đầu';
-        showToast(moiGhim ? 'Đã ghim ' + c.title : 'Đã bỏ ghim ' + c.title);
-        if(!fb) renderLinks();
-      }
-      nut.disabled=false;
-    };
   }
 
   $('lkDsNut').querySelectorAll('.lk-btn[data-kem]:not(.tat)').forEach(b=>{
@@ -4214,83 +4105,7 @@ function moChonLink(c){
 }
 function dongChonLink(){ lkOverlay.classList.remove('show'); }
 
-/* ---------- Khung them / sua concept ---------- */
-const lcOverlay=$('lcOverlay');
-let lcDangSua=null;
-
-
-function veXemTruoc(){
-  const url=$('lcAnh').value.trim(), ghiChu=$('lcNguon'), khung=$('lcPreview');
-  const img=document.createElement('img');
-  img.style.cssText='width:96px;aspect-ratio:2/3;object-fit:cover;border-radius:9px;border:1px solid var(--line)';
-  if(!url){ img.src=ANH_TRONG; ghiChu.textContent=''; khung.replaceChildren(img); return; }
-
-  const laLinkNgoai = /^https?:\/\//i.test(url);
-  ghiChu.textContent = 'Đang kiểm tra…';
-  ghiChu.style.color = '';
-  img.onload = ()=>{
-    ghiChu.textContent = laLinkNgoai ? '✓ Ảnh từ website bên ngoài' : '✓ Ảnh trong repo';
-    ghiChu.style.color = '';
-  };
-  img.onerror = ()=>{
-    img.onload = null;                       // dung de anh thay the ghi de mat canh bao
-    img.src = ANH_TRONG;
-    ghiChu.textContent = laLinkNgoai
-      ? '⚠ Không tải được ảnh từ link này'
-      : '⚠ Chưa có ảnh này trong repo — nhớ tải lên GitHub';
-    ghiChu.style.color = 'var(--danger)';
-  };
-  img.src = url;
-  khung.replaceChildren(img);
-}
-$('lcAnh').addEventListener('input', veXemTruoc);
-
-
-function moFormLink(c){
-  /* Gom tat ca ten model da nhap, tach theo dau phay, bo trung */
-  const dsModel = [...new Set(itemsLink().flatMap(x=>(x.model||'').split(',').map(t=>t.trim())).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
-  $('dsModel').innerHTML = dsModel.map(m=>`<option value="${esc(m)}">`).join('');
-  lcDangSua = c || null;
-  $('lcFormTitle').textContent = c ? 'Sửa Concept' : 'Thêm Concept';
-  $('lcTen').value    = c?.title   || '';
-  $('lcModel').value  = c?.model   || '';
-  $('lcLink').value   = c?.content || '';
-  $('lcLinkFb').value = c?.link_fb || '';
-  $('lcLinkTt').value = c?.link_tt || '';
-  $('lcGiaFb').value  = c?.gia_fb  || '';
-  $('lcGiaTt').value  = c?.gia_tt  || '';
-  $('lcAnh').value    = c?.image   || '';
-  $('lcDang').value   = c?.dang    || 'conceptual';
-  $('lcGhim').checked = !!c?.ghim;
-  veXemTruoc();
-  lcOverlay.classList.add('show');
-  setTimeout(()=>$('lcTen').focus(),50);
-}
-function dongFormLink(){ lcOverlay.classList.remove('show'); lcDangSua=null; }
-$('lcHuy').onclick = dongFormLink;
-$('lcAdd').onclick = ()=>moFormLink(null);
-
-$('lcLuu').onclick = async()=>{
-  const ten=$('lcTen').value.trim(), link=$('lcLink').value.trim();
-  if(!ten){  showToast('Nhập tên concept trước nhé', true); $('lcTen').focus();  return; }
-  if(!link){ showToast('Nhập link Website', true); $('lcLink').focus(); return; }
-  const nut=$('lcLuu'); nut.disabled=true; nut.textContent='Đang lưu…';
-  const ok = await upsertItem(lcDangSua?.id || null, {
-    title: ten, content: link, image: $('lcAnh').value.trim(),
-    model: $('lcModel').value.trim(), ghim: $('lcGhim').checked,
-    link_fb: $('lcLinkFb').value.trim(), link_tt: $('lcLinkTt').value.trim(),
-    gia_fb:  $('lcGiaFb').value.trim(),  gia_tt:  $('lcGiaTt').value.trim(),
-    cat: CAT_LINK, dang: $('lcDang').value, price: ''
-  });
-  nut.disabled=false; nut.textContent='Lưu';
-  if(!ok) return;
-  dongFormLink();
-  showToast(lcDangSua ? 'Đã cập nhật concept' : 'Đã thêm concept');
-  if(!fb) renderLinks();
-};
-
-
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongFormLink(); dongChonLink(); dongChonCon(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeOptions(); closeModal(); closePin(); closeFill(); dongChonLoai(); dongBaoGia(); dongChonLink(); dongChonCon(); } });
 
 /* Nut x xoa nhanh trong o tim: hien khi co chu, bam la xoa va giu con tro trong o */
 document.querySelectorAll('.search-wrap').forEach(w=>{
