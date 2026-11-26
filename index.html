@@ -3299,6 +3299,10 @@ function tachSoDo(txt){
   const raCao = (a, b) => +a*100 + (b.length===1 ? +b*10 : +b);
   let m = s.match(/(?:^|[^\d.])([12])\.(\d{1,2})\s*(?:mét|met|m)(?![a-zà-ỹ])/);
   if(!m) m = s.match(/(?:^|[^\d.])([12])\s*(?:mét|met|m)\s*(\d{1,2})(?!\d)/);
+  // 26/11: khach go tat "M61" / "m6" = 1m61 / 1m60. Chu m dung rieng, dinh lien so ("size m 60kg" khong tinh)
+  if(!m && (m = s.match(/(?:^|[^\da-zà-ỹ.])m(\d{1,2})(?![\d.])/))) m = [m[0], '1', m[1]];
+  // "1.61" khong ghi m: chi nhan 1 + 2 so le, khong dinh don vi can nang
+  if(!m && (m = s.match(/(?:^|[^\d.])1\.(\d{2})(?![\d.])(?!\s*(?:kg|ký|kí|ky|ki|k)(?![a-zà-ỹ]))/))) m = [m[0], '1', m[1]];
   if(m && raCao(m[1], m[2])>=130 && raCao(m[1], m[2])<=200){ kq.cao = raCao(m[1], m[2]); bo(m[0]); }
   else if((m = s.match(/cao\D{0,8}?(\d{3})/)) || (m = s.match(/(\d{3})\s*cm/))){ const v=+m[1]; if(v>=130 && v<=200){ kq.cao=v; bo(m[0]); } }
   // Can nang: 48kg / 48 ký / 48 ki / 48k / nặng 48
@@ -3317,9 +3321,12 @@ function tachSoDo(txt){
     if(x){ const v = +x[1], [lo, hi] = SD_GIOI_HAN[t]; if(v>=lo && v<=hi){ kq[t] = v; bo(x[0]); } }
   });
   // hoac 3 so lien nhau: 82-64-88 / 82 64 88 / 82/64/88 / 82.64.88
-  if(!kq.v1 && (m = s.match(/(\d{2,3})\s*[-–\/ .,x*]\s*(\d{2,3})\s*[-–\/ .,x*]\s*(\d{2,3})(?!\d)/))){
-    const v=[+m[1],+m[2],+m[3]];
-    if(v.every(x=>x>=45 && x<=140)){ kq.v1=v[0]; kq.v2=v[1]; kq.v3=v[2]; }
+  // 26/11: so dau khong dinh lien chu ("m61" tung bi lay lam vong 1 lam lech ca 3 vong).
+  // Tim kieu noi bang - / x * truoc, khong co moi toi kieu cach bang khoang trang / dau cham.
+  if(!kq.v1) for(const noi of ['[-–\\/x*]', '[-–\\/ .,x*]']){
+    const x = s.match(new RegExp('(?:^|[^a-zà-ỹ\\d.])(\\d{2,3})\\s*' + noi + '\\s*(\\d{2,3})\\s*' + noi + '\\s*(\\d{2,3})(?!\\d)'));
+    const v = x ? [+x[1], +x[2], +x[3]] : [];
+    if(x && v.every(n=>n>=45 && n<=140)){ kq.v1=v[0]; kq.v2=v[1]; kq.v3=v[2]; break; }
   }
   return kq;
 }
