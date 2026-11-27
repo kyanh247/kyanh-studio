@@ -3489,18 +3489,23 @@ function bqTinNhan(){
   }));
   dong.forEach(d=>{ d.cacPhu = [...d.phuChon.map(p=>({ ghi:p.ghi, tien:p.tien })), ...(d.phu ? [{ ghi:d.phuGhi || 'Phụ thu khác', tien:d.phu }] : [])]; });
   const nhieu = dong.length > 1;
-  /* Moi concept mot khoi (cau chu Ky Anh dua 02/11/2026): dong dau la tong cua concept do;
-     co phu thu thi ke "Goi chup chinh" + tung khoan ngay duoi */
-  const L = ['Dạ Studio gửi bạn bảng tổng hợp báo giá buổi chụp của mình ạ:'];
-  dong.forEach(d=>{
+  /* Khuon tin Ky Anh dua 27/11/2026: chao -> khoi "📸 Concept:" liet ke lien nhau -> khoi "💳 Báo giá gói chụp"
+     (Tong don / Giam / Thanh tien) -> cau ket "gửi báo giá 0N gói chụp".
+     Concept co phu thu: dong dau la tong cua concept do, ke "Goi chup chinh" + tung khoan ngay duoi,
+     va cach 1 dong giua cac concept cho de doc. */
+  const L = ['Dạ Studio gửi bạn bảng tổng hợp báo giá buổi chụp của mình ạ:', '', '📸 Concept:'];
+  const coPhu = dong.some(d=>d.cacPhu.length);
+  dong.forEach((d,i)=>{
     const cong = d.gia + d.cacPhu.reduce((t,p)=>t+p.tien,0);
-    L.push(`${nhieu ? d.so+'. ' : ''}Concept ${d.ten || '[Tên concept]'}${d.gia ? ': '+bqTien(cong)+'đ' : ''}`);
+    const ten = d.ten ? d.ten.charAt(0).toUpperCase() + d.ten.slice(1) : '[Tên concept]';   // "khách chọn sau" -> "Khách chọn sau"
+    if(coPhu && i) L.push('');
+    L.push(`${nhieu ? d.so+'. ' : ''}${ten}${d.gia ? ': '+bqTien(cong)+'đ' : ''}`);
     if(d.cacPhu.length){
       if(d.gia) L.push(`• Gói chụp chính: ${bqTien(d.gia)}đ`);   // dau cham tron de doc hon dau * (Ky Anh 12/11)
       d.cacPhu.forEach(p=>L.push(`• ${p.ghi}: ${bqTien(p.tien)}đ`));
     }
-    L.push('');
   });
+  L.push('', '💳 Báo giá gói chụp');
 
   /* Tong: du gia thi ra mot so; con concept chua co gia (vd khach chon sau) thi liet ke tung khoan */
   const duGia = dong.every(d=>d.gia);
@@ -3510,7 +3515,7 @@ function bqTinNhan(){
     phan.push(d.gia ? bqTien(d.gia)+'đ' : `concept ${d.so}`);
     d.cacPhu.forEach(p=>phan.push(bqTien(p.tien)+'đ'));
   });
-  L.push('💳 Tổng thanh toán: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
+  L.push('Tổng đơn: ' + (duGia ? bqTien(tong)+'đ' : phan.join(' + ')));
 
   /* Giam gia */
   let giam = 0, giamGhi = '';
@@ -3532,7 +3537,7 @@ function bqTinNhan(){
     L.push('', 'Phần còn lại sẽ thanh toán tiền mặt hoặc chuyển khoản sau buổi chụp.');
   }
   if(dong.some(d=>d.phuChon.some(p=>p.id==='be'))) L.push(BQ_GHI_EM_BE);
-  L.push('', 'Dạ mình xem qua cần tư vấn thêm nhắn lại studio nha');
+  L.push('', `Dạ Studio gửi báo giá ${String(dong.length).padStart(2,'0')} gói chụp trên ạ`);   // 27/11 thay cau "Dạ mình xem qua cần tư vấn thêm nhắn lại studio nha"
   return L.join('\n');
 }
 function bqCapNhat(){
