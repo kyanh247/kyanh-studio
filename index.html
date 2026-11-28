@@ -328,6 +328,7 @@
   /* Hang Link (28/11): khong con chu "Copy" -> ten nam giua o; "✓ Đã copy" / "Chưa có" hien sat day o, ten khong nhay */
   .lk-ba.lk-link .lk-btn { position: relative; }
   .lk-ba.lk-link .lk-phu { position: absolute; left: 0; right: 0; bottom: 7px; }
+  .lk-ba.lk-link .lk-btn.vua-copy .lk-ten { color: var(--gold-dark); font-weight: 700; }   /* 28/11: bam xong ten doi thanh "✓ Đã copy" cung dong, giua o -> 3 o deu nhau */
   .lk-ba .lk-btn .lk-phu.co-gia { font-size: 0.62rem; }
   @media (max-width: 374px) { .lk-hai .lk-btn .lk-ten { gap: 0.22rem; font-size: 0.64rem; } .lk-ba.lk-hai .lk-btn svg { width: 12px; height: 12px; } }   /* may nho: "Tu van coc & dat lich" vua 1 dong */
 
@@ -4106,7 +4107,8 @@ function moChonLink(c){
       const url = (c[n.truong]||'').trim();
       if(await copyText(url)){
         b.classList.add('vua-copy');
-        b.querySelector('.lk-phu').textContent = '✓ Đã copy';
+        if(b.closest('.lk-link')) b.querySelector('.lk-ten').textContent = '✓ Đã copy';   // hang Link: thay ten, 1 dong giua o (Ky Anh 28/11 "cho no deu hon")
+        else b.querySelector('.lk-phu').textContent = '✓ Đã copy';
         showToast('Đã copy ' + n.nhan + ' — ' + c.title);
         if(tangDem(idConcept(c.title))){   // chi dem kenh khi luot nay duoc cong (khong phai bam lon 2 lan)
           tangKenh({ fb:'fb', gfb:'fb', tt:'tt', gtt:'tt' }[n.id] || 'chung');   // Website gui duoc cho ca hai ben
